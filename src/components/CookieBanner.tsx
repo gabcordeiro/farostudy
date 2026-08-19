@@ -33,7 +33,7 @@ export function CookieBanner() {
       <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-soft">
           Usamos cookies essenciais e, com sua permissao, de analise para melhorar o Faro
-          Cards. Leia nossa{" "}
+          Study. Leia nossa{" "}
           <Link to="/privacidade" className="text-action underline underline-offset-2">
             Politica de Privacidade
           </Link>

@@ -11,6 +11,7 @@ import {
   IconChart,
   IconCoin,
   IconDeck,
+  IconHelp,
   IconLogout,
   IconQuiz,
   IconRoute,
@@ -27,6 +28,7 @@ const NAV = [
   { to: "/quiz", label: "Quiz", Icon: IconQuiz },
   { to: "/trilhas", label: "Trilhas", Icon: IconRoute },
   { to: "/importar", label: "Importar", Icon: IconUpload },
+  { to: "/ajuda", label: "Ajuda", Icon: IconHelp },
 ];
 
 export function Sidebar() {

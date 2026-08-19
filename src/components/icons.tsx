@@ -186,3 +186,11 @@ export const IconClose = (p: IconProps) => (
     <path d="M5 5l14 14M19 5 5 19" />
   </Base>
 );
+
+export const IconHelp = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9.5 9.5a2.5 2.5 0 1 1 3 2.45V14" />
+    <path d="M12 17h.01" strokeLinecap="round" />
+  </Base>
+);

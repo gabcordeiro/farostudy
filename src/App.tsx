@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes, Link } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
@@ -8,6 +8,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { PageTransition } from "@/components/PageTransition";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useProfile } from "@/features/profile/useProfile";
+import { WelcomeTour } from "@/features/help/WelcomeTour";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
@@ -20,6 +22,7 @@ const DeckDetailPage = lazy(() => import("@/features/decks/DeckDetailPage"));
 const AdminPage = lazy(() => import("@/features/admin/AdminPage"));
 const LandingPage = lazy(() => import("@/features/landing/LandingPage"));
 const PlansPage = lazy(() => import("@/features/billing/PlansPage"));
+const HelpPage = lazy(() => import("@/features/help/HelpPage"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const ThankYou = lazy(() => import("@/pages/ThankYou"));
@@ -65,6 +68,14 @@ function AdminAppRoute({ children }: { children: ReactNode }) {
 }
 
 function AppLayout({ children }: { children: ReactNode }) {
+  const { profile, loading: profileLoading, update } = useProfile();
+  const [tourOpen, setTourOpen] = useState(false);
+
+  // Usuario que nunca concluiu o tour ve ele uma unica vez, ao entrar no app.
+  useEffect(() => {
+    if (!profileLoading && profile && !profile.onboarded_at) setTourOpen(true);
+  }, [profileLoading, profile]);
+
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <div className="md:sticky md:top-0 md:h-screen">
@@ -81,6 +92,12 @@ function AppLayout({ children }: { children: ReactNode }) {
           Estudar agora
         </Link>
       </div>
+
+      <WelcomeTour
+        open={tourOpen}
+        onClose={() => setTourOpen(false)}
+        onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
+      />
     </div>
   );
 }
@@ -113,6 +130,7 @@ export default function App() {
           <Route path="/estudar" element={<AppRoute><StudyPage /></AppRoute>} />
           <Route path="/quiz" element={<AppRoute><QuizPage /></AppRoute>} />
           <Route path="/perfil" element={<AppRoute><ProfilePage /></AppRoute>} />
+          <Route path="/ajuda" element={<AppRoute><HelpPage /></AppRoute>} />
           <Route path="/trilhas" element={<AppRoute><DecksPage /></AppRoute>} />
           <Route path="/trilhas/:deckId" element={<AppRoute><DeckDetailPage /></AppRoute>} />
 

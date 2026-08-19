@@ -16,7 +16,8 @@ const SITE = "Faro Study";
 const BASE_URL = "https://farostudy.vercel.app";
 
 export function SEO({ title, description, path = "/", noindex, ogImage }: SEOProps) {
-  const fullTitle = `${title} | ${SITE}`;
+  // A home passa o proprio nome do site como titulo; evita "Faro Study | Faro Study".
+  const fullTitle = title === SITE ? SITE : `${title} | ${SITE}`;
   const url = `${BASE_URL}${path}`;
   return (
     <Helmet>

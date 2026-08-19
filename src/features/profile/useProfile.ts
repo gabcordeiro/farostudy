@@ -14,11 +14,13 @@ export interface ProfileRow {
   locale: string;
   timezone: string;
   role: UserRole;
+  onboarded_at: string | null;
 }
 
 interface UpdateInput {
   display_name?: string;
   avatar_url?: string | null;
+  onboarded_at?: string | null;
 }
 
 export function useProfile() {
@@ -33,7 +35,7 @@ export function useProfile() {
     const res = await withJwtRetry(() =>
       supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, locale, timezone, role")
+        .select("id, display_name, avatar_url, locale, timezone, role, onboarded_at")
         .eq("id", user.id)
         .maybeSingle(),
     );
@@ -55,7 +57,7 @@ export function useProfile() {
           .from("profiles")
           .update(patch)
           .eq("id", user.id)
-          .select("id, display_name, avatar_url, locale, timezone, role")
+          .select("id, display_name, avatar_url, locale, timezone, role, onboarded_at")
           .single(),
       );
       if (res.error) {

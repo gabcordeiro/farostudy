@@ -18,6 +18,7 @@ export interface Database {
           locale: string;
           timezone: string;
           role: UserRole;
+          onboarded_at: string | null;
           accepted_tos_at: string | null;
           accepted_privacy_at: string | null;
           created_at: string;

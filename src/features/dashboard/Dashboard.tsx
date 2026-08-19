@@ -3,6 +3,7 @@
  * Compoe Heatmap de Consistencia + BI de Retencao (curva de esquecimento).
  * Estados: skeleton (nunca spinner), erro, vazio (com mascote), pronto.
  */
+import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
@@ -107,14 +108,22 @@ export default function Dashboard() {
           <EmptyState
             mood="search"
             title="Ainda nao ha o que medir"
-            description="Estude alguns cards e o Faro comeca a mapear sua consistencia e sua curva de retencao aqui."
+            description="Gere seus primeiros cards e revise alguns: o Faro comeca a mapear sua consistencia e sua curva de retencao aqui."
             action={
-              <a
-                href="/estudar"
-                className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-              >
-                Comecar a estudar
-              </a>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Link
+                  to="/importar"
+                  className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                >
+                  Gerar meus cards
+                </Link>
+                <Link
+                  to="/ajuda"
+                  className="inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
+                >
+                  Como funciona
+                </Link>
+              </div>
             }
           />
         ) : (
