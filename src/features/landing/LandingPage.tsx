@@ -1,6 +1,6 @@
 /**
- * Landing publica: hero com CTA acima da dobra, destaques do produto,
- * chamada de precos e FAQ (accordion nativo <details>/<summary>).
+ * Landing pública: hero com CTA acima da dobra, destaques do produto,
+ * chamada de preços e FAQ (accordion nativo <details>/<summary>).
  */
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
@@ -16,44 +16,44 @@ const HIGHLIGHTS = [
   {
     Icon: IconRoute,
     title: "Trilhas por assunto",
-    body: "Organize por materia ou topico do edital e acompanhe cada uma separadamente.",
+    body: "Organize por matéria ou tópico do edital e acompanhe cada uma separadamente.",
   },
   {
     Icon: IconChart,
-    title: "BI de retencao",
-    body: "Heatmap de consistencia e curva de esquecimento mostram onde focar.",
+    title: "BI de retenção",
+    body: "Heatmap de consistência e curva de esquecimento mostram onde focar.",
   },
   {
     Icon: IconQuiz,
-    title: "Quiz de multipla escolha",
-    body: "Vire seus cards em quiz gerado por IA, salve e refaca quando quiser.",
+    title: "Quiz de múltipla escolha",
+    body: "Vire seus cards em quiz gerado por IA, salve e refaça quando quiser.",
   },
 ];
 
 const FAQ: { q: string; a: string }[] = [
   {
-    q: "O que e repeticao espacada?",
-    a: "E um metodo de estudo em que voce revisa cada card em intervalos crescentes, ajustados conforme voce acerta ou erra. Isso concentra seu tempo no que voce ainda nao sabe bem, em vez de repetir tudo igualmente.",
+    q: "O que é repetição espaçada?",
+    a: "É um método de estudo em que você revisa cada card em intervalos crescentes, ajustados conforme você acerta ou erra. Isso concentra seu tempo no que você ainda não sabe bem, em vez de repetir tudo igualmente.",
   },
   {
     q: "Como a IA gera os cards?",
-    a: "Voce cola um texto, um JSON estruturado ou o conteudo de um edital em Importar. O Faro processa esse material e devolve flashcards com pergunta e resposta prontos para a sua trilha.",
+    a: "Você cola um texto, um JSON estruturado ou o conteúdo de um edital em Importar. O Faro processa esse material e devolve flashcards com pergunta e resposta prontos para a sua trilha.",
   },
   {
     q: "Preciso pagar para usar?",
-    a: "Toda conta nova recebe creditos gratis de boas-vindas. Cada geracao de cards ou quiz com IA consome 1 credito; quando acabar, da para solicitar mais em Planos.",
+    a: "Toda conta nova recebe créditos grátis de boas-vindas. Cada geração de cards ou quiz com IA consome 1 crédito; quando acabar, dá para solicitar mais em Planos.",
   },
   {
-    q: "Da para importar minhas colecoes do Anki?",
-    a: "Sim, o suporte a arquivos .apkg esta no roadmap do Importar, permitindo trazer suas colecoes existentes e deixar a IA sugerir novas perguntas a partir delas.",
+    q: "Da para importar minhas coleções do Anki?",
+    a: "Sim, o suporte a arquivos .apkg esta no roadmap do Importar, permitindo trazer suas coleções existentes e deixar a IA sugerir novas perguntas a partir delas.",
   },
   {
     q: "Meus dados ficam seguros?",
-    a: "Sim. O acesso e isolado por conta (Row-Level Security no banco), suas senhas nunca sao armazenadas em texto puro, e voce pode entrar com e-mail/senha ou com sua conta Google.",
+    a: "Sim. O acesso e isolado por conta (Row-Level Security no banco), suas senhas nunca são armazenadas em texto puro, e você pode entrar com e-mail/senha ou com sua conta Google.",
   },
   {
-    q: "Funciona para idiomas tambem?",
-    a: "Sim. Alem de concursos publicos, o Faro tem leitura em voz alta (texto-para-fala) nos cards, util para pronuncia e fixacao de vocabulario.",
+    q: "Funciona para idiomas também?",
+    a: "Sim. Além de concursos públicos, o Faro tem leitura em voz alta (texto-para-fala) nos cards, útil para pronuncia e fixacao de vocabulario.",
   },
 ];
 
@@ -83,7 +83,7 @@ export default function LandingPage() {
     <main className="min-h-screen">
       <SEO
         title="Faro Study"
-        description="Repeticao espacada com IA para concursos publicos e idiomas. Gere flashcards, monte quizzes e acompanhe sua retencao."
+        description="Repetição espaçada com IA para concursos públicos e idiomas. Gere flashcards, monte quizzes e acompanhe sua retenção."
         path="/"
       />
 
@@ -111,18 +111,18 @@ export default function LandingPage() {
       <section className="mx-auto grid max-w-5xl gap-10 px-6 py-16 lg:grid-cols-2 lg:items-center">
         <div>
           <h1 className="font-display text-4xl leading-tight text-paper sm:text-5xl">
-            O faro certo para suas revisoes.
+            O faro certo para suas revisões.
           </h1>
           <p className="mt-4 max-w-md text-base text-slate-muted">
-            Transforme editais, textos e cards em revisoes que acontecem no momento
-            certo. IA gera as perguntas, voce decide quando revisar.
+            Transforme editais, textos e cards em revisões que acontecem no momento
+            certo. IA gera as perguntas, você decide quando revisar.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               to="/login"
               className="rounded-sm bg-action px-6 py-3 text-sm font-medium text-ink-900 hover:bg-action-deep"
             >
-              Criar conta gratis
+              Criar conta grátis
             </Link>
             <Link
               to="/planos"
@@ -132,7 +132,7 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="mt-4 text-2xs text-slate-muted">
-            Conta gratis inclui creditos de boas-vindas para testar a geracao por IA.
+            Conta grátis inclui créditos de boas-vindas para testar a geração por IA.
           </p>
         </div>
         <div className="flex justify-center lg:justify-end">
@@ -140,7 +140,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Destaques -- grid 2x2, nao 3 cards em fileira */}
+      {/* Destaques -- grid 2x2, não 3 cards em fileira */}
       <section className="border-t border-hairline bg-surface px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <h2 className="font-display text-2xl text-paper">Como o Faro ajuda</h2>
@@ -161,7 +161,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl">
           <h2 className="font-display text-2xl text-paper">Perguntas frequentes</h2>
           <p className="mt-2 text-sm text-slate-muted">
-            Nao achou o que procurava? Escreva para{" "}
+            Não achou o que procurava? Escreva para{" "}
             <a href="mailto:contato@farostudy.vercel.app" className="text-action underline underline-offset-2">
               contato@farostudy.vercel.app
             </a>
@@ -175,7 +175,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-hairline px-6 py-8">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-2xs text-slate-muted">
-          <span>Faro Study - repeticao espacada para concursos e idiomas</span>
+          <span>Faro Study - repetição espaçada para concursos e idiomas</span>
           <div className="flex gap-4">
             <Link to="/termos" className="hover:text-paper">
               Termos

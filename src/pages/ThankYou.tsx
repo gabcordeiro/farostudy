@@ -1,4 +1,4 @@
-/** Thank you page (checklist producao #14). */
+/** Thank you page (checklist produção #14). */
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
@@ -16,7 +16,7 @@ export default function ThankYou() {
       <div className="space-y-2">
         <h1 className="font-display text-3xl text-paper">Tudo certo por aqui</h1>
         <p className="max-w-md text-sm text-slate-muted">
-          Confirmamos seu cadastro. O Faro ja esta preparando suas primeiras trilhas de estudo.
+          Confirmamos seu cadastro. O Faro já esta preparando suas primeiras trilhas de estudo.
         </p>
       </div>
       <Link

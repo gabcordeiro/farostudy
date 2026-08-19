@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { IconDeck, IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { deckTitleSchema } from "@/lib/validation";
+import { useArmedAction } from "@/lib/useArmedAction";
 import { useDeckList } from "./useDeckList";
 
 export default function DecksPage() {
@@ -20,13 +21,13 @@ export default function DecksPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { armedId: deletingId, confirm: confirmArm } = useArmedAction();
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
     const parsed = deckTitleSchema.safeParse(newTitle);
     if (!parsed.success) {
-      setCreateError(parsed.error.issues[0]?.message ?? "Titulo invalido");
+      setCreateError(parsed.error.issues[0]?.message ?? "Título inválido");
       return;
     }
     setBusyCreate(true);
@@ -54,12 +55,8 @@ export default function DecksPage() {
   }
 
   async function confirmDelete(id: string) {
-    if (deletingId !== id) {
-      setDeletingId(id);
-      return;
-    }
+    if (!confirmArm(id)) return;
     await remove(id);
-    setDeletingId(null);
   }
 
   return (
@@ -136,7 +133,7 @@ export default function DecksPage() {
         <EmptyState
           mood="sleepy"
           title="Nenhuma trilha ainda"
-          description="Crie sua primeira trilha e gere cards com IA para comecar a estudar."
+          description="Crie sua primeira trilha e gere cards com IA para começar a estudar."
           action={
             <Link
               to="/importar"
@@ -215,7 +212,7 @@ export default function DecksPage() {
         </ul>
       )}
       {deletingId ? (
-        <p className="mt-2 text-2xs text-slate-muted">Clique no lixeira de novo para confirmar a exclusao.</p>
+        <p className="mt-2 text-2xs text-slate-muted">Clique na lixeira de novo para confirmar. A trilha e todos os cards dela serão apagados.</p>
       ) : null}
     </div>
   );

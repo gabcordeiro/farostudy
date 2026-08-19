@@ -1,11 +1,11 @@
 /**
- * Escape de conteudo do usuario para renderizacao segura dos flashcards.
+ * Escape de conteúdo do usuário para renderização segura dos flashcards.
  * Regra: NUNCA usar dangerouslySetInnerHTML com texto de card sem passar por aqui.
- * (checklist seguranca #15 - escape user content / anti XSS)
+ * (checklist segurança #15 - escape user content / anti XSS)
  *
- * Estrategia padrao: renderizar como texto puro (o React ja escapa por default).
+ * Estratégia padrão: renderizar como texto puro (o React já escapa por default).
  * Este helper existe para os poucos pontos que precisam montar HTML (ex: markdown
- * minimo de card). Aqui permitimos um subconjunto seguro e escapamos o resto.
+ * mínimo de card). Aqui permitimos um subconjunto seguro e escapamos o resto.
  */
 
 const ESCAPE_MAP: Record<string, string> = {

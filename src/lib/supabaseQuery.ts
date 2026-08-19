@@ -1,6 +1,6 @@
 /**
  * Helper para queries que podem falhar por clock skew ("JWT issued at future").
- * Estrategia: executa; se o erro indicar problema de iat/exp, forca
+ * Estratégia: executa; se o erro indicar problema de iat/exp, força
  * refreshSession() para obter token novo e reexecuta uma vez.
  */
 import { supabase } from "./supabase";
@@ -33,9 +33,9 @@ function isClockSkewError(res: { error: QueryError | null }): boolean {
 
 /**
  * Executa `run()`; se o resultado carrega um erro de clock/JWT, tenta um
- * refresh e reexecuta. Retorna o proximo resultado (sucesso ou erro final).
+ * refresh e reexecuta. Retorna o próximo resultado (sucesso ou erro final).
  *
- * Aceita PromiseLike (Supabase builders sao thenables, nao Promise "puros").
+ * Aceita PromiseLike (Supabase builders são thenables, não Promise "puros").
  */
 export async function withJwtRetry<T>(
   run: () => PromiseLike<QueryResult<T>>,
@@ -53,7 +53,7 @@ export async function withJwtRetry<T>(
       error: {
         ...(second.error ?? {}),
         message:
-          "Seu relogio parece estar dessincronizado. Verifique a hora do sistema e tente novamente.",
+          "Seu relógio parece estar dessincronizado. Verifique a hora do sistema e tente novamente.",
       },
     };
   }

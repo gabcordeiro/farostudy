@@ -1,7 +1,7 @@
 /**
- * Avisos nao-bloqueantes (ex: "Gerando cards com IA...", "12 cards criados").
+ * Avisos não-bloqueantes (ex: "Gerando cards com IA...", "12 cards criados").
  * Pilha no canto, entrada fluida, some sozinho. Sem cor de fundo saturada,
- * sem faixa lateral colorida -- so um marcador circular pequeno por tipo.
+ * sem faixa lateral colorida -- só um marcador circular pequeno por tipo.
  */
 import {
   createContext,

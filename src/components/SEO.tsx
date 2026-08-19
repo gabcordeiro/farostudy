@@ -1,5 +1,5 @@
 /**
- * Meta title/description por pagina (checklist producao #3, #4)
+ * Meta title/description por página (checklist produção #3, #4)
  * usando react-helmet-async. Envolver a app em <HelmetProvider/>.
  */
 import { Helmet } from "react-helmet-async";
@@ -16,7 +16,7 @@ const SITE = "Faro Study";
 const BASE_URL = "https://farostudy.vercel.app";
 
 export function SEO({ title, description, path = "/", noindex, ogImage }: SEOProps) {
-  // A home passa o proprio nome do site como titulo; evita "Faro Study | Faro Study".
+  // A home passa o próprio nome do site como título; evita "Faro Study | Faro Study".
   const fullTitle = title === SITE ? SITE : `${title} | ${SITE}`;
   const url = `${BASE_URL}${path}`;
   return (

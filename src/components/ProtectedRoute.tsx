@@ -1,7 +1,7 @@
 /**
- * Gate de rota autenticada. Enquanto carrega mostra skeleton (nao spinner);
- * sem sessao, redireciona para /login preservando o destino.
- * A seguranca real e da RLS -- isto e apenas UX de navegacao.
+ * Gate de rota autenticada. Enquanto carrega mostra skeleton (não spinner);
+ * sem sessão, redireciona para /login preservando o destino.
+ * A segurança real e da RLS -- isto e apenas UX de navegação.
  */
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";

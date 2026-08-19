@@ -1,6 +1,6 @@
 /**
- * Cookie banner (checklist producao #17). Sobrio, sem glassmorphism.
- * Persiste a escolha localmente; analytics so carrega apos consentimento.
+ * Cookie banner (checklist produção #17). Sóbrio, sem glassmorphism.
+ * Persiste a escolha localmente; analytics só carrega após consentimento.
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -32,10 +32,10 @@ export function CookieBanner() {
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-soft">
-          Usamos cookies essenciais e, com sua permissao, de analise para melhorar o Faro
+          Usamos cookies essenciais e, com sua permissão, de análise para melhorar o Faro
           Study. Leia nossa{" "}
           <Link to="/privacidade" className="text-action underline underline-offset-2">
-            Politica de Privacidade
+            Política de Privacidade
           </Link>
           .
         </p>

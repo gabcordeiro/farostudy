@@ -1,6 +1,6 @@
 /**
- * Fila de revisao: cards vencidos (due_at <= now) do usuario, com o
- * category_id do deck ja resolvido para gravar no reviews.
+ * Fila de revisão: cards vencidos (due_at <= now) do usuário, com o
+ * category_id do deck já resolvido para gravar no reviews.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

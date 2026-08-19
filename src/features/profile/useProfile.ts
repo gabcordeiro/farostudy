@@ -1,5 +1,5 @@
 /**
- * Le e atualiza o profile do usuario logado. RLS trava tudo em auth.uid()=id.
+ * Le e atualiza o profile do usuário logado. RLS trava tudo em auth.uid()=id.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

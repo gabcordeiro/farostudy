@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { IconPencil, IconTrash } from "@/components/icons";
 import { renderCardHtml } from "@/lib/sanitize";
 import { cardEditSchema, deckTitleSchema } from "@/lib/validation";
+import { useArmedAction } from "@/lib/useArmedAction";
 import { useDeckDetail, type DeckCardRow } from "./useDeckDetail";
 
 function CardEditor({
@@ -29,7 +30,7 @@ function CardEditor({
   async function handleSave() {
     const parsed = cardEditSchema.safeParse({ front, back, hint: hint || undefined });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Dados invalidos");
+      setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
     }
     setSaving(true);
@@ -99,7 +100,7 @@ export default function DeckDetailPage() {
   const [titleValue, setTitleValue] = useState("");
   const [titleError, setTitleError] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
-  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
+  const { armedId: deletingCardId, confirm: confirmArm } = useArmedAction();
 
   useEffect(() => setTitleValue(title), [title]);
 
@@ -111,7 +112,7 @@ export default function DeckDetailPage() {
     e.preventDefault();
     const parsed = deckTitleSchema.safeParse(titleValue);
     if (!parsed.success) {
-      setTitleError(parsed.error.issues[0]?.message ?? "Titulo invalido");
+      setTitleError(parsed.error.issues[0]?.message ?? "Título inválido");
       return;
     }
     setTitleError(null);
@@ -120,12 +121,8 @@ export default function DeckDetailPage() {
   }
 
   async function handleDeleteCard(id: string) {
-    if (deletingCardId !== id) {
-      setDeletingCardId(id);
-      return;
-    }
+    if (!confirmArm(id)) return;
     await deleteCard(id);
-    setDeletingCardId(null);
   }
 
   return (
@@ -199,7 +196,7 @@ export default function DeckDetailPage() {
         <EmptyState
           mood="sleepy"
           title="Nenhum card nessa trilha"
-          description="Gere cards com IA ou crie manualmente para comecar."
+          description="Gere cards com IA ou crie manualmente para começar."
           action={
             <Link
               to="/importar"
@@ -268,7 +265,7 @@ export default function DeckDetailPage() {
         </ul>
       )}
       {deletingCardId ? (
-        <p className="mt-2 text-2xs text-slate-muted">Clique na lixeira de novo para confirmar a exclusao.</p>
+        <p className="mt-2 text-2xs text-slate-muted">Clique na lixeira de novo para confirmar a exclusão do card.</p>
       ) : null}
     </div>
   );

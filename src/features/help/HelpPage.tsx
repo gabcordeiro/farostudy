@@ -1,6 +1,6 @@
 /**
- * Ajuda: o que e o app, como comecar, o que faz cada aba e duvidas comuns.
- * Tambem permite reabrir o tour de boas-vindas.
+ * Ajuda: o que é o app, como começar, o que faz cada aba e dúvidas comuns.
+ * Também permite reabrir o tour de boas-vindas.
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -13,46 +13,46 @@ import { WelcomeTour } from "./WelcomeTour";
 const FIRST_STEPS = [
   {
     title: "Crie sua primeira trilha",
-    body: "Uma trilha e uma materia ou topico do edital. Voce pode criar direto na tela de Importar, no seletor de trilha.",
+    body: "Uma trilha e uma matéria ou tópico do edital. Você pode criar direto na tela de Importar, no seletor de trilha.",
     to: "/trilhas",
     cta: "Ver trilhas",
   },
   {
     title: "Gere cards com IA",
-    body: "Cole um texto ou resumo em Importar. Comece com um trecho pequeno, de um assunto so: os cards saem mais precisos assim.",
+    body: "Cole um texto ou resumo em Importar. Comece com um trecho pequeno, de um assunto só: os cards saem mais precisos assim.",
     to: "/importar",
     cta: "Gerar cards",
   },
   {
     title: "Estude alguns minutos",
-    body: "Va em Estudar e responda os cards do dia. Seja honesto na avaliacao: e ela que ensina o app quando te mostrar cada card de novo.",
+    body: "Va em Estudar e responda os cards do dia. Seja honesto na avaliação: e ela que ensina o app quando te mostrar cada card de novo.",
     to: "/estudar",
     cta: "Estudar agora",
   },
   {
     title: "Volte amanha",
-    body: "A repeticao espacada so funciona com constancia. Alguns minutos por dia rendem muito mais que horas de uma vez.",
+    body: "A repetição espaçada só funciona com constancia. Alguns minutos por dia rendem muito mais que horas de uma vez.",
     to: "/painel",
-    cta: "Ver evolucao",
+    cta: "Ver evolução",
   },
 ];
 
 const FAQ = [
   {
-    q: "O que e repeticao espacada?",
-    a: "E um metodo em que cada card volta a aparecer em intervalos crescentes, ajustados pelo seu desempenho. O que voce erra reaparece logo; o que ja sabe demora mais. Assim seu tempo vai para o que ainda nao esta fixado.",
+    q: "O que é repetição espaçada?",
+    a: "É um método em que cada card volta a aparecer em intervalos crescentes, ajustados pelo seu desempenho. O que você erra reaparece logo; o que já sabe demora mais. Assim seu tempo vai para o que ainda não está fixado.",
   },
   {
     q: "Por que devo avaliar honestamente se acertei?",
-    a: "A avaliacao (de Errei a Facil) e o que define quando o card volta. Se marcar Facil em algo que voce chutou, o card so vai reaparecer daqui a muito tempo, e voce vai esquecer. Marcar Errei nao e derrota, e o que faz o metodo funcionar.",
+    a: "A avaliação (de Errei a Fácil) e o que define quando o card volta. Se marcar Fácil em algo que você chutou, o card só vai reaparecer daqui a muito tempo, e você vai esquecer. Marcar Errei não e derrota, e o que faz o método funcionar.",
   },
   {
     q: "Quantos cards devo estudar por dia?",
-    a: "Nao existe numero certo. O app ja mostra apenas o que venceu no dia, entao o ideal e zerar essa fila. Se estiver acumulando muita coisa, gere menos cards novos por semana ate estabilizar.",
+    a: "Não existe número certo. O app já mostra apenas o que venceu no dia, então o ideal e zerar essa fila. Se estiver acumulando muita coisa, gere menos cards novos por semana até estabilizar.",
   },
   {
-    q: "O que consome credito?",
-    a: "Apenas as geracoes por IA: criar cards em Importar e montar um quiz novo. Estudar, editar cards e refazer um quiz ja salvo nao custam nada. Se a geracao falhar, o credito e devolvido automaticamente.",
+    q: "O que consome crédito?",
+    a: "Apenas as gerações por IA: criar cards em Importar e montar um quiz novo. Estudar, editar cards e refazer um quiz já salvo não custam nada. Se a geração falhar, o crédito e devolvido automaticamente.",
   },
   {
     q: "Posso editar um card que a IA gerou errado?",
@@ -60,7 +60,7 @@ const FAQ = [
   },
   {
     q: "Da para usar para idiomas?",
-    a: "Sim. Alem dos flashcards, a tela de Estudar tem um botao de audio que le a pergunta e a resposta em voz alta, util para pronuncia e vocabulario.",
+    a: "Sim. Além dos flashcards, a tela de Estudar tem um botão de áudio que le a pergunta e a resposta em voz alta, útil para pronuncia e vocabulario.",
   },
 ];
 
@@ -71,7 +71,7 @@ export default function HelpPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <SEO
         title="Ajuda"
-        description="Como usar o Faro Study: guia de inicio, o que faz cada aba e duvidas comuns."
+        description="Como usar o Faro Study: guia de inicio, o que faz cada aba e dúvidas comuns."
         path="/ajuda"
         noindex
       />
@@ -84,16 +84,16 @@ export default function HelpPage() {
         </div>
       </header>
 
-      {/* O que e o app */}
+      {/* O que é o app */}
       <section className="mb-10 flex flex-wrap items-center gap-6 rounded-md border border-hairline bg-elevated p-6">
         <Mascot size="md" mood="search" alt="" />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-lg text-paper">O que e o Faro Study</h2>
+          <h2 className="font-display text-lg text-paper">O que é o Faro Study</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-slate-muted">
-            E um app de <strong className="text-slate-soft">repeticao espacada</strong> para
-            concursos e idiomas. Voce traz sua materia, a IA transforma em flashcards, e o app
-            calcula o melhor dia para voce revisar cada um -- pouco antes de esquecer. O
-            resultado: menos tempo relendo o que ja sabe, mais tempo no que ainda escapa.
+            E um app de <strong className="text-slate-soft">repetição espaçada</strong> para
+            concursos e idiomas. Você traz sua matéria, a IA transforma em flashcards, e o app
+            calcula o melhor dia para você revisar cada um -- pouco antes de esquecer. O
+            resultado: menos tempo relendo o que já sabe, mais tempo no que ainda escapa.
           </p>
           <button
             type="button"
@@ -107,7 +107,7 @@ export default function HelpPage() {
 
       {/* Primeiros passos */}
       <section className="mb-10">
-        <h2 className="font-display text-lg text-paper">Por onde comecar</h2>
+        <h2 className="font-display text-lg text-paper">Por onde começar</h2>
         <ol className="mt-4 space-y-3">
           {FIRST_STEPS.map((step, i) => (
             <li
@@ -135,9 +135,9 @@ export default function HelpPage() {
         </ol>
       </section>
 
-      {/* O que e cada aba */}
+      {/* O que é cada aba */}
       <section className="mb-10">
-        <h2 className="font-display text-lg text-paper">O que e cada aba</h2>
+        <h2 className="font-display text-lg text-paper">O que é cada aba</h2>
         <div className="mt-4 space-y-2">
           {SECTIONS.map(({ to, label, Icon, detail }) => (
             <div key={to} className="rounded-md border border-hairline bg-elevated p-4">
@@ -161,9 +161,9 @@ export default function HelpPage() {
         </div>
       </section>
 
-      {/* Duvidas comuns */}
+      {/* Dúvidas comuns */}
       <section>
-        <h2 className="font-display text-lg text-paper">Duvidas comuns</h2>
+        <h2 className="font-display text-lg text-paper">Dúvidas comuns</h2>
         <div className="mt-4 divide-y divide-hairline rounded-md border border-hairline bg-elevated">
           {FAQ.map((item) => (
             <details key={item.q} className="group px-5 py-4">

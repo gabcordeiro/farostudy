@@ -1,6 +1,6 @@
 /**
  * Login / Cadastro (Supabase Auth): email+senha e Google OAuth.
- * Mascote ao lado do formulario (regra de UI #1). Validacao Zod + estados de erro.
+ * Mascote ao lado do formulario (regra de UI #1). Validação Zod + estados de erro.
  */
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
@@ -70,15 +70,15 @@ export function LoginPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          setNotice("Enviamos um e-mail de confirmacao. Verifique sua caixa de entrada.");
+          setNotice("Enviamos um e-mail de confirmação. Verifique sua caixa de entrada.");
         }
       }
     } catch (err) {
-      // Mensagem generica para nao facilitar enumeracao de contas.
+      // Mensagem generica para não facilitar enumeracao de contas.
       setFormError(
         mode === "signin"
-          ? "E-mail ou senha invalidos."
-          : (err as Error).message ?? "Nao foi possivel criar a conta.",
+          ? "E-mail ou senha inválidos."
+          : (err as Error).message ?? "Não foi possível criar a conta.",
       );
     } finally {
       setBusy(false);
@@ -93,7 +93,7 @@ export function LoginPage() {
       options: { redirectTo, queryParams: { prompt: "select_account" } },
     });
     if (error) {
-      setFormError("Nao foi possivel iniciar o login com o Google.");
+      setFormError("Não foi possível iniciar o login com o Google.");
       setBusy(false);
     }
   }
@@ -110,15 +110,15 @@ export function LoginPage() {
           <Mascot size="xl" mood="search" alt="Faro, o mascote, dando boas-vindas" />
           <div>
             <h2 className="font-display text-2xl text-paper">
-              O faro certo para suas revisoes.
+              O faro certo para suas revisões.
             </h2>
             <p className="mt-2 max-w-sm text-sm text-slate-muted">
-              Transforme editais e textos em flashcards e deixe a repeticao espacada
+              Transforme editais e textos em flashcards e deixe a repetição espaçada
               decidir o que revisar hoje.
             </p>
           </div>
         </div>
-        <p className="text-2xs text-slate-muted">Repeticao espacada para concursos e idiomas</p>
+        <p className="text-2xs text-slate-muted">Repetição espaçada para concursos e idiomas</p>
       </section>
 
       {/* Formulario */}
@@ -223,7 +223,7 @@ export function LoginPage() {
           </form>
 
           <p className="mt-5 text-sm text-slate-muted">
-            {mode === "signin" ? "Nao tem conta?" : "Ja tem conta?"}{" "}
+            {mode === "signin" ? "Não tem conta?" : "Já tem conta?"}{" "}
             <button
               type="button"
               onClick={() => {
@@ -238,13 +238,13 @@ export function LoginPage() {
           </p>
 
           <p className="mt-6 text-2xs leading-relaxed text-slate-muted">
-            Ao continuar voce concorda com os{" "}
+            Ao continuar você concorda com os{" "}
             <Link to="/termos" className="underline underline-offset-2">
               Termos
             </Link>{" "}
             e a{" "}
             <Link to="/privacidade" className="underline underline-offset-2">
-              Politica de Privacidade
+              Política de Privacidade
             </Link>
             .
           </p>

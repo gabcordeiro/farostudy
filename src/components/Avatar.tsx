@@ -1,6 +1,6 @@
 /**
- * Avatar do usuario: imagem com fallback para iniciais.
- * Sempre com alt text (checklist producao #9).
+ * Avatar do usuário: imagem com fallback para iniciais.
+ * Sempre com alt text (checklist produção #9).
  */
 const SIZES = { sm: 28, md: 40, lg: 96 } as const;
 

@@ -3,7 +3,7 @@
 (function () {
   try {
     var stored = localStorage.getItem("faro.theme.v1");
-    var pref = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    var pref = stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
     var isDark =
       pref === "dark" ||
       (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);

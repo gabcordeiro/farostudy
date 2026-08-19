@@ -1,7 +1,7 @@
 /**
- * Tipos do banco (subset). Em producao gerar com:
+ * Tipos do banco (subset). Em produção gerar com:
  *   supabase gen types typescript --project-id <id> > src/lib/database.types.ts
- * Mantido a mao aqui para o scaffold compilar sem a CLI.
+ * Mantido à mão aqui para o scaffold compilar sem a CLI.
  */
 export type CardState = "new" | "learning" | "review" | "relearning" | "suspended";
 export type UserRole = "user" | "admin";

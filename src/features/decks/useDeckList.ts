@@ -1,6 +1,6 @@
 /**
- * Lista de trilhas com contagem de cards, para a pagina /trilhas.
- * RLS garante que so vem trilha do proprio usuario.
+ * Lista de trilhas com contagem de cards, para a página /trilhas.
+ * RLS garante que só vem trilha do próprio usuário.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

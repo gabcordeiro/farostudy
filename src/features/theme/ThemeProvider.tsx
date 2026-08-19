@@ -31,10 +31,12 @@ function readSystem(): Resolved {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// Dark e o padrao do produto: quem nunca escolheu ve o tema escuro, mesmo
+// que o sistema esteja no claro. "Sistema" continua disponivel no toggle.
 function readStored(): ThemePreference {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "dark";
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  return raw === "light" || raw === "dark" || raw === "system" ? raw : "system";
+  return raw === "light" || raw === "dark" || raw === "system" ? raw : "dark";
 }
 
 function applyClass(resolved: Resolved) {

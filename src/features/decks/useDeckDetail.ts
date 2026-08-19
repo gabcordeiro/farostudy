@@ -1,7 +1,7 @@
 /**
  * Detalhe de uma trilha: dados do deck + seus cards, com edicao/exclusao.
  * RLS trava tudo em auth.uid() = user_id; o trigger de cards confere que o
- * deck_id continua pertencendo ao usuario em qualquer update.
+ * deck_id continua pertencendo ao usuário em qualquer update.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

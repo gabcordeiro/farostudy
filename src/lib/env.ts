@@ -1,6 +1,6 @@
 /**
- * Leitura validada das variaveis de ambiente publicas.
- * Somente chaves com prefixo VITE_ chegam ao browser (checklist seguranca #1, #3).
+ * Leitura validada das variáveis de ambiente públicas.
+ * Somente chaves com prefixo VITE_ chegam ao browser (checklist segurança #1, #3).
  * Falha cedo e de forma clara se algo faltar.
  */
 import { z } from "zod";
@@ -14,10 +14,10 @@ const schema = z.object({
 const parsed = schema.safeParse(import.meta.env);
 
 if (!parsed.success) {
-  // Nao vaza valores, apenas quais chaves faltam.
+  // Não vaza valores, apenas quais chaves faltam.
   const missing = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
   throw new Error(
-    `Configuracao de ambiente invalida. Verifique seu .env.local: ${missing}`,
+    `Configuração de ambiente inválida. Verifique seu .env.local: ${missing}`,
   );
 }
 

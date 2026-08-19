@@ -1,4 +1,4 @@
-/** Custom 404 (checklist producao #1) com o mascote farejando. */
+/** Custom 404 (checklist produção #1) com o mascote farejando. */
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
@@ -7,17 +7,17 @@ export default function NotFound() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <SEO
-        title="Pagina nao encontrada"
-        description="A pagina que voce procura nao existe."
+        title="Página não encontrada"
+        description="A página que você procura não existe."
         path="/404"
         noindex
       />
-      <Mascot size="xl" mood="search" alt="Faro farejando uma pagina que nao existe" />
+      <Mascot size="xl" mood="search" alt="Faro farejando uma página que não existe" />
       <div className="space-y-2">
         <p className="font-mono text-sm text-action">404</p>
-        <h1 className="font-display text-3xl text-paper">O Faro nao achou essa trilha</h1>
+        <h1 className="font-display text-3xl text-paper">O Faro não achou essa trilha</h1>
         <p className="max-w-md text-sm text-slate-muted">
-          A pagina pode ter sido movida ou nunca existiu. Vamos voltar ao seu painel.
+          A página pode ter sido movida ou nunca existiu. Vamos voltar ao seu painel.
         </p>
       </div>
       <Link

@@ -1,8 +1,8 @@
 /**
- * O SDK do supabase-js so expoe uma mensagem generica em `error.message`
+ * O SDK do supabase-js só expoe uma mensagem generica em `error.message`
  * ("Edge Function returned a non-2xx status code") quando uma edge function
  * responde com status != 2xx. O corpo real (nosso {error, detail}) fica em
- * `error.context` (a Response crua). Este helper le esse corpo com seguranca.
+ * `error.context` (a Response crua). Este helper le esse corpo com segurança.
  */
 export interface FunctionErrorInfo {
   message: string;
@@ -15,7 +15,7 @@ interface FunctionsErrorLike {
   context?: Response;
 }
 
-/** Erro com o motivo real ja extraido do corpo da resposta da edge function. */
+/** Erro com o motivo real já extraido do corpo da resposta da edge function. */
 export class AppFunctionError extends Error {
   insufficientCredits: boolean;
   status?: number;
@@ -38,7 +38,7 @@ export async function describeFunctionError(error: unknown): Promise<FunctionErr
       const body = (await err.context.json()) as { error?: string; detail?: string };
       message = body.detail || body.error || message;
     } catch {
-      // corpo nao era JSON valido; mantem a mensagem generica
+      // corpo não era JSON válido; mantém a mensagem generica
     }
   }
 

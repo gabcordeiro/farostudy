@@ -1,8 +1,8 @@
 /**
- * BI de Retencao (Curva de Esquecimento).
- * - Curva R = e^(-t/S) projetando a retencao da categoria mais fragil.
+ * BI de Retenção (Curva de Esquecimento).
+ * - Curva R = e^(-t/S) projetando a retenção da categoria mais frágil.
  * - Ranking das categorias com menor taxa de acerto e quando revisar.
- * Paleta sobria: trilha em foco/indigo, alerta em laranja. Sem checkmarks, sem emoji.
+ * Paleta sóbria: trilha em foco/indigo, alerta em laranja. Sem checkmarks, sem emoji.
  */
 import { useMemo, useState } from "react";
 import type { CategoryRetention } from "./dashboard.types";
@@ -56,9 +56,9 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
     <section className="rounded-md border border-slate-border bg-ink-700 p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg text-paper">Retencao por trilha</h2>
+          <h2 className="font-display text-lg text-paper">Retenção por trilha</h2>
           <p className="text-2xs uppercase tracking-wider text-slate-muted">
-            Curva de esquecimento e projecao de desempenho
+            Curva de esquecimento e projeção de desempenho
           </p>
         </div>
         <div className="flex items-center gap-2 text-right">
@@ -81,7 +81,7 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
                 viewBox={`0 0 ${w} ${h}`}
                 className="w-full"
                 role="img"
-                aria-label={`Curva de esquecimento de ${selected.name}. Retencao cai abaixo de 90% em ${
+                aria-label={`Curva de esquecimento de ${selected.name}. Retenção cai abaixo de 90% em ${
                   dipDay >= 0 ? `${dipDay} dias` : "mais de 30 dias"
                 }.`}
               >
@@ -107,7 +107,7 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
                   strokeWidth={1}
                   strokeDasharray="4 3"
                 />
-                {/* area sob a curva */}
+                {/* área sob a curva */}
                 <path
                   d={`${curvePath(selected.stabilityDays, w, h, padX, padY)} L${w - padX} ${
                     h - padY
@@ -122,7 +122,7 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
                   stroke={selected.color}
                   strokeWidth={2}
                 />
-                {/* marcador do ponto de revisao */}
+                {/* marcador do ponto de revisão */}
                 {dipDay >= 0 ? (
                   <g>
                     <line
@@ -156,23 +156,23 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
                 ))}
               </svg>
               <p className="mt-1 text-sm text-slate-soft">
-                <span className="font-medium text-paper">{selected.name}</span> mantem 90% de
-                retencao por{" "}
+                <span className="font-medium text-paper">{selected.name}</span> mantém 90% de
+                retenção por{" "}
                 <span className="text-action">
                   {dipDay >= 0 ? `~${dipDay} dias` : "mais de 30 dias"}
                 </span>
-                . Agende a revisao antes disso.
+                . Agende a revisão antes disso.
               </p>
             </>
           ) : (
-            <p className="text-sm text-slate-muted">Sem dados de retencao ainda.</p>
+            <p className="text-sm text-slate-muted">Sem dados de retenção ainda.</p>
           )}
         </div>
 
-        {/* Ranking: categorias mais fragis primeiro */}
+        {/* Ranking: categorias mais frágeis primeiro */}
         <div>
           <p className="mb-2 text-2xs uppercase tracking-wider text-slate-muted">
-            Onde voce mais erra
+            Onde você mais erra
           </p>
           <ul className="space-y-1.5">
             {ranked.slice(0, 6).map((cat) => {
@@ -208,7 +208,7 @@ export function RetentionBI({ retention, overallAccuracy }: Props) {
                     <span className="shrink-0 text-right">
                       <span className="flex items-center gap-1 text-sm font-semibold tabular-nums text-paper">
                         {pct < 70 ? (
-                          <IconArrowDownRight className="h-4 w-4 text-bad" title="Baixa retencao" />
+                          <IconArrowDownRight className="h-4 w-4 text-bad" title="Baixa retenção" />
                         ) : null}
                         {pct}%
                       </span>

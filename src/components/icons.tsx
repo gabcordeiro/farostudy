@@ -1,5 +1,5 @@
 /**
- * Icones proprios em SVG (stroke). Evita Lucide (regra de design #2) e
+ * Icones próprios em SVG (stroke). Evita Lucide (regra de design #2) e
  * qualquer icone de "sparkle/brilho" (#24). Traco de 1.6, cantos definidos.
  */
 import type { ReactNode, SVGProps } from "react";
@@ -172,6 +172,14 @@ export const IconCoin = (p: IconProps) => (
 export const IconShield = (p: IconProps) => (
   <Base {...p}>
     <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+  </Base>
+);
+
+export const IconMore = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="5" cy="12" r="1.4" />
+    <circle cx="12" cy="12" r="1.4" />
+    <circle cx="19" cy="12" r="1.4" />
   </Base>
 );
 

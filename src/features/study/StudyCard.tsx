@@ -1,6 +1,6 @@
 /**
- * Componente puro do card em revisao. Renderiza frente/verso com escape
- * anti-XSS e oferece TTS (Web Speech API) para o texto visivel.
+ * Componente puro do card em revisão. Renderiza frente/verso com escape
+ * anti-XSS e oferece TTS (Web Speech API) para o texto visível.
  */
 import { useCallback } from "react";
 import { renderCardHtml } from "@/lib/sanitize";
@@ -33,7 +33,7 @@ export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
           {card.deck_title || "Sem trilha"}
         </span>
         <span className="text-2xs text-slate-muted">
-          {card.reps > 0 ? `revisao #${card.reps + 1}` : "primeiro estudo"}
+          {card.reps > 0 ? `revisão #${card.reps + 1}` : "primeiro estudo"}
         </span>
       </header>
 

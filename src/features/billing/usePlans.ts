@@ -1,6 +1,6 @@
 /**
- * Planos de credito publicos + solicitacao de compra (fluxo manual: o admin
- * aprova em /admin ate o gateway de pagamento de verdade ser plugado).
+ * Planos de crédito públicos + solicitação de compra (fluxo manual: o admin
+ * aprova em /admin até o gateway de pagamento de verdade ser plugado).
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

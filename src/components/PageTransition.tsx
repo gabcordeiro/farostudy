@@ -1,5 +1,5 @@
 /**
- * Transicao fluida entre paginas: fade + leve subida, sem exagero.
+ * Transição fluida entre páginas: fade + leve subida, sem exagero.
  * Reinicia a cada troca de rota (key = pathname). Respeita
  * prefers-reduced-motion via o override global em index.css.
  */

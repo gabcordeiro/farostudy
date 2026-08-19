@@ -1,6 +1,6 @@
 /**
- * Estado global de autenticacao via Supabase Auth.
- * - Sessao gerenciada pelo SDK (cookies/localStorage seguros, PKCE). (#9, #10)
+ * Estado global de autenticação via Supabase Auth.
+ * - Sessão gerenciada pelo SDK (cookies/localStorage seguros, PKCE). (#9, #10)
  * - Autorizacao de dados vem da RLS, nunca deste estado de UI.
  */
 import {
@@ -31,17 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
 
     (async () => {
-      // Sessao ja em cache (persistSession=true) aparece na hora.
+      // Sessão já em cache (persistSession=true) aparece na hora.
       const { data } = await supabase.auth.getSession();
       if (!active) return;
       setSession(data.session);
       setLoading(false);
 
       // Renova em background para lidar com clock skew (JWT iat no futuro):
-      // um refresh ancora iat no relogio atual do servidor de auth.
+      // um refresh ancora iat no relógio atual do servidor de auth.
       if (data.session) {
         supabase.auth.refreshSession().catch(() => {
-          /* silencioso: proxima query cai no withJwtRetry */
+          /* silencioso: próxima query cai no withJwtRetry */
         });
       }
     })();

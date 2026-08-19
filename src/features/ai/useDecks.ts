@@ -1,5 +1,5 @@
 /**
- * Lista e cria decks (trilhas) do usuario. RLS garante o escopo por dono.
+ * Lista e cria decks (trilhas) do usuário. RLS garante o escopo por dono.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

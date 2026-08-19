@@ -1,6 +1,6 @@
 /**
  * Retorno do OAuth (Google). Com detectSessionInUrl + PKCE, o SDK troca o code
- * por sessao automaticamente; aqui apenas aguardamos e redirecionamos.
+ * por sessão automaticamente; aqui apenas aguardamos e redirecionamos.
  */
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ export function AuthCallback() {
     let active = true;
     const finish = (path: string) => active && navigate(path, { replace: true });
 
-    // Se ja houver sessao (code trocado), segue direto.
+    // Se já houver sessão (code trocado), segue direto.
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) finish("/painel");
     });
@@ -23,7 +23,7 @@ export function AuthCallback() {
       if (session) finish("/painel");
     });
 
-    // Falha silenciosa apos alguns segundos volta ao login.
+    // Falha silenciosa após alguns segundos volta ao login.
     const timer = window.setTimeout(() => finish("/login"), 8000);
 
     return () => {

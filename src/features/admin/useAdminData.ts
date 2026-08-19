@@ -1,6 +1,6 @@
 /**
- * Dados do painel admin: usuarios (via RPC admin_list_users, ja que auth.users
- * nao e exposto por PostgREST), solicitacoes de credito e as acoes que so um
+ * Dados do painel admin: usuários (via RPC admin_list_users, já que auth.users
+ * não e exposto por PostgREST), solicitações de crédito e as ações que só um
  * admin pode executar (todas via RPC security definer no banco).
  */
 import { useCallback, useEffect, useState } from "react";
@@ -86,7 +86,7 @@ export function useAdminData() {
       );
     }
 
-    if (usersRes.error) setError(usersRes.error.message ?? "Erro ao carregar usuarios");
+    if (usersRes.error) setError(usersRes.error.message ?? "Erro ao carregar usuários");
     else {
       setUsers(
         (usersRes.data ?? []).map((u) => ({
@@ -143,7 +143,7 @@ export function useAdminData() {
         supabase.rpc("grant_credits", { target_user: targetUser, amount, reason }),
       );
       if (res.error) {
-        setError(res.error.message ?? "Falha ao conceder creditos");
+        setError(res.error.message ?? "Falha ao conceder créditos");
         return false;
       }
       const newBalance = res.data as unknown as number;

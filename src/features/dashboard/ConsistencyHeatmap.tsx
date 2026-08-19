@@ -1,7 +1,7 @@
 /**
- * Heatmap de Consistencia (estilo contribuicoes do GitHub).
- * Mostra a ofensiva (streak) de dias estudados nas ultimas 53 semanas.
- * Rampa de UMA cor (indigo/foco) + pico em laranja. Sem arco-iris, sem neon. (#4)
+ * Heatmap de Consistência (estilo contribuições do GitHub).
+ * Mostra a ofensiva (streak) de dias estudados nas últimas 53 semanas.
+ * Rampa de UMA cor (indigo/foco) + pico em laranja. Sem arco-íris, sem neon. (#4)
  */
 import { useMemo } from "react";
 import type { DayActivity } from "./dashboard.types";
@@ -17,7 +17,7 @@ const WEEKS = 53;
 const DAY_MS = 86400000;
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-// Rampa monocromatica (foco) + tier de pico (acao). Indice 0 = sem estudo.
+// Rampa monocromatica (foco) + tier de pico (ação). Índice 0 = sem estudo.
 const LEVEL_FILL = ["#1A2234", "#2C2A6B", "#3F3BAE", "#5B57D6", "#F2762E"];
 
 function levelFor(reviews: number, max: number): number {
@@ -78,9 +78,9 @@ export function ConsistencyHeatmap({ activity, currentStreak, longestStreak }: P
     <section className="rounded-md border border-slate-border bg-ink-700 p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg text-paper">Consistencia</h2>
+          <h2 className="font-display text-lg text-paper">Consistência</h2>
           <p className="text-2xs uppercase tracking-wider text-slate-muted">
-            {total} revisoes nas ultimas 53 semanas
+            {total} revisões nas últimas 53 semanas
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ export function ConsistencyHeatmap({ activity, currentStreak, longestStreak }: P
           width={width}
           height={height}
           role="img"
-          aria-label={`Mapa de consistencia: ${total} revisoes, ofensiva atual de ${currentStreak} dias.`}
+          aria-label={`Mapa de consistência: ${total} revisões, ofensiva atual de ${currentStreak} dias.`}
           className="min-w-full"
         >
           {monthTicks.map((t) => (
@@ -146,7 +146,7 @@ export function ConsistencyHeatmap({ activity, currentStreak, longestStreak }: P
                 >
                   <title>
                     {c.reviews > 0
-                      ? `${c.reviews} revisoes (${c.correct} certas) em ${c.day}`
+                      ? `${c.reviews} revisões (${c.correct} certas) em ${c.day}`
                       : `Sem estudo em ${c.day}`}
                   </title>
                 </rect>

@@ -1,6 +1,6 @@
 /**
- * Repeticao espacada - variacao do SM-2 e utilidades da curva de esquecimento.
- * Puro e testavel: sem I/O aqui.
+ * Repetição espaçada - variacao do SM-2 e utilidades da curva de esquecimento.
+ * Puro e testável: sem I/O aqui.
  */
 
 export type Rating = 1 | 2 | 3 | 4; // again | hard | good | easy
@@ -15,7 +15,7 @@ export interface SrsState {
 
 const MIN_EASE = 1.3;
 
-/** Calcula o proximo estado do card dado o rating do usuario. */
+/** Calcula o próximo estado do card dado o rating do usuário. */
 export function schedule(prev: SrsState, rating: Rating, now = new Date()): SrsState & { dueAt: Date } {
   let { intervalDays, easeFactor, reps, lapses } = prev;
   let state = prev.state;
@@ -45,7 +45,7 @@ export function schedule(prev: SrsState, rating: Rating, now = new Date()): SrsS
 }
 
 /**
- * Retencao prevista pela curva de esquecimento (Ebbinghaus):
+ * Retenção prevista pela curva de esquecimento (Ebbinghaus):
  * R = e^(-t / S), onde S (estabilidade em dias) cresce com o intervalo/ease.
  * Usada no BI para projetar quando uma categoria cai abaixo do alvo.
  */
@@ -54,7 +54,7 @@ export function predictedRetention(daysSinceReview: number, stabilityDays: numbe
   return Math.exp(-daysSinceReview / stabilityDays);
 }
 
-/** Dias ate a retencao prevista cair ate `target` (ex: 0.9). */
+/** Dias até a retenção prevista cair até `target` (ex: 0.9). */
 export function daysUntilRetention(stabilityDays: number, target = 0.9): number {
   if (stabilityDays <= 0) return 0;
   return Math.max(0, Math.round(-stabilityDays * Math.log(target)));

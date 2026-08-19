@@ -1,8 +1,8 @@
 /**
  * Tour de boas-vindas (estilo app): passo a passo em um modal, mostrado uma
- * unica vez por usuario. A conclusao fica gravada em profiles.onboarded_at,
- * entao acompanha a conta -- nao o navegador.
- * Pode ser reaberto a qualquer momento pela pagina de Ajuda.
+ * única vez por usuário. A conclusão fica gravada em profiles.onboarded_at,
+ * então acompanha a conta -- não o navegador.
+ * Pode ser reaberto a qualquer momento pela página de Ajuda.
  */
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ import { TOUR_STEPS } from "./content";
 interface Props {
   open: boolean;
   onClose: () => void;
-  /** Chamado quando o usuario termina ou pula (grava onboarded_at). */
+  /** Chamado quando o usuário termina ou pula (grava onboarded_at). */
   onFinish?: () => void;
 }
 
@@ -113,7 +113,7 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
                 onClick={() => setStep((s) => s + 1)}
                 className="rounded-sm bg-action px-5 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
               >
-                Proximo
+                Próximo
               </button>
             )}
           </div>

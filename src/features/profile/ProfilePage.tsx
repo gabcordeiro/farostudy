@@ -1,6 +1,6 @@
 /**
- * Edicao do perfil: nome de exibicao + foto (upload ao bucket `avatars`).
- * Todas as escritas passam por RLS. Upload valida tipo/tamanho no cliente.
+ * Edição do perfil: nome de exibição + foto (upload ao bucket `avatars`).
+ * Todas as escritas passam por RLS. Upload válida tipo/tamanho no cliente.
  */
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { SEO } from "@/components/SEO";
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     if (ok) {
       setAvatarUrl(url);
       setNotice("Foto atualizada.");
-      // Limpeza best-effort dos arquivos antigos do usuario.
+      // Limpeza best-effort dos arquivos antigos do usuário.
       void supabase.storage
         .from("avatars")
         .list(user.id, { limit: 20 })
@@ -83,7 +83,7 @@ export default function ProfilePage() {
     setNotice(null);
     const parsed = profileUpdateSchema.safeParse({ display_name: displayName });
     if (!parsed.success) {
-      setFormError(parsed.error.issues[0]?.message ?? "Dados invalidos.");
+      setFormError(parsed.error.issues[0]?.message ?? "Dados inválidos.");
       return;
     }
     setSaving(true);
@@ -128,13 +128,13 @@ export default function ProfilePage() {
                   className="sr-only"
                 />
               </label>
-              <p className="text-2xs text-slate-muted">PNG, JPG ou WebP, ate 2 MB.</p>
+              <p className="text-2xs text-slate-muted">PNG, JPG ou WebP, até 2 MB.</p>
             </div>
           </div>
 
           <div>
             <label htmlFor="display_name" className="mb-1 block text-sm text-slate-soft">
-              Nome de exibicao
+              Nome de exibição
             </label>
             <input
               id="display_name"

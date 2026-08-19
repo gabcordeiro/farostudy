@@ -1,10 +1,10 @@
 /**
  * Mascote "Faro" (Basset Hound geometrico).
  * Renderizado em pontos estrategicos: login, empty states, loading e logo.
- * SEMPRE com alt text (checklist producao #9).
+ * SEMPRE com alt text (checklist produção #9).
  *
- * Quando o PNG transparente final estiver disponivel, coloque-o em
- * `public/faro-mascot.png` e troque DEFAULT_SRC. O SVG placeholder ja renderiza.
+ * Quando o PNG transparente final estiver disponível, coloque-o em
+ * `public/faro-mascot.png` e troque DEFAULT_SRC. O SVG placeholder já renderiza.
  */
 type MascotMood = "default" | "search" | "sleepy" | "cheer";
 
@@ -16,7 +16,7 @@ interface MascotProps {
   size?: keyof typeof SIZES;
   mood?: MascotMood;
   className?: string;
-  /** Descricao contextual para leitores de tela. */
+  /** Descrição contextual para leitores de tela. */
   alt?: string;
 }
 
@@ -24,7 +24,7 @@ const MOOD_ALT: Record<MascotMood, string> = {
   default: "Faro, o mascote basset hound do Faro Study",
   search: "Faro farejando novos cards para estudar",
   sleepy: "Faro descansando enquanto seus cards carregam",
-  cheer: "Faro comemorando sua sequencia de estudos",
+  cheer: "Faro comemorando sua sequência de estudos",
 };
 
 export function Mascot({ size = "md", mood = "default", className, alt }: MascotProps) {

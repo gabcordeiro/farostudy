@@ -1,6 +1,6 @@
 /**
  * Empty state com o mascote Faro (regra de UI #2 do mascote).
- * Ex: "Voce nao tem cards para revisar hoje, que tal criar um?"
+ * Ex: "Você não tem cards para revisar hoje, que tal criar um?"
  */
 import type { ReactNode } from "react";
 import { Mascot } from "./Mascot";

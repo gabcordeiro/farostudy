@@ -1,7 +1,7 @@
 /**
- * Geracao de cards com IA (Gemini via edge function).
+ * Geração de cards com IA (Gemini via edge function).
  * Cola texto ou JSON, escolhe (ou cria) a trilha e o Faro devolve os flashcards.
- * Upload de .apkg fica como proximo passo (parsing do pacote Anki no backend).
+ * Upload de .apkg fica como próximo passo (parsing do pacote Anki no backend).
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -70,7 +70,7 @@ export default function GeneratePage() {
       return;
     }
     setBusy(true);
-    const progressId = notify("O Faro esta lendo seu conteudo e montando os cards...", "info", 0);
+    const progressId = notify("O Faro esta lendo seu conteúdo e montando os cards...", "info", 0);
     try {
       const res = await generateCards({ deckId: targetDeck, mode, content, maxCards });
       setResult(res);
@@ -172,7 +172,7 @@ export default function GeneratePage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-soft">Maximo de cards</label>
+            <label className="mb-1 block text-sm text-slate-soft">Máximo de cards</label>
             <input
               type="number"
               min={1}
@@ -184,7 +184,7 @@ export default function GeneratePage() {
           </div>
         </div>
 
-        {/* Conteudo */}
+        {/* Conteúdo */}
         <div>
           <label className="mb-1 block text-sm text-slate-soft">
             {mode === "text" ? "Texto de origem" : "JSON de origem"}
@@ -196,7 +196,7 @@ export default function GeneratePage() {
             maxLength={50000}
             placeholder={
               mode === "text"
-                ? "Cole aqui o trecho do edital, resumo ou materia..."
+                ? "Cole aqui o trecho do edital, resumo ou matéria..."
                 : '[{"conceito":"...","definicao":"..."}]'
             }
             className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 font-mono text-sm text-paper outline-none focus:border-focus"
@@ -259,7 +259,7 @@ export default function GeneratePage() {
               >
                 <p
                   className="text-paper"
-                  // Conteudo passado por escape seguro (anti-XSS #15).
+                  // Conteúdo passado por escape seguro (anti-XSS #15).
                   dangerouslySetInnerHTML={{ __html: renderCardHtml(c.front) }}
                 />
                 <p

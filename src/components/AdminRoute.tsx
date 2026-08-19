@@ -1,6 +1,6 @@
 /**
- * Gate de rota admin: alem de logado, exige profile.role === 'admin'.
- * A seguranca real esta nas RPCs (is_admin() no banco); isto e so UX.
+ * Gate de rota admin: além de logado, exige profile.role === 'admin'.
+ * A segurança real esta nas RPCs (is_admin() no banco); isto e só UX.
  */
 import { Navigate } from "react-router-dom";
 import { useProfile } from "@/features/profile/useProfile";

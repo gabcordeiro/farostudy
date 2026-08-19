@@ -1,5 +1,5 @@
 export interface DayActivity {
-  day: string; // YYYY-MM-DD (dia local do usuario)
+  day: string; // YYYY-MM-DD (dia local do usuário)
   reviews: number;
   correct: number;
 }
@@ -11,9 +11,9 @@ export interface CategoryRetention {
   totalReviews: number;
   correctReviews: number;
   accuracy: number; // 0..1
-  /** Estabilidade estimada (dias) derivada da acuracia -> curva de esquecimento. */
+  /** Estabilidade estimada (dias) derivada da acurácia -> curva de esquecimento. */
   stabilityDays: number;
-  /** Dias ate a retencao cair a 90%. */
+  /** Dias até a retenção cair a 90%. */
   daysToReview: number;
 }
 

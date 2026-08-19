@@ -1,6 +1,6 @@
 /**
  * Busca e agrega os dados do dashboard a partir das views de BI do Supabase.
- * As views usam security_invoker => a RLS ja garante que so vem dado do usuario. (#7, #17)
+ * As views usam security_invoker => a RLS já garante que só vem dado do usuário. (#7, #17)
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -14,9 +14,9 @@ import type {
 
 type Status = "loading" | "ready" | "error";
 
-/** Deriva estabilidade (dias) a partir da acuracia observada. Heuristica sobria. */
+/** Deriva estabilidade (dias) a partir da acurácia observada. Heuristica sóbria. */
 function stabilityFromAccuracy(accuracy: number, volume: number): number {
-  // Mais acerto e mais volume => memoria mais estavel. Faixa ~1..60 dias.
+  // Mais acerto e mais volume => memória mais estavel. Faixa ~1..60 dias.
   const base = Math.max(0.01, accuracy);
   const confidence = Math.min(1, volume / 40);
   return Math.round(1 + 59 * base * confidence);
@@ -35,7 +35,7 @@ function computeStreaks(activity: DayActivity[]): { current: number; longest: nu
     cursor.setDate(cursor.getDate() - 1);
   }
 
-  // maior streak historico
+  // maior streak histórico
   const days = [...active].sort();
   let longest = 0;
   let run = 0;

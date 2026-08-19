@@ -1,7 +1,7 @@
 /**
  * Sidebar com o mascote Faro como logotipo (regra de UI #4 do mascote).
- * Navegacao sobria, sem hover exagerado. Colapsa em telas pequenas.
- * Rodape: saldo de creditos, avatar clicavel -> /perfil, tema, sair.
+ * Navegação sóbria, sem hover exagerado. Colapsa em telas pequenas.
+ * Rodape: saldo de créditos, avatar clicavel -> /perfil, tema, sair.
  */
 import { Link, NavLink } from "react-router-dom";
 import { Mascot } from "./Mascot";
@@ -23,7 +23,7 @@ import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 
 const NAV = [
-  { to: "/painel", label: "Evolucao", Icon: IconChart },
+  { to: "/painel", label: "Evolução", Icon: IconChart },
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
   { to: "/quiz", label: "Quiz", Icon: IconQuiz },
   { to: "/trilhas", label: "Trilhas", Icon: IconRoute },
@@ -45,7 +45,7 @@ export function Sidebar() {
         <Mascot size="sm" alt="Faro Study" />
         <span className="font-display text-lg tracking-tight text-paper">Faro Study</span>
       </div>
-      <nav className="flex-1 p-2" aria-label="Navegacao principal">
+      <nav className="flex-1 p-2" aria-label="Navegação principal">
         <ul className="space-y-1">
           {NAV.map(({ to, label, Icon }) => (
             <li key={to}>
@@ -93,7 +93,7 @@ export function Sidebar() {
             >
               <span className="flex items-center gap-1.5">
                 <IconCoin className="h-3.5 w-3.5 text-action" />
-                {balance ?? "..."} creditos
+                {balance ?? "..."} créditos
               </span>
               <span className="text-action">+ obter</span>
             </Link>

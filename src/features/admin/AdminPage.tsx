@@ -1,6 +1,6 @@
 /**
- * Painel admin: gerenciar usuarios (papel, creditos), aprovar/rejeitar
- * solicitacoes de compra e editar os planos de credito.
+ * Painel admin: gerenciar usuários (papel, créditos), aprovar/rejeitar
+ * solicitações de compra e editar os planos de crédito.
  */
 import { useState, type FormEvent } from "react";
 import { SEO } from "@/components/SEO";
@@ -52,18 +52,18 @@ export default function AdminPage() {
     const raw = grantAmount[userId];
     const amount = Number(raw);
     if (!amount || amount <= 0) {
-      notify("Informe uma quantidade valida de creditos.", "error");
+      notify("Informe uma quantidade válida de créditos.", "error");
       return;
     }
     const ok = await grantCredits(userId, amount, "ajuste manual pelo admin");
-    notify(ok ? `${amount} creditos concedidos.` : "Falha ao conceder creditos.", ok ? "success" : "error");
+    notify(ok ? `${amount} créditos concedidos.` : "Falha ao conceder créditos.", ok ? "success" : "error");
     if (ok) setGrantAmount((prev) => ({ ...prev, [userId]: "" }));
   }
 
   async function handleResolve(requestId: string, approve: boolean) {
     const ok = await resolveRequest(requestId, approve);
     notify(
-      ok ? (approve ? "Pedido aprovado, creditos liberados." : "Pedido rejeitado.") : "Falha ao resolver pedido.",
+      ok ? (approve ? "Pedido aprovado, créditos liberados." : "Pedido rejeitado.") : "Falha ao resolver pedido.",
       ok ? "success" : "error",
     );
   }
@@ -73,7 +73,7 @@ export default function AdminPage() {
     const credits = Number(newPlan.credits);
     const priceReais = Number(newPlan.price.replace(",", "."));
     if (!newPlan.name.trim() || !credits || credits <= 0 || !priceReais || priceReais < 0) {
-      notify("Preencha nome, creditos e preco validos.", "error");
+      notify("Preencha nome, créditos e preço validos.", "error");
       return;
     }
     setSavingPlan(true);
@@ -94,21 +94,21 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <SEO title="Admin" description="Gerenciamento de usuarios, creditos e planos." path="/admin" noindex />
+      <SEO title="Admin" description="Gerenciamento de usuários, créditos e planos." path="/admin" noindex />
 
       <header className="mb-6 flex items-center gap-3">
         <IconShield className="h-6 w-6 text-focus-soft" title="Admin" />
         <div>
-          <h1 className="font-display text-2xl text-paper">Administracao</h1>
-          <p className="text-sm text-slate-muted">Usuarios, papeis, planos e solicitacoes de credito.</p>
+          <h1 className="font-display text-2xl text-paper">Administração</h1>
+          <p className="text-sm text-slate-muted">Usuários, papeis, planos e solicitações de crédito.</p>
         </div>
       </header>
 
       <div className="mb-5 inline-flex overflow-hidden rounded-sm border border-hairline">
         {(
           [
-            { key: "users", label: "Usuarios" },
-            { key: "requests", label: `Solicitacoes${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
+            { key: "users", label: "Usuários" },
+            { key: "requests", label: `Solicitações${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
             { key: "plans", label: "Planos" },
           ] as { key: Tab; label: string }[]
         ).map(({ key, label }) => (
@@ -162,6 +162,7 @@ export default function AdminPage() {
                   type="number"
                   min={1}
                   placeholder="qtd"
+                  aria-label={`Créditos para ${u.displayName || u.email}`}
                   value={grantAmount[u.id] ?? ""}
                   onChange={(e) => setGrantAmount((prev) => ({ ...prev, [u.id]: e.target.value }))}
                   className="w-16 rounded-sm border border-hairline bg-surface px-2 py-1 text-2xs text-paper outline-none focus:border-focus"
@@ -189,7 +190,7 @@ export default function AdminPage() {
         </ul>
       ) : tab === "requests" ? (
         requests.length === 0 ? (
-          <EmptyState mood="sleepy" title="Nenhuma solicitacao" description="Pedidos de compra de creditos aparecem aqui." />
+          <EmptyState mood="sleepy" title="Nenhuma solicitação" description="Pedidos de compra de créditos aparecem aqui." />
         ) : (
           <ul className="space-y-2">
             {requests.map((r) => {
@@ -204,7 +205,7 @@ export default function AdminPage() {
                       {user?.displayName || user?.email || r.userId}
                     </p>
                     <p className="text-2xs text-slate-muted">
-                      {r.planName} - {r.planCredits} creditos - {formatDate(r.createdAt)}
+                      {r.planName} - {r.planCredits} créditos - {formatDate(r.createdAt)}
                     </p>
                   </div>
                   {r.status === "pending" ? (
@@ -254,7 +255,7 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Creditos</label>
+              <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Créditos</label>
               <input
                 type="number"
                 min={1}
@@ -264,10 +265,11 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Preco (R$)</label>
+              <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Preço (R$)</label>
               <input
                 inputMode="decimal"
                 placeholder="9,90"
+                aria-label="Preço do plano em reais"
                 value={newPlan.price}
                 onChange={(e) => setNewPlan((p) => ({ ...p, price: e.target.value }))}
                 className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
@@ -291,7 +293,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-paper">{p.name}</p>
                   <p className="text-2xs text-slate-muted">
-                    {p.credits} creditos - {formatBRL(p.priceCents)}
+                    {p.credits} créditos - {formatBRL(p.priceCents)}
                   </p>
                 </div>
                 <button

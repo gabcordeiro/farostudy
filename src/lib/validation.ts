@@ -1,6 +1,6 @@
 /**
  * Esquemas Zod compartilhados entre front e edge functions.
- * Validar TODO input (checklist seguranca #14) e restringir uploads (#16).
+ * Validar TODO input (checklist segurança #14) e restringir uploads (#16).
  */
 import { z } from "zod";
 
@@ -13,24 +13,24 @@ const APKG_MIME = new Set([
 
 export const cardInputSchema = z.object({
   deckId: z.string().uuid(),
-  front: z.string().trim().min(1, "Frente obrigatoria").max(8000),
-  back: z.string().trim().min(1, "Verso obrigatorio").max(8000),
+  front: z.string().trim().min(1, "Frente obrigatória").max(8000),
+  back: z.string().trim().min(1, "Verso obrigatório").max(8000),
   hint: z.string().trim().max(2000).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
 });
 export type CardInput = z.infer<typeof cardInputSchema>;
 
 export const cardEditSchema = z.object({
-  front: z.string().trim().min(1, "Frente obrigatoria").max(8000),
-  back: z.string().trim().min(1, "Verso obrigatorio").max(8000),
+  front: z.string().trim().min(1, "Frente obrigatória").max(8000),
+  back: z.string().trim().min(1, "Verso obrigatório").max(8000),
   hint: z.string().trim().max(2000).optional(),
 });
 export type CardEditInput = z.infer<typeof cardEditSchema>;
 
-export const deckTitleSchema = z.string().trim().min(1, "Titulo obrigatorio").max(160);
+export const deckTitleSchema = z.string().trim().min(1, "Título obrigatório").max(160);
 
 export const deckInputSchema = z.object({
-  title: z.string().trim().min(1, "Titulo obrigatorio").max(160),
+  title: z.string().trim().min(1, "Título obrigatório").max(160),
   description: z.string().trim().max(2000).optional(),
   categoryId: z.string().uuid().nullable().optional(),
 });
@@ -51,7 +51,7 @@ export const aiGenerateSchema = z.object({
 });
 export type AiGenerateInput = z.infer<typeof aiGenerateSchema>;
 
-/** Validacao client-side do arquivo .apkg antes do upload. */
+/** Validação client-side do arquivo .apkg antes do upload. */
 export function validateApkgFile(file: File): { ok: true } | { ok: false; error: string } {
   if (file.size > APKG_MAX_BYTES) {
     return { ok: false, error: "Arquivo maior que 50 MB." };
@@ -62,7 +62,7 @@ export function validateApkgFile(file: File): { ok: true } | { ok: false; error:
   }
   // .apkg e um zip; navegadores costumam reportar application/zip ou vazio.
   if (file.type && !APKG_MIME.has(file.type)) {
-    return { ok: false, error: "Tipo de arquivo nao suportado." };
+    return { ok: false, error: "Tipo de arquivo não suportado." };
   }
   return { ok: true };
 }
@@ -70,7 +70,7 @@ export function validateApkgFile(file: File): { ok: true } | { ok: false; error:
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // 2 MB (espelha o bucket)
 const AVATAR_MIME = new Set(["image/png", "image/jpeg", "image/webp"]);
 
-/** Validacao client-side de foto de perfil antes do upload (#16). */
+/** Validação client-side de foto de perfil antes do upload (#16). */
 export function validateAvatarFile(file: File): { ok: true } | { ok: false; error: string } {
   if (!AVATAR_MIME.has(file.type)) {
     return { ok: false, error: "Envie uma imagem PNG, JPG ou WebP." };
@@ -82,14 +82,14 @@ export function validateAvatarFile(file: File): { ok: true } | { ok: false; erro
 }
 
 export const profileUpdateSchema = z.object({
-  display_name: z.string().trim().min(1, "Nome obrigatorio").max(80),
+  display_name: z.string().trim().min(1, "Nome obrigatório").max(80),
 });
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 
 export const authEmailSchema = z.object({
-  email: z.string().trim().toLowerCase().email("E-mail invalido"),
+  email: z.string().trim().toLowerCase().email("E-mail inválido"),
   password: z
     .string()
-    .min(8, "Minimo de 8 caracteres")
-    .max(72, "Maximo de 72 caracteres"),
+    .min(8, "Mínimo de 8 caracteres")
+    .max(72, "Máximo de 72 caracteres"),
 });

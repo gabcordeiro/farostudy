@@ -1,5 +1,5 @@
 /**
- * Saldo de creditos do usuario logado (v_credit_balance, RLS por dono).
+ * Saldo de créditos do usuário logado (v_credit_balance, RLS por dono).
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

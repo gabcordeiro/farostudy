@@ -1,8 +1,8 @@
 /**
- * Sessao de estudo: percorre cards vencidos, coleta rating (1-4), aplica
+ * Sessão de estudo: percorre cards vencidos, coleta rating (1-4), aplica
  * SM-2 (schedule) e grava log em `reviews` -- alimentando o BI do painel.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
@@ -17,9 +17,9 @@ import { useStudyQueue, type StudyCardRow } from "./useStudyQueue";
 
 const RATINGS: { rating: Rating; label: string; hint: string; tone: string }[] = [
   { rating: 1, label: "Errei", hint: "0d", tone: "bg-bad text-paper hover:bg-bad/80" },
-  { rating: 2, label: "Dificil", hint: "curto", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
+  { rating: 2, label: "Difícil", hint: "curto", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
   { rating: 3, label: "Bom", hint: "medio", tone: "bg-good text-paper hover:bg-good/80" },
-  { rating: 4, label: "Facil", hint: "longo", tone: "bg-action text-ink-900 hover:bg-action-deep" },
+  { rating: 4, label: "Fácil", hint: "longo", tone: "bg-action text-ink-900 hover:bg-action-deep" },
 ];
 
 export default function StudyPage() {
@@ -96,7 +96,7 @@ export default function StudyPage() {
         return;
       }
 
-      // Remove esse card da fila local (nao vai reaparecer nesta sessao).
+      // Remove esse card da fila local (não vai reaparecer nesta sessão).
       setQueue((q) => q.filter((c) => c.id !== current.id));
       setDone((d) => ({ reviewed: d.reviewed + 1, correct: d.correct + (rating >= 3 ? 1 : 0) }));
       setSaving(false);
@@ -107,6 +107,31 @@ export default function StudyPage() {
 
   const total = useMemo(() => queue.length + done.reviewed, [queue.length, done.reviewed]);
 
+  // Atalhos de teclado: Espaco/Enter revela a resposta, 1-4 avalia.
+  // Ignorados quando o foco esta num campo de texto.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = e.target as HTMLElement | null;
+      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!current || saving) return;
+
+      if (!showBack) {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          setShowBack(true);
+        }
+        return;
+      }
+      if (e.key >= "1" && e.key <= "4") {
+        e.preventDefault();
+        void grade(Number(e.key) as Rating);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [current, showBack, saving, grade]);
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <SEO title="Estudar" description="Revise seus flashcards vencidos." path="/estudar" noindex />
@@ -115,7 +140,7 @@ export default function StudyPage() {
         <div className="flex items-center gap-3">
           <IconDeck className="h-6 w-6 text-focus-soft" title="Estudar" />
           <div>
-            <h1 className="font-display text-2xl text-paper">Sessao de estudo</h1>
+            <h1 className="font-display text-2xl text-paper">Sessão de estudo</h1>
             <p className="text-sm text-slate-muted">
               {done.reviewed} de {total} revisadas
             </p>
@@ -140,7 +165,7 @@ export default function StudyPage() {
         </div>
       ) : error ? (
         <div className="rounded-md border border-bad/40 bg-elevated p-6 text-center">
-          <p className="text-sm text-slate-soft">Nao foi possivel carregar seus cards.</p>
+          <p className="text-sm text-slate-soft">Não foi possível carregar seus cards.</p>
           <p className="mt-1 text-2xs text-slate-muted">{error}</p>
         </div>
       ) : current ? (
@@ -154,37 +179,48 @@ export default function StudyPage() {
           ) : null}
 
           {!showBack ? (
-            <button
-              type="button"
-              onClick={() => setShowBack(true)}
-              className="w-full rounded-sm bg-focus py-3 text-sm font-medium text-paper hover:bg-focus-deep"
-            >
-              Mostrar resposta
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setShowBack(true)}
+                className="w-full rounded-sm bg-focus py-3 text-sm font-medium text-paper hover:bg-focus-deep"
+              >
+                Mostrar resposta
+              </button>
+              <p className="hidden text-center text-2xs text-slate-muted sm:block">
+                Dica: aperte <kbd className="font-mono text-slate-soft">espaço</kbd> para revelar
+              </p>
+            </>
           ) : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {RATINGS.map(({ rating, label, hint, tone }) => (
-                <button
-                  key={rating}
-                  type="button"
-                  disabled={saving}
-                  onClick={() => void grade(rating)}
-                  className={`rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
-                >
-                  <span className="block">{label}</span>
-                  <span className="mt-0.5 block text-2xs opacity-80">{hint}</span>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {RATINGS.map(({ rating, label, hint, tone }) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void grade(rating)}
+                    className={`rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
+                  >
+                    <span className="block">{label}</span>
+                    <span className="mt-0.5 block text-2xs opacity-80">{hint}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="hidden text-center text-2xs text-slate-muted sm:block">
+                Dica: use as teclas <kbd className="font-mono text-slate-soft">1</kbd> a{" "}
+                <kbd className="font-mono text-slate-soft">4</kbd> para avaliar
+              </p>
+            </>
           )}
         </div>
       ) : done.reviewed > 0 ? (
         <EmptyState
           mood="cheer"
-          title="Sessao concluida"
-          description={`Voce revisou ${done.reviewed} cards com ${Math.round(
+          title="Sessão concluida"
+          description={`Você revisou ${done.reviewed} cards com ${Math.round(
             (done.correct / done.reviewed) * 100,
-          )}% de acerto. O Faro ja atualizou seu painel.`}
+          )}% de acerto. O Faro já atualizou seu painel.`}
           action={
             <Link
               to="/painel"
@@ -198,7 +234,7 @@ export default function StudyPage() {
         <EmptyState
           mood="sleepy"
           title="Nada vencido por hoje"
-          description="O Faro nao encontrou cards vencidos para revisar agora. Gere novos cards ou volte depois."
+          description="O Faro não encontrou cards vencidos para revisar agora. Gere novos cards ou volte depois."
           action={
             <Link
               to="/importar"

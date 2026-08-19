@@ -1,6 +1,6 @@
 /**
- * Dashboard - BI de Evolucao.
- * Compoe Heatmap de Consistencia + BI de Retencao (curva de esquecimento).
+ * Dashboard - BI de Evolução.
+ * Compoe Heatmap de Consistência + BI de Retenção (curva de esquecimento).
  * Estados: skeleton (nunca spinner), erro, vazio (com mascote), pronto.
  */
 import { Link } from "react-router-dom";
@@ -72,8 +72,8 @@ export default function Dashboard() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <SEO
-        title="Painel de evolucao"
-        description="Acompanhe sua ofensiva de estudos e a curva de retencao por trilha no Faro Study."
+        title="Painel de evolução"
+        description="Acompanhe sua ofensiva de estudos e a curva de retenção por trilha no Faro Study."
         path="/painel"
         noindex
       />
@@ -81,9 +81,9 @@ export default function Dashboard() {
       <header className="mb-6 flex items-center gap-3">
         <IconChart className="h-6 w-6 text-focus-soft" title="Painel" />
         <div>
-          <h1 className="font-display text-2xl text-paper">Sua evolucao</h1>
+          <h1 className="font-display text-2xl text-paper">Sua evolução</h1>
           <p className="text-sm text-slate-muted">
-            Consistencia diaria e retencao por trilha de estudo.
+            Consistência diária e retenção por trilha de estudo.
           </p>
         </div>
       </header>
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
       {status === "error" ? (
         <div className="rounded-md border border-bad/40 bg-ink-700 p-6 text-center">
-          <p className="text-sm text-slate-soft">Nao foi possivel carregar seu painel.</p>
+          <p className="text-sm text-slate-soft">Não foi possível carregar seu painel.</p>
           <p className="mt-1 text-2xs text-slate-muted">{error}</p>
           <button
             onClick={() => void reload()}
@@ -107,8 +107,8 @@ export default function Dashboard() {
         data.retention.length === 0 && data.reviewsLast30 === 0 ? (
           <EmptyState
             mood="search"
-            title="Ainda nao ha o que medir"
-            description="Gere seus primeiros cards e revise alguns: o Faro comeca a mapear sua consistencia e sua curva de retencao aqui."
+            title="Ainda não ha o que medir"
+            description="Gere seus primeiros cards e revise alguns: o Faro começa a mapear sua consistência e sua curva de retenção aqui."
             action={
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
@@ -137,7 +137,7 @@ export default function Dashboard() {
               />
               <StatTile
                 icon={<IconLayers className="h-4 w-4" />}
-                label="Revisoes 30d"
+                label="Revisões 30d"
                 value={String(data.reviewsLast30)}
               />
               <StatTile

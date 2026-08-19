@@ -1,6 +1,6 @@
 /**
- * Pagina de planos (creditos). Publica: visitantes veem precos, usuarios
- * logados podem solicitar -- um admin aprova em /admin ate o gateway de
+ * Página de planos (créditos). Pública: visitantes veem preços, usuários
+ * logados podem solicitar -- um admin aprova em /admin até o gateway de
  * pagamento real (Stripe ou similar) ser conectado com as chaves do dono.
  */
 import { Link } from "react-router-dom";
@@ -27,8 +27,8 @@ export default function PlansPage() {
     const ok = await requestPlan(planId);
     notify(
       ok
-        ? "Pedido enviado. Um admin vai aprovar e os creditos caem na sua conta."
-        : "Nao foi possivel enviar o pedido agora.",
+        ? "Pedido enviado. Um admin vai aprovar e os créditos caem na sua conta."
+        : "Não foi possível enviar o pedido agora.",
       ok ? "success" : "error",
     );
   }
@@ -41,7 +41,7 @@ export default function PlansPage() {
     <main className="min-h-screen">
       <SEO
         title="Planos"
-        description="Planos de creditos do Faro Study para gerar cards e quizzes com IA."
+        description="Planos de créditos do Faro Study para gerar cards e quizzes com IA."
         path="/planos"
       />
 
@@ -65,15 +65,15 @@ export default function PlansPage() {
 
       <section className="mx-auto max-w-5xl px-6 py-14">
         <div className="max-w-xl">
-          <h1 className="font-display text-3xl text-paper">Planos de creditos</h1>
+          <h1 className="font-display text-3xl text-paper">Planos de créditos</h1>
           <p className="mt-2 text-sm text-slate-muted">
-            Cada geracao de cards ou quiz com IA consome 1 credito. Escolha um pacote e
+            Cada geração de cards ou quiz com IA consome 1 crédito. Escolha um pacote e
             continue estudando sem parar.
           </p>
           {user && balance !== null ? (
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-sm border border-hairline bg-elevated px-3 py-1.5 text-sm text-paper">
               <IconCoin className="h-4 w-4 text-action" />
-              Voce tem {balance} {balance === 1 ? "credito" : "creditos"}
+              Você tem {balance} {balance === 1 ? "crédito" : "créditos"}
             </p>
           ) : null}
         </div>
@@ -98,7 +98,7 @@ export default function PlansPage() {
                     <p className="mt-3 font-display text-3xl text-paper">{formatBRL(plan.priceCents)}</p>
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-muted">
                       <IconCoin className="h-4 w-4 text-action" />
-                      {plan.credits} creditos
+                      {plan.credits} créditos
                     </p>
                   </div>
                   <div className="mt-6">
@@ -130,8 +130,8 @@ export default function PlansPage() {
         )}
 
         <p className="mt-6 text-2xs text-slate-muted">
-          Pagamento automatico chega em breve. Por enquanto, seu pedido e revisado
-          manualmente e os creditos sao liberados na sua conta assim que aprovado.
+          Pagamento automático chega em breve. Por enquanto, seu pedido e revisado
+          manualmente e os créditos são liberados na sua conta assim que aprovado.
         </p>
       </section>
     </main>

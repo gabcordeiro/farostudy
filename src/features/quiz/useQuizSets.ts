@@ -1,6 +1,6 @@
 /**
  * Baterias de quiz salvas por trilha: permite refazer sem gastar uma nova
- * chamada de IA. RLS garante que cada usuario so ve as proprias.
+ * chamada de IA. RLS garante que cada usuário só ve as próprias.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";

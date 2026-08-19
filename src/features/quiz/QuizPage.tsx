@@ -1,7 +1,7 @@
 /**
- * Modo Quiz: multipla escolha gerada por IA a partir dos cards de uma trilha.
+ * Modo Quiz: múltipla escolha gerada por IA a partir dos cards de uma trilha.
  * Cada resposta grava um review (rating 3 = acerto, 1 = erro) para alimentar
- * o painel de retencao. Toda bateria gerada e salva (quiz_sets) para poder
+ * o painel de retenção. Toda bateria gerada e salva (quiz_sets) para poder
  * ser refeita sem gastar uma nova chamada de IA.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -59,7 +59,7 @@ export default function QuizPage() {
   const current = items[index];
   const isLast = current && index === items.length - 1;
 
-  // Se o usuario trocar de trilha, esconde a fila de perguntas em andamento.
+  // Se o usuário trocar de trilha, esconde a fila de perguntas em andamento.
   useEffect(() => {
     setItems([]);
     setRawItems([]);
@@ -93,8 +93,8 @@ export default function QuizPage() {
       const res = await generateQuiz({ deckId, count });
       dismiss(progressId);
       if (res.items.length === 0) {
-        setError("O Faro nao conseguiu montar o quiz agora. Tente outra trilha.");
-        notify("Nao foi possivel montar o quiz.", "error");
+        setError("O Faro não conseguiu montar o quiz agora. Tente outra trilha.");
+        notify("Não foi possível montar o quiz.", "error");
       } else {
         startFrom(res.items, deckId);
         void saveSet(deckId, res.items);
@@ -130,7 +130,7 @@ export default function QuizPage() {
 
     setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
 
-    // Grava review sem mexer em cards.due_at (isso e trabalho do /estudar).
+    // Grava review sem mexer em cards.due_at (isso é trabalho do /estudar).
     await withJwtRetry(() =>
       supabase.from("reviews").insert({
         user_id: user.id,
@@ -154,14 +154,14 @@ export default function QuizPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <SEO title="Quiz" description="Quiz de multipla escolha gerado por IA." path="/quiz" noindex />
+      <SEO title="Quiz" description="Quiz de múltipla escolha gerado por IA." path="/quiz" noindex />
 
       <header className="mb-6 flex items-center gap-3">
         <IconQuiz className="h-6 w-6 text-focus-soft" title="Quiz" />
         <div>
           <h1 className="font-display text-2xl text-paper">Quiz</h1>
           <p className="text-sm text-slate-muted">
-            Multipla escolha a partir dos cards de uma trilha.
+            Múltipla escolha a partir dos cards de uma trilha.
           </p>
         </div>
       </header>
@@ -188,16 +188,16 @@ export default function QuizPage() {
                 </select>
               ) : (
                 <p className="text-sm text-slate-muted">
-                  Voce ainda nao tem trilhas.{" "}
+                  Você ainda não tem trilhas.{" "}
                   <Link to="/importar" className="text-action underline underline-offset-2">
                     Crie uma
                   </Link>{" "}
-                  para comecar.
+                  para começar.
                 </p>
               )}
             </div>
             <div>
-              <label className="mb-1 block text-sm text-slate-soft">Numero de perguntas</label>
+              <label className="mb-1 block text-sm text-slate-soft">Número de perguntas</label>
               <input
                 type="number"
                 min={1}
@@ -330,7 +330,7 @@ export default function QuizPage() {
                   onClick={next}
                   className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
                 >
-                  Proxima
+                  Próxima
                 </button>
               )}
             </div>
@@ -342,7 +342,7 @@ export default function QuizPage() {
         <EmptyState
           mood="cheer"
           title="Quiz concluido"
-          description={`Voce acertou ${score.correct} de ${score.total}. Os resultados ja foram para o seu painel.`}
+          description={`Você acertou ${score.correct} de ${score.total}. Os resultados já foram para o seu painel.`}
           action={
             <button
               type="button"

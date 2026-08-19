@@ -1,7 +1,9 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Navigate, Route, Routes, Link } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
+import { MobileNav } from "@/components/MobileNav";
+import { Mascot } from "@/components/Mascot";
 import { CookieBanner } from "@/components/CookieBanner";
 import { Skeleton } from "@/components/Skeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -43,7 +45,7 @@ function RouteFallback() {
   );
 }
 
-/** Rota autenticada com layout de app (sidebar + CTA mobile + transicao). */
+/** Rota autenticada com layout de app (sidebar + CTA mobile + transição). */
 function AppRoute({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute>
@@ -67,31 +69,34 @@ function AdminAppRoute({ children }: { children: ReactNode }) {
   );
 }
 
+/** Cabeçalho enxuto do mobile: so a marca, ja que a navegação foi para o rodapé. */
+function MobileHeader() {
+  return (
+    <div className="flex items-center gap-2.5 border-b border-hairline bg-surface px-4 py-3 md:hidden">
+      <Mascot size="sm" alt="Faro Study" />
+      <span className="font-display text-base tracking-tight text-paper">Faro Study</span>
+    </div>
+  );
+}
+
 function AppLayout({ children }: { children: ReactNode }) {
   const { profile, loading: profileLoading, update } = useProfile();
   const [tourOpen, setTourOpen] = useState(false);
 
-  // Usuario que nunca concluiu o tour ve ele uma unica vez, ao entrar no app.
+  // Usuário que nunca concluiu o tour ve ele uma única vez, ao entrar no app.
   useEffect(() => {
     if (!profileLoading && profile && !profile.onboarded_at) setTourOpen(true);
   }, [profileLoading, profile]);
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <div className="md:sticky md:top-0 md:h-screen">
+      {/* Sidebar so no desktop; no mobile a navegação vira barra de abas. */}
+      <div className="hidden md:sticky md:top-0 md:block md:h-screen">
         <Sidebar />
       </div>
+      <MobileHeader />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
-
-      {/* Sticky mobile CTA (checklist producao #11) */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-border bg-ink-800/95 p-3 md:hidden">
-        <Link
-          to="/estudar"
-          className="block rounded-sm bg-action py-2.5 text-center text-sm font-medium text-ink-900"
-        >
-          Estudar agora
-        </Link>
-      </div>
+      <MobileNav />
 
       <WelcomeTour
         open={tourOpen}
@@ -102,7 +107,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
-/** "/" mostra a landing publica; usuario logado vai direto ao painel. */
+/** "/" mostra a landing pública; usuário logado vai direto ao painel. */
 function HomeRoute() {
   const { session, loading } = useAuth();
   if (loading) return <RouteFallback />;
@@ -115,7 +120,7 @@ export default function App() {
     <>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          {/* Publicas */}
+          {/* Públicas */}
           <Route path="/" element={<HomeRoute />} />
           <Route path="/planos" element={<PlansPage />} />
           <Route path="/login" element={<LoginPage />} />

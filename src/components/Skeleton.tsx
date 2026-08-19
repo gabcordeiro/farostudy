@@ -1,7 +1,7 @@
 /**
- * Skeleton loaders (checklist producao #21 / regra #21).
- * Nunca spinners genericos: usamos blocos que espelham o layout final.
- * Animacao discreta (sem hover exagerado, sem neon).
+ * Skeleton loaders (checklist produção #21 / regra #21).
+ * Nunca spinners genéricos: usamos blocos que espelham o layout final.
+ * Animação discreta (sem hover exagerado, sem neon).
  */
 import type { HTMLAttributes } from "react";
 
