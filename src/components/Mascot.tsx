@@ -21,7 +21,7 @@ interface MascotProps {
 }
 
 const MOOD_ALT: Record<MascotMood, string> = {
-  default: "Faro, o mascote basset hound do Faro Cards",
+  default: "Faro, o mascote basset hound do Faro Study",
   search: "Faro farejando novos cards para estudar",
   sleepy: "Faro descansando enquanto seus cards carregam",
   cheer: "Faro comemorando sua sequencia de estudos",

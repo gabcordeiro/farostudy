@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { AuthProvider } from "./features/auth/AuthProvider";
 import { ThemeProvider } from "./features/theme/ThemeProvider";
+import { ToastProvider } from "./components/Toast";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -16,7 +17,9 @@ createRoot(root).render(
       <ThemeProvider>
         <BrowserRouter>
           <AuthProvider>
-            <App />
+            <ToastProvider>
+              <App />
+            </ToastProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

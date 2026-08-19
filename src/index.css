@@ -54,6 +54,18 @@
     background: theme("colors.focus.DEFAULT");
     color: hsl(var(--text-primary));
   }
+
+  /* Fluidez padrao em toda a UI: transicoes curtas e discretas, nunca */
+  /* efeitos exagerados de hover. Uma unica curva de easing no produto todo. */
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }
 
 @layer utilities {

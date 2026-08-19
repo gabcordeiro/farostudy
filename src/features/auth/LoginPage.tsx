@@ -103,8 +103,8 @@ export function LoginPage() {
       {/* Painel do mascote */}
       <section className="hidden flex-col justify-between border-r border-slate-border bg-ink-800 p-10 lg:flex">
         <div className="flex items-center gap-2.5">
-          <Mascot size="sm" alt="Faro Cards" />
-          <span className="font-display text-lg text-paper">Faro Cards</span>
+          <Mascot size="sm" alt="Faro Study" />
+          <span className="font-display text-lg text-paper">Faro Study</span>
         </div>
         <div className="flex flex-col items-start gap-6">
           <Mascot size="xl" mood="search" alt="Faro, o mascote, dando boas-vindas" />
@@ -125,8 +125,8 @@ export function LoginPage() {
       <section className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <Mascot size="sm" alt="Faro Cards" />
-            <span className="font-display text-lg text-paper">Faro Cards</span>
+            <Mascot size="sm" alt="Faro Study" />
+            <span className="font-display text-lg text-paper">Faro Study</span>
           </div>
 
           <h1 className="font-display text-2xl text-paper">

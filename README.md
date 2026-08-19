@@ -1,4 +1,4 @@
-# Faro Cards
+# Faro Study
 
 Plataforma de repeticao espacada (estilo Anki) focada em concursos publicos e
 aprendizado de idiomas. Gera flashcards com IA, importa colecoes `.apkg`,
@@ -13,7 +13,7 @@ Stack: **React + TypeScript (Vite)**, **Tailwind CSS**, **Supabase**
 ## Estrutura de pastas
 
 ```
-faro-cards/
+faro-study/
 ├── index.html                 # meta base, fontes proprias, favicon set
 ├── vercel.json                # security headers, HTTPS/HSTS, CSP, SPA rewrites
 ├── .env.example               # apenas chaves publicas (VITE_*)

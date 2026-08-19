@@ -1,21 +1,26 @@
 /**
  * Geracao de cards com IA (Gemini via edge function).
- * Cola texto ou JSON, escolhe a trilha e o Faro devolve os flashcards.
+ * Cola texto ou JSON, escolhe (ou cria) a trilha e o Faro devolve os flashcards.
  * Upload de .apkg fica como proximo passo (parsing do pacote Anki no backend).
  */
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { renderCardHtml } from "@/lib/sanitize";
-import { IconWand } from "@/components/icons";
+import { IconRoute, IconWand } from "@/components/icons";
+import { useToast } from "@/components/Toast";
 import { useDecks } from "./useDecks";
 import { generateCards, type GenerateResult } from "./generateCards";
 
 type Mode = "text" | "json";
+const NEW_DECK_VALUE = "__new__";
 
 export default function GeneratePage() {
   const { decks, loading: decksLoading, createDeck } = useDecks();
+  const { notify, dismiss } = useToast();
   const [deckId, setDeckId] = useState("");
+  const [creatingDeck, setCreatingDeck] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
   const [mode, setMode] = useState<Mode>("text");
   const [content, setContent] = useState("");
@@ -24,13 +29,25 @@ export default function GeneratePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerateResult | null>(null);
+  const [resultDeckId, setResultDeckId] = useState<string | null>(null);
+
+  function handleDeckSelect(value: string) {
+    if (value === NEW_DECK_VALUE) {
+      setCreatingDeck(true);
+      setDeckId("");
+    } else {
+      setCreatingDeck(false);
+      setDeckId(value);
+    }
+  }
 
   async function ensureDeck(): Promise<string | null> {
     if (deckId) return deckId;
-    if (newDeckTitle.trim()) {
+    if (creatingDeck && newDeckTitle.trim()) {
       const created = await createDeck(newDeckTitle);
       if (created) {
         setDeckId(created.id);
+        setCreatingDeck(false);
         return created.id;
       }
     }
@@ -46,15 +63,25 @@ export default function GeneratePage() {
     }
     const targetDeck = await ensureDeck();
     if (!targetDeck) {
-      setError("Escolha uma trilha existente ou informe um nome para criar uma.");
+      setError("Escolha uma trilha existente ou crie uma nova.");
       return;
     }
     setBusy(true);
+    const progressId = notify("O Faro esta lendo seu conteudo e montando os cards...", "info", 0);
     try {
       const res = await generateCards({ deckId: targetDeck, mode, content, maxCards });
       setResult(res);
+      setResultDeckId(targetDeck);
+      dismiss(progressId);
+      notify(
+        res.created > 0 ? `${res.created} cards criados com sucesso.` : "Nenhum card foi gerado desta vez.",
+        res.created > 0 ? "success" : "error",
+      );
     } catch (err) {
-      setError((err as Error).message ?? "Falha ao gerar os cards.");
+      const message = (err as Error).message ?? "Falha ao gerar os cards.";
+      setError(message);
+      dismiss(progressId);
+      notify(message, "error");
     } finally {
       setBusy(false);
     }
@@ -64,7 +91,7 @@ export default function GeneratePage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <SEO
         title="Gerar cards com IA"
-        description="Transforme textos e editais em flashcards com o Faro Cards."
+        description="Transforme textos e editais em flashcards com o Faro Study."
         path="/importar"
         noindex
       />
@@ -79,17 +106,26 @@ export default function GeneratePage() {
         </div>
       </header>
 
-      <div className="space-y-5 rounded-md border border-slate-border bg-ink-700 p-5">
+      <div className="space-y-5 rounded-md border border-hairline bg-elevated p-5">
         {/* Trilha */}
         <div>
-          <label className="mb-1 block text-sm text-slate-soft">Trilha</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-sm text-slate-soft">Trilha</label>
+            <Link
+              to="/trilhas"
+              className="inline-flex items-center gap-1 text-2xs text-slate-muted hover:text-paper"
+            >
+              <IconRoute className="h-3.5 w-3.5" />
+              Gerenciar trilhas
+            </Link>
+          </div>
           {decksLoading ? (
             <Skeleton className="h-10 w-full" />
-          ) : decks.length > 0 ? (
+          ) : (
             <select
-              value={deckId}
-              onChange={(e) => setDeckId(e.target.value)}
-              className="w-full rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+              value={creatingDeck ? NEW_DECK_VALUE : deckId}
+              onChange={(e) => handleDeckSelect(e.target.value)}
+              className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
             >
               <option value="">Selecione uma trilha...</option>
               {decks.map((d) => (
@@ -97,29 +133,33 @@ export default function GeneratePage() {
                   {d.title}
                 </option>
               ))}
+              <option value={NEW_DECK_VALUE}>+ Criar nova trilha...</option>
             </select>
-          ) : (
+          )}
+          {creatingDeck ? (
             <input
+              autoFocus
               value={newDeckTitle}
               onChange={(e) => setNewDeckTitle(e.target.value)}
               placeholder="Nome da nova trilha (ex: Legislacao)"
-              className="w-full rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+              maxLength={160}
+              className="mt-2 w-full animate-fade-in rounded-sm border border-focus bg-surface px-3 py-2 text-sm text-paper outline-none"
             />
-          )}
+          ) : null}
         </div>
 
         {/* Modo + quantidade */}
         <div className="flex flex-wrap gap-4">
           <div>
             <label className="mb-1 block text-sm text-slate-soft">Entrada</label>
-            <div className="inline-flex overflow-hidden rounded-sm border border-slate-border">
+            <div className="inline-flex overflow-hidden rounded-sm border border-hairline">
               {(["text", "json"] as Mode[]).map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setMode(m)}
                   className={`px-4 py-2 text-sm ${
-                    mode === m ? "bg-focus text-paper" : "bg-ink-800 text-slate-soft"
+                    mode === m ? "bg-focus text-paper" : "bg-surface text-slate-soft"
                   }`}
                 >
                   {m === "text" ? "Texto" : "JSON"}
@@ -135,7 +175,7 @@ export default function GeneratePage() {
               max={100}
               value={maxCards}
               onChange={(e) => setMaxCards(Number(e.target.value))}
-              className="w-24 rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+              className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
             />
           </div>
         </div>
@@ -155,7 +195,7 @@ export default function GeneratePage() {
                 ? "Cole aqui o trecho do edital, resumo ou materia..."
                 : '[{"conceito":"...","definicao":"..."}]'
             }
-            className="w-full resize-y rounded-sm border border-slate-border bg-ink-800 px-3 py-2 font-mono text-sm text-paper outline-none focus:border-focus"
+            className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 font-mono text-sm text-paper outline-none focus:border-focus"
           />
           <p className="mt-1 text-2xs text-slate-muted">{content.length}/50000</p>
         </div>
@@ -187,15 +227,23 @@ export default function GeneratePage() {
       ) : null}
 
       {result ? (
-        <section className="mt-6">
-          <h2 className="mb-3 font-display text-lg text-paper">
-            {result.created} cards criados
-          </h2>
+        <section className="mt-6 animate-rise-in">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg text-paper">{result.created} cards criados</h2>
+            {resultDeckId ? (
+              <Link
+                to={`/trilhas/${resultDeckId}`}
+                className="text-2xs text-action underline underline-offset-2"
+              >
+                Ver na trilha
+              </Link>
+            ) : null}
+          </div>
           <ul className="space-y-2">
             {result.cards.map((c) => (
               <li
                 key={c.id}
-                className="rounded-sm border border-slate-border bg-ink-700 p-3 text-sm"
+                className="rounded-sm border border-hairline bg-elevated p-3 text-sm"
               >
                 <p
                   className="text-paper"

@@ -1,4 +1,4 @@
-# Faro Cards - robots.txt (checklist producao #7)
+# Faro Study - robots.txt (checklist producao #7)
 User-agent: *
 Allow: /$
 Allow: /privacidade
@@ -10,4 +10,4 @@ Disallow: /trilhas
 Disallow: /importar
 Disallow: /obrigado
 
-Sitemap: https://farocards.app/sitemap.xml
+Sitemap: https://farostudy.vercel.app/sitemap.xml

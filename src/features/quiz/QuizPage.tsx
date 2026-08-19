@@ -1,20 +1,23 @@
 /**
  * Modo Quiz: multipla escolha gerada por IA a partir dos cards de uma trilha.
  * Cada resposta grava um review (rating 3 = acerto, 1 = erro) para alimentar
- * o painel de retencao.
+ * o painel de retencao. Toda bateria gerada e salva (quiz_sets) para poder
+ * ser refeita sem gastar uma nova chamada de IA.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { IconQuiz } from "@/components/icons";
+import { useToast } from "@/components/Toast";
 import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDecks } from "@/features/ai/useDecks";
 import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
+import { useQuizSets } from "./useQuizSets";
 
 interface DisplayItem extends QuizItem {
   deckId: string;
@@ -31,14 +34,21 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
 export default function QuizPage() {
   const { user } = useAuth();
+  const { notify, dismiss } = useToast();
   const { decks, loading: decksLoading } = useDecks();
   const [deckId, setDeckId] = useState("");
   const [count, setCount] = useState(10);
+  const { sets: savedSets, loading: setsLoading, save: saveSet } = useQuizSets(deckId || undefined);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawItems, setRawItems] = useState<(QuizItem & { deckId: string })[]>([]);
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
@@ -46,6 +56,26 @@ export default function QuizPage() {
 
   const current = items[index];
   const isLast = current && index === items.length - 1;
+
+  // Se o usuario trocar de trilha, esconde a fila de perguntas em andamento.
+  useEffect(() => {
+    setItems([]);
+    setRawItems([]);
+  }, [deckId]);
+
+  function startFrom(source: QuizItem[], targetDeckId: string) {
+    const built: DisplayItem[] = source.map((it) => ({
+      ...it,
+      deckId: targetDeckId,
+      categoryId: null,
+      shuffled: shuffle(it.choices),
+    }));
+    setRawItems(source.map((it) => ({ ...it, deckId: targetDeckId })));
+    setItems(built);
+    setIndex(0);
+    setAnswer(null);
+    setScore({ correct: 0, total: 0 });
+  }
 
   async function handleStart() {
     setError(null);
@@ -55,29 +85,36 @@ export default function QuizPage() {
     }
     setBusy(true);
     setItems([]);
-    setIndex(0);
-    setAnswer(null);
-    setScore({ correct: 0, total: 0 });
+    const progressId = notify("O Faro esta preparando as perguntas do quiz...", "info", 0);
     try {
       const res = await generateQuiz({ deckId, count });
-      const deck = decks.find((d) => d.id === deckId);
-      const built: DisplayItem[] = res.items.map((it) => ({
-        ...it,
-        deckId,
-        categoryId: null,
-        shuffled: shuffle(it.choices),
-        // deckId ok; deck category vira via reload do useDecks se precisar.
-        // Para o insert em reviews, RLS + trigger validam ownership.
-      }));
-      if (built.length === 0) setError("O Faro nao conseguiu montar o quiz agora. Tente outra trilha.");
-      setItems(built);
-      // categoria: se tivessemos o campo, ja teriamos posto; deixamos null (view lida).
-      void deck;
+      dismiss(progressId);
+      if (res.items.length === 0) {
+        setError("O Faro nao conseguiu montar o quiz agora. Tente outra trilha.");
+        notify("Nao foi possivel montar o quiz.", "error");
+      } else {
+        startFrom(res.items, deckId);
+        void saveSet(deckId, res.items);
+        notify(`Quiz com ${res.items.length} perguntas pronto e salvo.`, "success");
+      }
     } catch (err) {
-      setError((err as Error).message ?? "Falha ao gerar o quiz.");
+      dismiss(progressId);
+      const message = (err as Error).message ?? "Falha ao gerar o quiz.";
+      setError(message);
+      notify(message, "error");
     } finally {
       setBusy(false);
     }
+  }
+
+  function handleRedoSaved(setItemsSrc: QuizItem[], targetDeckId: string) {
+    setError(null);
+    startFrom(setItemsSrc, targetDeckId);
+    notify("Bateria carregada. Boa sorte!", "info");
+  }
+
+  function handleRedoCurrent() {
+    startFrom(rawItems, rawItems[0]?.deckId ?? deckId);
   }
 
   async function handleAnswer(choiceIdx: number) {
@@ -126,60 +163,96 @@ export default function QuizPage() {
       </header>
 
       {items.length === 0 && !busy ? (
-        <div className="space-y-4 rounded-md border border-hairline bg-elevated p-5">
-          <div>
-            <label className="mb-1 block text-sm text-slate-soft">Trilha</label>
-            {decksLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : decks.length > 0 ? (
-              <select
-                value={deckId}
-                onChange={(e) => setDeckId(e.target.value)}
-                className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-              >
-                <option value="">Selecione uma trilha...</option>
-                {decks.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.title}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <p className="text-sm text-slate-muted">
-                Voce ainda nao tem trilhas.{" "}
-                <Link to="/importar" className="text-action underline underline-offset-2">
-                  Crie uma
-                </Link>{" "}
-                para comecar.
+        <div className="space-y-5">
+          <div className="space-y-4 rounded-md border border-hairline bg-elevated p-5">
+            <div>
+              <label className="mb-1 block text-sm text-slate-soft">Trilha</label>
+              {decksLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : decks.length > 0 ? (
+                <select
+                  value={deckId}
+                  onChange={(e) => setDeckId(e.target.value)}
+                  className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                >
+                  <option value="">Selecione uma trilha...</option>
+                  {decks.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.title}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-slate-muted">
+                  Voce ainda nao tem trilhas.{" "}
+                  <Link to="/importar" className="text-action underline underline-offset-2">
+                    Crie uma
+                  </Link>{" "}
+                  para comecar.
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-slate-soft">Numero de perguntas</label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+              />
+            </div>
+
+            {error ? (
+              <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
+                {error}
               </p>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-slate-soft">Numero de perguntas</label>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-            />
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleStart}
+              disabled={!deckId}
+              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+            >
+              Gerar novo quiz
+            </button>
           </div>
 
-          {error ? (
-            <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
-              {error}
-            </p>
+          {deckId ? (
+            <div>
+              <p className="mb-2 text-2xs uppercase tracking-wider text-slate-muted">
+                Baterias salvas dessa trilha
+              </p>
+              {setsLoading ? (
+                <Skeleton className="h-12 w-full" />
+              ) : savedSets.length === 0 ? (
+                <p className="text-sm text-slate-muted">Nenhuma bateria salva ainda.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {savedSets.map((s) => (
+                    <li
+                      key={s.id}
+                      className="flex items-center justify-between gap-3 rounded-sm border border-hairline bg-elevated px-4 py-2.5"
+                    >
+                      <span className="text-sm text-paper">
+                        {s.itemCount} perguntas
+                        <span className="ml-2 text-2xs text-slate-muted">{formatDate(s.createdAt)}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRedoSaved(s.items, s.deckId)}
+                        className="rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
+                      >
+                        Refazer
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           ) : null}
-
-          <button
-            type="button"
-            onClick={handleStart}
-            disabled={!deckId}
-            className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
-          >
-            Iniciar quiz
-          </button>
         </div>
       ) : null}
 
@@ -258,6 +331,15 @@ export default function QuizPage() {
           mood="cheer"
           title="Quiz concluido"
           description={`Voce acertou ${score.correct} de ${score.total}. Os resultados ja foram para o seu painel.`}
+          action={
+            <button
+              type="button"
+              onClick={handleRedoCurrent}
+              className="inline-block rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
+            >
+              Refazer essa bateria
+            </button>
+          }
         />
       ) : null}
     </div>

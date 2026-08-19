@@ -8,7 +8,7 @@ export default function ThankYou() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <SEO
         title="Obrigado"
-        description="Recebemos seu cadastro no Faro Cards."
+        description="Recebemos seu cadastro no Faro Study."
         path="/obrigado"
         noindex
       />

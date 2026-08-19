@@ -1,9 +1,9 @@
 {
-  "name": "faro-cards",
+  "name": "faro-study",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Faro Cards - plataforma de repeticao espacada para concursos publicos e idiomas.",
+  "description": "Faro Study - plataforma de repeticao espacada para concursos publicos e idiomas.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

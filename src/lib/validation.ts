@@ -20,6 +20,15 @@ export const cardInputSchema = z.object({
 });
 export type CardInput = z.infer<typeof cardInputSchema>;
 
+export const cardEditSchema = z.object({
+  front: z.string().trim().min(1, "Frente obrigatoria").max(8000),
+  back: z.string().trim().min(1, "Verso obrigatorio").max(8000),
+  hint: z.string().trim().max(2000).optional(),
+});
+export type CardEditInput = z.infer<typeof cardEditSchema>;
+
+export const deckTitleSchema = z.string().trim().min(1, "Titulo obrigatorio").max(160);
+
 export const deckInputSchema = z.object({
   title: z.string().trim().min(1, "Titulo obrigatorio").max(160),
   description: z.string().trim().max(2000).optional(),

@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <SEO title="Perfil" description="Edite seu nome e foto no Faro Cards." path="/perfil" noindex />
+      <SEO title="Perfil" description="Edite seu nome e foto no Faro Study." path="/perfil" noindex />
 
       <header className="mb-6 flex items-center gap-3">
         <IconUser className="h-6 w-6 text-focus-soft" title="Perfil" />

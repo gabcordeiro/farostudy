@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import { Navigate, Route, Routes, Link } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { CookieBanner } from "@/components/CookieBanner";
-import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PageTransition } from "@/components/PageTransition";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
@@ -13,6 +13,8 @@ const GeneratePage = lazy(() => import("@/features/ai/GeneratePage"));
 const StudyPage = lazy(() => import("@/features/study/StudyPage"));
 const QuizPage = lazy(() => import("@/features/quiz/QuizPage"));
 const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
+const DecksPage = lazy(() => import("@/features/decks/DecksPage"));
+const DeckDetailPage = lazy(() => import("@/features/decks/DeckDetailPage"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const ThankYou = lazy(() => import("@/pages/ThankYou"));
@@ -33,32 +35,13 @@ function RouteFallback() {
   );
 }
 
-/** Placeholder honesto para rotas ainda em construcao (usa o mascote). */
-function Placeholder({ title }: { title: string }) {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <EmptyState
-        mood="sleepy"
-        title={title}
-        description="Esta area faz parte do roadmap do Faro Cards e sera liberada em breve."
-        action={
-          <Link
-            to="/painel"
-            className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-          >
-            Voltar ao painel
-          </Link>
-        }
-      />
-    </div>
-  );
-}
-
-/** Rota autenticada com layout de app (sidebar + CTA mobile). */
+/** Rota autenticada com layout de app (sidebar + CTA mobile + transicao). */
 function AppRoute({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute>
-      <AppLayout>{children}</AppLayout>
+      <AppLayout>
+        <PageTransition>{children}</PageTransition>
+      </AppLayout>
     </ProtectedRoute>
   );
 }
@@ -105,7 +88,8 @@ export default function App() {
           <Route path="/estudar" element={<AppRoute><StudyPage /></AppRoute>} />
           <Route path="/quiz" element={<AppRoute><QuizPage /></AppRoute>} />
           <Route path="/perfil" element={<AppRoute><ProfilePage /></AppRoute>} />
-          <Route path="/trilhas" element={<AppRoute><Placeholder title="Trilhas de estudo" /></AppRoute>} />
+          <Route path="/trilhas" element={<AppRoute><DecksPage /></AppRoute>} />
+          <Route path="/trilhas/:deckId" element={<AppRoute><DeckDetailPage /></AppRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

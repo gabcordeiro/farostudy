@@ -72,7 +72,7 @@ export default function Dashboard() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <SEO
         title="Painel de evolucao"
-        description="Acompanhe sua ofensiva de estudos e a curva de retencao por trilha no Faro Cards."
+        description="Acompanhe sua ofensiva de estudos e a curva de retencao por trilha no Faro Study."
         path="/painel"
         noindex
       />

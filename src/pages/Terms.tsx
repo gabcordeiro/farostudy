@@ -6,7 +6,7 @@ export default function Terms() {
     <main className="mx-auto max-w-3xl px-6 py-12">
       <SEO
         title="Termos de Servico"
-        description="Regras de uso do Faro Cards."
+        description="Regras de uso do Faro Study."
         path="/termos"
       />
       <h1 className="font-display text-3xl text-paper">Termos de Servico</h1>
@@ -18,7 +18,7 @@ export default function Terms() {
         <section>
           <h2 className="font-display text-lg text-paper">Uso do servico</h2>
           <p>
-            O Faro Cards oferece ferramentas de repeticao espacada para estudo. Voce e
+            O Faro Study oferece ferramentas de repeticao espacada para estudo. Voce e
             responsavel pelo conteudo que cria ou importa e por respeitar direitos autorais de
             materiais de terceiros.
           </p>
@@ -46,7 +46,7 @@ export default function Terms() {
         </section>
         <section>
           <h2 className="font-display text-lg text-paper">Contato</h2>
-          <p>Faro Cards - contato@farocards.app</p>
+          <p>Faro Study - contato@farostudy.vercel.app</p>
         </section>
       </div>
     </main>

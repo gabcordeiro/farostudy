@@ -6,7 +6,7 @@ export default function Privacy() {
     <main className="mx-auto max-w-3xl px-6 py-12">
       <SEO
         title="Politica de Privacidade"
-        description="Como o Faro Cards coleta, usa e protege seus dados."
+        description="Como o Faro Study coleta, usa e protege seus dados."
         path="/privacidade"
       />
       <h1 className="font-display text-3xl text-paper">Politica de Privacidade</h1>
@@ -48,9 +48,9 @@ export default function Privacy() {
         <section>
           <h2 className="font-display text-lg text-paper">Contato</h2>
           <p>
-            Faro Cards - Rua Exemplo, 123, Sala 4, Belo Horizonte/MG, CEP 30110-000, Brasil.
+            Faro Study - Rua Exemplo, 123, Sala 4, Belo Horizonte/MG, CEP 30110-000, Brasil.
             <br />
-            privacidade@farocards.app
+            privacidade@farostudy.vercel.app
           </p>
         </section>
       </div>

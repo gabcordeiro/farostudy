@@ -12,8 +12,8 @@ interface SEOProps {
   ogImage?: string;
 }
 
-const SITE = "Faro Cards";
-const BASE_URL = "https://farocards.app";
+const SITE = "Faro Study";
+const BASE_URL = "https://farostudy.vercel.app";
 
 export function SEO({ title, description, path = "/", noindex, ogImage }: SEOProps) {
   const fullTitle = `${title} | ${SITE}`;

@@ -141,3 +141,23 @@ export const IconUser = (p: IconProps) => (
     <path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5" />
   </Base>
 );
+
+export const IconPencil = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M4 20h4l11-11-4-4L4 16v4Z" />
+    <path d="M13 7l4 4" />
+  </Base>
+);
+
+export const IconTrash = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13" />
+    <path d="M10 11v6M14 11v6" />
+  </Base>
+);
+
+export const IconPlus = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Base>
+);

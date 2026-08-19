@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Faro Cards Design System
+ * Faro Study Design System
  * -------------------------------------------------------------------------
  * Regras de design (Anti-Vibecoding) codificadas aqui:
  *  - Sem branco puro (#3): tokens semanticos resolvem via var(--bg-*) e no
@@ -79,6 +79,29 @@ const config: Config = {
       },
       fontSize: {
         "2xs": ["0.6875rem", { lineHeight: "1rem" }],
+      },
+      transitionTimingFunction: {
+        // Curva unica do produto: saida rapida, chegada suave. Nada de bounce.
+        fluid: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
+      keyframes: {
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "rise-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "toast-in": {
+          from: { opacity: "0", transform: "translateY(8px) scale(0.98)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "rise-in": "rise-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "toast-in": "toast-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

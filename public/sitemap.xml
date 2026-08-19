@@ -2,17 +2,17 @@
 <!-- checklist producao #8 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://farocards.app/</loc>
+    <loc>https://farostudy.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://farocards.app/privacidade</loc>
+    <loc>https://farostudy.vercel.app/privacidade</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://farocards.app/termos</loc>
+    <loc>https://farostudy.vercel.app/termos</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

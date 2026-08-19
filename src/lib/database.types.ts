@@ -112,6 +112,19 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["reviews"]["Row"]>;
         Relationships: [];
       };
+      quiz_sets: {
+        Row: {
+          id: string;
+          user_id: string;
+          deck_id: string;
+          items: unknown;
+          item_count: number;
+          created_at: string;
+        };
+        Insert: { user_id: string; deck_id: string; items: unknown };
+        Update: Partial<Database["public"]["Tables"]["quiz_sets"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {
