@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { withJwtRetry } from "@/lib/supabaseQuery";
 import { daysUntilRetention } from "@/lib/srs";
 import type {
   CategoryRetention,
@@ -63,26 +64,30 @@ export function useDashboardData() {
     const sinceStr = since.toISOString().slice(0, 10);
 
     const [activityRes, retentionRes] = await Promise.all([
-      supabase
-        .from("v_daily_activity")
-        .select("day, reviews, correct")
-        .gte("day", sinceStr)
-        .order("day", { ascending: true })
-        .returns<{ day: string; reviews: number; correct: number }[]>(),
-      supabase
-        .from("v_retention_by_category")
-        .select("category_id, category_name, category_color, total_reviews, correct_reviews, accuracy")
-        .order("total_reviews", { ascending: false })
-        .returns<
-          {
-            category_id: string | null;
-            category_name: string;
-            category_color: string;
-            total_reviews: number;
-            correct_reviews: number;
-            accuracy: number;
-          }[]
-        >(),
+      withJwtRetry(() =>
+        supabase
+          .from("v_daily_activity")
+          .select("day, reviews, correct")
+          .gte("day", sinceStr)
+          .order("day", { ascending: true })
+          .returns<{ day: string; reviews: number; correct: number }[]>(),
+      ),
+      withJwtRetry(() =>
+        supabase
+          .from("v_retention_by_category")
+          .select("category_id, category_name, category_color, total_reviews, correct_reviews, accuracy")
+          .order("total_reviews", { ascending: false })
+          .returns<
+            {
+              category_id: string | null;
+              category_name: string;
+              category_color: string;
+              total_reviews: number;
+              correct_reviews: number;
+              accuracy: number;
+            }[]
+          >(),
+      ),
     ]);
 
     if (!mounted.current) return;

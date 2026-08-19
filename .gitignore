@@ -9,6 +9,13 @@ dist-ssr
 *.local
 *.tsbuildinfo
 
+# Artefatos gerados por tsc -b a partir de configs .ts
+/tailwind.config.js
+/tailwind.config.d.ts
+/postcss.config.d.ts
+/vite.config.js
+/vite.config.d.ts
+
 # env / secrets  (checklist: hide API keys, purge git secrets)
 .env
 .env.*

@@ -107,3 +107,37 @@ export const IconWand = (p: IconProps) => (
     <path d="M6 18 16 8M14 4h1M19 9h1M18 4v1M4 14v1M9 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z" />
   </Base>
 );
+
+export const IconSun = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.5 5.5l1.5 1.5M17 17l1.5 1.5M5.5 18.5 7 17M17 7l1.5-1.5" />
+  </Base>
+);
+
+export const IconMoon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11Z" />
+  </Base>
+);
+
+export const IconSystem = (p: IconProps) => (
+  <Base {...p}>
+    <rect x="3" y="4" width="18" height="12" />
+    <path d="M8 20h8M12 16v4" />
+  </Base>
+);
+
+export const IconQuiz = (p: IconProps) => (
+  <Base {...p}>
+    <rect x="4" y="4" width="16" height="16" />
+    <path d="M8 10h5M8 14h8M8 18h6" />
+  </Base>
+);
+
+export const IconUser = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5" />
+  </Base>
+);

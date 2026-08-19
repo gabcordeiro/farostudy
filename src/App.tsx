@@ -10,6 +10,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
 const GeneratePage = lazy(() => import("@/features/ai/GeneratePage"));
+const StudyPage = lazy(() => import("@/features/study/StudyPage"));
+const QuizPage = lazy(() => import("@/features/quiz/QuizPage"));
+const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const ThankYou = lazy(() => import("@/pages/ThankYou"));
@@ -99,7 +102,9 @@ export default function App() {
           <Route path="/" element={<Navigate to="/painel" replace />} />
           <Route path="/painel" element={<AppRoute><Dashboard /></AppRoute>} />
           <Route path="/importar" element={<AppRoute><GeneratePage /></AppRoute>} />
-          <Route path="/estudar" element={<AppRoute><Placeholder title="Sessao de estudo" /></AppRoute>} />
+          <Route path="/estudar" element={<AppRoute><StudyPage /></AppRoute>} />
+          <Route path="/quiz" element={<AppRoute><QuizPage /></AppRoute>} />
+          <Route path="/perfil" element={<AppRoute><ProfilePage /></AppRoute>} />
           <Route path="/trilhas" element={<AppRoute><Placeholder title="Trilhas de estudo" /></AppRoute>} />
 
           <Route path="*" element={<NotFound />} />

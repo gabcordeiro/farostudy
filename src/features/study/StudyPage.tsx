@@ -1,0 +1,214 @@
+/**
+ * Sessao de estudo: percorre cards vencidos, coleta rating (1-4), aplica
+ * SM-2 (schedule) e grava log em `reviews` -- alimentando o BI do painel.
+ */
+import { useCallback, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { Skeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { IconDeck } from "@/components/icons";
+import { supabase } from "@/lib/supabase";
+import { withJwtRetry } from "@/lib/supabaseQuery";
+import { schedule, type Rating } from "@/lib/srs";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { StudyCard } from "./StudyCard";
+import { useStudyQueue, type StudyCardRow } from "./useStudyQueue";
+
+const RATINGS: { rating: Rating; label: string; hint: string; tone: string }[] = [
+  { rating: 1, label: "Errei", hint: "0d", tone: "bg-bad text-paper hover:bg-bad/80" },
+  { rating: 2, label: "Dificil", hint: "curto", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
+  { rating: 3, label: "Bom", hint: "medio", tone: "bg-good text-paper hover:bg-good/80" },
+  { rating: 4, label: "Facil", hint: "longo", tone: "bg-action text-ink-900 hover:bg-action-deep" },
+];
+
+export default function StudyPage() {
+  const [searchParams] = useSearchParams();
+  const deckId = searchParams.get("deck") ?? undefined;
+  const { user } = useAuth();
+  const { queue, loading, error, setQueue } = useStudyQueue(deckId);
+
+  const [index, setIndex] = useState(0);
+  const [showBack, setShowBack] = useState(false);
+  const [startedAt, setStartedAt] = useState<number>(() => Date.now());
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [done, setDone] = useState({ reviewed: 0, correct: 0 });
+
+  const current: StudyCardRow | undefined = queue[index];
+
+  const advance = useCallback(() => {
+    setShowBack(false);
+    setStartedAt(Date.now());
+    setIndex((i) => i + 1);
+  }, []);
+
+  const grade = useCallback(
+    async (rating: Rating) => {
+      if (!current || !user) return;
+      setSaving(true);
+      setSaveError(null);
+
+      const prev = {
+        intervalDays: current.interval_days,
+        easeFactor: current.ease_factor,
+        reps: current.reps,
+        lapses: current.lapses,
+        state: current.state,
+      };
+      const next = schedule(prev, rating);
+      const durationMs = Math.max(0, Math.min(600000, Date.now() - startedAt));
+
+      const updateRes = await withJwtRetry(() =>
+        supabase
+          .from("cards")
+          .update({
+            state: next.state,
+            due_at: next.dueAt.toISOString(),
+            interval_days: next.intervalDays,
+            ease_factor: next.easeFactor,
+            reps: next.reps,
+            lapses: next.lapses,
+          })
+          .eq("id", current.id),
+      );
+      if (updateRes.error) {
+        setSaveError(updateRes.error.message ?? "Falha ao salvar");
+        setSaving(false);
+        return;
+      }
+
+      const insertRes = await withJwtRetry(() =>
+        supabase.from("reviews").insert({
+          user_id: user.id,
+          card_id: current.id,
+          deck_id: current.deck_id,
+          category_id: current.category_id,
+          rating,
+          duration_ms: durationMs,
+          prev_interval: prev.intervalDays,
+          next_interval: next.intervalDays,
+        }),
+      );
+      if (insertRes.error) {
+        setSaveError(insertRes.error.message ?? "Falha ao salvar");
+        setSaving(false);
+        return;
+      }
+
+      // Remove esse card da fila local (nao vai reaparecer nesta sessao).
+      setQueue((q) => q.filter((c) => c.id !== current.id));
+      setDone((d) => ({ reviewed: d.reviewed + 1, correct: d.correct + (rating >= 3 ? 1 : 0) }));
+      setSaving(false);
+      advance();
+    },
+    [current, user, startedAt, setQueue, advance],
+  );
+
+  const total = useMemo(() => queue.length + done.reviewed, [queue.length, done.reviewed]);
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+      <SEO title="Estudar" description="Revise seus flashcards vencidos." path="/estudar" noindex />
+
+      <header className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <IconDeck className="h-6 w-6 text-focus-soft" title="Estudar" />
+          <div>
+            <h1 className="font-display text-2xl text-paper">Sessao de estudo</h1>
+            <p className="text-sm text-slate-muted">
+              {done.reviewed} de {total} revisadas
+            </p>
+          </div>
+        </div>
+        <div className="text-right text-2xs text-slate-muted">
+          <p>Acertos</p>
+          <p className="font-mono text-sm text-paper">
+            {done.reviewed ? Math.round((done.correct / done.reviewed) * 100) : 0}%
+          </p>
+        </div>
+      </header>
+
+      {loading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-40 w-full" />
+          <div className="grid grid-cols-4 gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        </div>
+      ) : error ? (
+        <div className="rounded-md border border-bad/40 bg-elevated p-6 text-center">
+          <p className="text-sm text-slate-soft">Nao foi possivel carregar seus cards.</p>
+          <p className="mt-1 text-2xs text-slate-muted">{error}</p>
+        </div>
+      ) : current ? (
+        <div className="space-y-4">
+          <StudyCard card={current} showBack={showBack} />
+
+          {saveError ? (
+            <p role="alert" className="text-2xs text-bad">
+              {saveError}
+            </p>
+          ) : null}
+
+          {!showBack ? (
+            <button
+              type="button"
+              onClick={() => setShowBack(true)}
+              className="w-full rounded-sm bg-focus py-3 text-sm font-medium text-paper hover:bg-focus-deep"
+            >
+              Mostrar resposta
+            </button>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {RATINGS.map(({ rating, label, hint, tone }) => (
+                <button
+                  key={rating}
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void grade(rating)}
+                  className={`rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
+                >
+                  <span className="block">{label}</span>
+                  <span className="mt-0.5 block text-2xs opacity-80">{hint}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : done.reviewed > 0 ? (
+        <EmptyState
+          mood="cheer"
+          title="Sessao concluida"
+          description={`Voce revisou ${done.reviewed} cards com ${Math.round(
+            (done.correct / done.reviewed) * 100,
+          )}% de acerto. O Faro ja atualizou seu painel.`}
+          action={
+            <Link
+              to="/painel"
+              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            >
+              Ver painel
+            </Link>
+          }
+        />
+      ) : (
+        <EmptyState
+          mood="sleepy"
+          title="Nada vencido por hoje"
+          description="O Faro nao encontrou cards vencidos para revisar agora. Gere novos cards ou volte depois."
+          action={
+            <Link
+              to="/importar"
+              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            >
+              Gerar cards
+            </Link>
+          }
+        />
+      )}
+    </div>
+  );
+}

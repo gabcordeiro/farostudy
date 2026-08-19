@@ -54,3 +54,32 @@ runtime das edge functions.
 Teste pela pagina **Importar** (`/importar`): escolha/crie uma trilha, cole um
 texto e clique em "Gerar cards". A funcao valida seu login, chama o Gemini e
 grava os cards na sua trilha via RLS.
+
+## 5. Migracao 0002 (bucket de avatares)
+
+Necessaria para a pagina `/perfil` (foto de perfil).
+
+- Supabase > SQL Editor > New query > cole o conteudo de
+  `supabase/migrations/0002_avatars.sql` e rode. Pode rodar mais de uma vez sem
+  efeito colateral (idempotente).
+
+## 6. Deploy da funcao Quiz (`generate-quiz`)
+
+Ja esta no workflow `deploy-supabase-functions.yml`. Depois deste commit:
+
+- GitHub > Actions > **Deploy Supabase Edge Functions** > **Run workflow** na
+  branch da PR (ou em `main` apos o merge).
+- Os secrets `SUPABASE_ACCESS_TOKEN` e `SUPABASE_PROJECT_ID` que voce ja tem
+  cobrem as duas functions (`generate-cards` e `generate-quiz`).
+
+Nao precisa criar novos secrets no Supabase: `generate-quiz` usa o mesmo
+`GEMINI_API_KEY` que voce ja salvou.
+
+## 7. Tema, fonte e login
+
+- **Tema**: toggle 3-vias (Claro / Sistema / Escuro) na sidebar; a escolha e
+  guardada em `localStorage` e aplicada antes do primeiro paint (sem flash).
+- **Fonte**: Roboto (400/500/700), carregada via Google Fonts em `index.html`.
+- **Login persistente**: ja e o comportamento default via `persistSession=true`
+  no client Supabase. O `AuthProvider` tambem chama `refreshSession()` no boot
+  para renovar o token e evitar o erro "JWT issued at future" (clock skew).

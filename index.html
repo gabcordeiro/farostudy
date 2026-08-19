@@ -1,9 +1,25 @@
 <!doctype html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0B0F17" />
+
+    <!-- Anti-flash de tema: aplica a classe .dark/.light antes do CSS pintar. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("faro.theme.v1");
+          var pref = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+          var isDark =
+            pref === "dark" ||
+            (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (isDark) document.documentElement.classList.add("dark");
+        } catch (_) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
 
     <!-- Favicon set (checklist producao #6) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -11,11 +27,11 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fontes proprias (evita Inter/Geist/Space Grotesk) -->
+    <!-- Fonte Roboto (400/500/700) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
 

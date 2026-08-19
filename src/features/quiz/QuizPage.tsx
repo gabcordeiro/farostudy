@@ -1,0 +1,265 @@
+/**
+ * Modo Quiz: multipla escolha gerada por IA a partir dos cards de uma trilha.
+ * Cada resposta grava um review (rating 3 = acerto, 1 = erro) para alimentar
+ * o painel de retencao.
+ */
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { Skeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { IconQuiz } from "@/components/icons";
+import { renderCardHtml } from "@/lib/sanitize";
+import { supabase } from "@/lib/supabase";
+import { withJwtRetry } from "@/lib/supabaseQuery";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { useDecks } from "@/features/ai/useDecks";
+import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
+
+interface DisplayItem extends QuizItem {
+  deckId: string;
+  categoryId: string | null;
+  shuffled: QuizChoice[];
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+export default function QuizPage() {
+  const { user } = useAuth();
+  const { decks, loading: decksLoading } = useDecks();
+  const [deckId, setDeckId] = useState("");
+  const [count, setCount] = useState(10);
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [items, setItems] = useState<DisplayItem[]>([]);
+  const [index, setIndex] = useState(0);
+  const [answer, setAnswer] = useState<number | null>(null);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+
+  const current = items[index];
+  const isLast = current && index === items.length - 1;
+
+  async function handleStart() {
+    setError(null);
+    if (!deckId) {
+      setError("Selecione uma trilha.");
+      return;
+    }
+    setBusy(true);
+    setItems([]);
+    setIndex(0);
+    setAnswer(null);
+    setScore({ correct: 0, total: 0 });
+    try {
+      const res = await generateQuiz({ deckId, count });
+      const deck = decks.find((d) => d.id === deckId);
+      const built: DisplayItem[] = res.items.map((it) => ({
+        ...it,
+        deckId,
+        categoryId: null,
+        shuffled: shuffle(it.choices),
+        // deckId ok; deck category vira via reload do useDecks se precisar.
+        // Para o insert em reviews, RLS + trigger validam ownership.
+      }));
+      if (built.length === 0) setError("O Faro nao conseguiu montar o quiz agora. Tente outra trilha.");
+      setItems(built);
+      // categoria: se tivessemos o campo, ja teriamos posto; deixamos null (view lida).
+      void deck;
+    } catch (err) {
+      setError((err as Error).message ?? "Falha ao gerar o quiz.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleAnswer(choiceIdx: number) {
+    if (!current || !user || answer !== null) return;
+    setAnswer(choiceIdx);
+    const chosen = current.shuffled[choiceIdx];
+    const correct = chosen?.isCorrect === true;
+    const rating = correct ? 3 : 1;
+
+    setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+
+    // Grava review sem mexer em cards.due_at (isso e trabalho do /estudar).
+    await withJwtRetry(() =>
+      supabase.from("reviews").insert({
+        user_id: user.id,
+        card_id: current.cardId,
+        deck_id: current.deckId,
+        category_id: current.categoryId,
+        rating,
+      }),
+    );
+  }
+
+  function next() {
+    setAnswer(null);
+    setIndex((i) => i + 1);
+  }
+
+  const progress = useMemo(
+    () => (items.length ? `Pergunta ${Math.min(index + 1, items.length)} de ${items.length}` : ""),
+    [index, items.length],
+  );
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+      <SEO title="Quiz" description="Quiz de multipla escolha gerado por IA." path="/quiz" noindex />
+
+      <header className="mb-6 flex items-center gap-3">
+        <IconQuiz className="h-6 w-6 text-focus-soft" title="Quiz" />
+        <div>
+          <h1 className="font-display text-2xl text-paper">Quiz</h1>
+          <p className="text-sm text-slate-muted">
+            Multipla escolha a partir dos cards de uma trilha.
+          </p>
+        </div>
+      </header>
+
+      {items.length === 0 && !busy ? (
+        <div className="space-y-4 rounded-md border border-hairline bg-elevated p-5">
+          <div>
+            <label className="mb-1 block text-sm text-slate-soft">Trilha</label>
+            {decksLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : decks.length > 0 ? (
+              <select
+                value={deckId}
+                onChange={(e) => setDeckId(e.target.value)}
+                className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+              >
+                <option value="">Selecione uma trilha...</option>
+                {decks.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.title}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-sm text-slate-muted">
+                Voce ainda nao tem trilhas.{" "}
+                <Link to="/importar" className="text-action underline underline-offset-2">
+                  Crie uma
+                </Link>{" "}
+                para comecar.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-slate-soft">Numero de perguntas</label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={count}
+              onChange={(e) => setCount(Number(e.target.value))}
+              className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+            />
+          </div>
+
+          {error ? (
+            <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={!deckId}
+            className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+          >
+            Iniciar quiz
+          </button>
+        </div>
+      ) : null}
+
+      {busy ? (
+        <div className="space-y-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      ) : null}
+
+      {current ? (
+        <div className="space-y-4">
+          <p className="text-2xs uppercase tracking-wider text-slate-muted">{progress}</p>
+          <article className="rounded-md border border-hairline bg-elevated p-5">
+            <div
+              className="text-base leading-relaxed text-paper"
+              dangerouslySetInnerHTML={{ __html: renderCardHtml(current.front) }}
+            />
+          </article>
+          <ul className="space-y-2">
+            {current.shuffled.map((ch, i) => {
+              const chosen = answer === i;
+              const revealed = answer !== null;
+              const isRight = ch.isCorrect;
+              const tone = !revealed
+                ? "border-hairline hover:border-focus"
+                : isRight
+                  ? "border-good bg-good/10"
+                  : chosen
+                    ? "border-bad bg-bad/10"
+                    : "border-hairline opacity-60";
+              return (
+                <li key={i}>
+                  <button
+                    type="button"
+                    disabled={revealed}
+                    onClick={() => void handleAnswer(i)}
+                    className={`w-full rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper ${tone}`}
+                  >
+                    {ch.text}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          {answer !== null ? (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-2xs text-slate-muted">
+                Placar: {score.correct}/{score.total}
+              </p>
+              {isLast ? (
+                <Link
+                  to="/painel"
+                  className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                >
+                  Ver painel
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={next}
+                  className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
+                >
+                  Proxima
+                </button>
+              )}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!current && items.length > 0 && !busy ? (
+        <EmptyState
+          mood="cheer"
+          title="Quiz concluido"
+          description={`Voce acertou ${score.correct} de ${score.total}. Os resultados ja foram para o seu painel.`}
+        />
+      ) : null}
+    </div>
+  );
+}

@@ -58,6 +58,25 @@ export function validateApkgFile(file: File): { ok: true } | { ok: false; error:
   return { ok: true };
 }
 
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // 2 MB (espelha o bucket)
+const AVATAR_MIME = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+/** Validacao client-side de foto de perfil antes do upload (#16). */
+export function validateAvatarFile(file: File): { ok: true } | { ok: false; error: string } {
+  if (!AVATAR_MIME.has(file.type)) {
+    return { ok: false, error: "Envie uma imagem PNG, JPG ou WebP." };
+  }
+  if (file.size > AVATAR_MAX_BYTES) {
+    return { ok: false, error: "Imagem maior que 2 MB." };
+  }
+  return { ok: true };
+}
+
+export const profileUpdateSchema = z.object({
+  display_name: z.string().trim().min(1, "Nome obrigatorio").max(80),
+});
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+
 export const authEmailSchema = z.object({
   email: z.string().trim().toLowerCase().email("E-mail invalido"),
   password: z

@@ -2,8 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =============================================================================
+ * Tokens semanticos (light default, .dark sobrescreve).
+ * Formato HSL "H S% L%" para permitir "hsl(var(--x) / <alpha>)" no Tailwind.
+ * Regra #3: no light NUNCA usar branco puro; bg-page fica em Slate muito claro.
+ * ============================================================================= */
 @layer base {
   :root {
+    /* Light */
+    --bg-page: 225 25% 96%;      /* fundo raiz - nao branco puro */
+    --bg-surface: 224 20% 92%;   /* superficies */
+    --bg-elevated: 224 18% 88%;  /* cards elevados */
+    --border-hairline: 224 14% 82%;
+    --text-primary: 223 40% 10%;
+    --text-soft: 223 20% 28%;
+    --text-muted: 223 12% 45%;
+    color-scheme: light;
+  }
+  :root.dark {
+    /* Dark */
+    --bg-page: 220 38% 7%;       /* #0B0F17 */
+    --bg-surface: 222 30% 11%;   /* #111725 */
+    --bg-elevated: 222 27% 14%;  /* #171F30 */
+    --border-hairline: 218 30% 20%;
+    --text-primary: 222 22% 92%;
+    --text-soft: 220 16% 76%;
+    --text-muted: 222 14% 61%;
     color-scheme: dark;
   }
 
@@ -14,15 +38,13 @@
   }
 
   body {
-    /* Fundo Slate escuro - nunca branco puro (regra #3). */
-    background-color: theme("colors.ink.900");
-    color: theme("colors.paper");
+    background-color: hsl(var(--bg-page));
+    color: hsl(var(--text-primary));
     font-family: theme("fontFamily.sans");
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  /* Foco visivel e consistente (acessibilidade). */
   :focus-visible {
     outline: 2px solid theme("colors.focus.soft");
     outline-offset: 2px;
@@ -30,12 +52,11 @@
 
   ::selection {
     background: theme("colors.focus.DEFAULT");
-    color: theme("colors.paper");
+    color: hsl(var(--text-primary));
   }
 }
 
 @layer utilities {
-  /* Respeita usuarios que pedem menos movimento (sem hover/anim exageradas). */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

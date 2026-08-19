@@ -25,8 +25,14 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy functions
+      - name: Deploy generate-cards
         run: supabase functions deploy generate-cards --project-ref "$SUPABASE_PROJECT_ID"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+      - name: Deploy generate-quiz
+        run: supabase functions deploy generate-quiz --project-ref "$SUPABASE_PROJECT_ID"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}

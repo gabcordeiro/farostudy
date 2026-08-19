@@ -1,24 +1,41 @@
 /**
  * Sidebar com o mascote Faro como logotipo (regra de UI #4 do mascote).
  * Navegacao sobria, sem hover exagerado. Colapsa em telas pequenas.
+ * Rodape: avatar clicavel -> /perfil, toggle de tema, sair.
  */
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Mascot } from "./Mascot";
-import { IconChart, IconDeck, IconLogout, IconRoute, IconUpload } from "./icons";
+import { Avatar } from "./Avatar";
+import { ThemeToggle } from "./ThemeToggle";
+import {
+  IconChart,
+  IconDeck,
+  IconLogout,
+  IconQuiz,
+  IconRoute,
+  IconUpload,
+} from "./icons";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useProfile } from "@/features/profile/useProfile";
 
 const NAV = [
   { to: "/painel", label: "Evolucao", Icon: IconChart },
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
+  { to: "/quiz", label: "Quiz", Icon: IconQuiz },
   { to: "/trilhas", label: "Trilhas", Icon: IconRoute },
   { to: "/importar", label: "Importar", Icon: IconUpload },
 ];
 
 export function Sidebar() {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+
+  const displayName = profile?.display_name ?? user?.email ?? "";
+  const emailLabel = user?.email ?? "";
+
   return (
-    <aside className="flex h-full w-full flex-col border-r border-slate-border bg-ink-800 md:w-60">
-      <div className="flex items-center gap-2.5 border-b border-slate-border px-4 py-4">
+    <aside className="flex h-full w-full flex-col border-r border-hairline bg-surface md:w-60">
+      <div className="flex items-center gap-2.5 border-b border-hairline px-4 py-4">
         <Mascot size="sm" alt="Faro Cards" />
         <span className="font-display text-lg tracking-tight text-paper">Faro Cards</span>
       </div>
@@ -31,8 +48,8 @@ export function Sidebar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? "bg-ink-600 text-paper"
-                      : "text-slate-soft hover:bg-ink-700 hover:text-paper"
+                      ? "bg-elevated text-paper"
+                      : "text-slate-soft hover:bg-elevated hover:text-paper"
                   }`
                 }
               >
@@ -43,23 +60,34 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
-      <div className="border-t border-slate-border p-3">
+
+      <div className="space-y-2 border-t border-hairline p-3">
         {user ? (
-          <div className="flex items-center justify-between gap-2">
-            <span className="min-w-0 truncate text-2xs text-slate-muted" title={user.email ?? ""}>
-              {user.email}
-            </span>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="flex shrink-0 items-center gap-1 rounded-sm px-2 py-1 text-2xs text-slate-soft hover:bg-ink-700 hover:text-paper"
+          <>
+            <Link
+              to="/perfil"
+              className="flex items-center gap-2 rounded-sm px-1 py-1 hover:bg-elevated"
+              title={emailLabel}
             >
-              <IconLogout className="h-4 w-4" />
-              Sair
-            </button>
-          </div>
+              <Avatar url={profile?.avatar_url} name={displayName} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-2xs text-slate-soft">
+                {displayName}
+              </span>
+            </Link>
+            <div className="flex items-center justify-between gap-2">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="flex items-center gap-1 rounded-sm px-2 py-1 text-2xs text-slate-soft hover:bg-elevated hover:text-paper"
+              >
+                <IconLogout className="h-4 w-4" />
+                Sair
+              </button>
+            </div>
+          </>
         ) : (
-          <p className="text-2xs text-slate-muted">Repeticao espacada</p>
+          <ThemeToggle />
         )}
       </div>
     </aside>

@@ -30,11 +30,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      // Sessao ja em cache (persistSession=true) aparece na hora.
+      const { data } = await supabase.auth.getSession();
       if (!active) return;
       setSession(data.session);
       setLoading(false);
-    });
+
+      // Renova em background para lidar com clock skew (JWT iat no futuro):
+      // um refresh ancora iat no relogio atual do servidor de auth.
+      if (data.session) {
+        supabase.auth.refreshSession().catch(() => {
+          /* silencioso: proxima query cai no withJwtRetry */
+        });
+      }
+    })();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
