@@ -129,6 +129,13 @@ export function LoginPage() {
             <span className="font-display text-lg text-paper">Faro Study</span>
           </div>
 
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-1.5 text-2xs text-slate-muted hover:text-paper"
+          >
+            &larr; Voltar
+          </Link>
+
           <h1 className="font-display text-2xl text-paper">
             {mode === "signin" ? "Entrar" : "Criar conta"}
           </h1>
