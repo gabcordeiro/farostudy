@@ -109,13 +109,14 @@ export interface Database {
           prev_interval?: number | null;
           next_interval?: number | null;
         };
-        Update: never;
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Row"]>;
         Relationships: [];
       };
     };
     Views: {
       v_daily_activity: {
         Row: { user_id: string; day: string; reviews: number; correct: number };
+        Relationships: [];
       };
       v_retention_by_category: {
         Row: {
@@ -127,6 +128,7 @@ export interface Database {
           correct_reviews: number;
           accuracy: number;
         };
+        Relationships: [];
       };
     };
     Functions: Record<string, never>;

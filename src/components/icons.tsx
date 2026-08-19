@@ -94,3 +94,16 @@ export const IconArrowUpRight = (p: IconProps) => (
     <path d="M7 17 17 7M9 7h8v8" />
   </Base>
 );
+
+export const IconLogout = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M14 4H6v16h8" />
+    <path d="M10 12h10M17 9l3 3-3 3" />
+  </Base>
+);
+
+export const IconWand = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M6 18 16 8M14 4h1M19 9h1M18 4v1M4 14v1M9 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z" />
+  </Base>
+);

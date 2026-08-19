@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
+import { AuthProvider } from "./features/auth/AuthProvider";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -12,7 +13,9 @@ createRoot(root).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
   </StrictMode>,

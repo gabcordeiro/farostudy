@@ -4,7 +4,8 @@
  */
 import { NavLink } from "react-router-dom";
 import { Mascot } from "./Mascot";
-import { IconChart, IconDeck, IconRoute, IconUpload } from "./icons";
+import { IconChart, IconDeck, IconLogout, IconRoute, IconUpload } from "./icons";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 const NAV = [
   { to: "/painel", label: "Evolucao", Icon: IconChart },
@@ -14,6 +15,7 @@ const NAV = [
 ];
 
 export function Sidebar() {
+  const { user, signOut } = useAuth();
   return (
     <aside className="flex h-full w-full flex-col border-r border-slate-border bg-ink-800 md:w-60">
       <div className="flex items-center gap-2.5 border-b border-slate-border px-4 py-4">
@@ -41,9 +43,24 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
-      <div className="border-t border-slate-border p-3 text-2xs text-slate-muted">
-        <p>Faro Cards</p>
-        <p>Repeticao espacada</p>
+      <div className="border-t border-slate-border p-3">
+        {user ? (
+          <div className="flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-2xs text-slate-muted" title={user.email ?? ""}>
+              {user.email}
+            </span>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="flex shrink-0 items-center gap-1 rounded-sm px-2 py-1 text-2xs text-slate-soft hover:bg-ink-700 hover:text-paper"
+            >
+              <IconLogout className="h-4 w-4" />
+              Sair
+            </button>
+          </div>
+        ) : (
+          <p className="text-2xs text-slate-muted">Repeticao espacada</p>
+        )}
       </div>
     </aside>
   );

@@ -5,13 +5,21 @@ import { Sidebar } from "@/components/Sidebar";
 import { CookieBanner } from "@/components/CookieBanner";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
+const GeneratePage = lazy(() => import("@/features/ai/GeneratePage"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const ThankYou = lazy(() => import("@/pages/ThankYou"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const LoginPage = lazy(() =>
+  import("@/features/auth/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const AuthCallback = lazy(() =>
+  import("@/features/auth/AuthCallback").then((m) => ({ default: m.AuthCallback })),
+);
 
 function RouteFallback() {
   return (
@@ -43,6 +51,15 @@ function Placeholder({ title }: { title: string }) {
   );
 }
 
+/** Rota autenticada com layout de app (sidebar + CTA mobile). */
+function AppRoute({ children }: { children: ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  );
+}
+
 function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -69,17 +86,21 @@ export default function App() {
     <>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
+          {/* Auth (publicas) */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+
           {/* Rotas legais sem layout de app */}
           <Route path="/privacidade" element={<Privacy />} />
           <Route path="/termos" element={<Terms />} />
           <Route path="/obrigado" element={<ThankYou />} />
 
-          {/* App */}
+          {/* App (autenticadas) */}
           <Route path="/" element={<Navigate to="/painel" replace />} />
-          <Route path="/painel" element={<AppLayout><Dashboard /></AppLayout>} />
-          <Route path="/estudar" element={<AppLayout><Placeholder title="Sessao de estudo" /></AppLayout>} />
-          <Route path="/trilhas" element={<AppLayout><Placeholder title="Trilhas de estudo" /></AppLayout>} />
-          <Route path="/importar" element={<AppLayout><Placeholder title="Importar do Anki" /></AppLayout>} />
+          <Route path="/painel" element={<AppRoute><Dashboard /></AppRoute>} />
+          <Route path="/importar" element={<AppRoute><GeneratePage /></AppRoute>} />
+          <Route path="/estudar" element={<AppRoute><Placeholder title="Sessao de estudo" /></AppRoute>} />
+          <Route path="/trilhas" element={<AppRoute><Placeholder title="Trilhas de estudo" /></AppRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

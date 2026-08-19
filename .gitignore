@@ -7,6 +7,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
 
 # env / secrets  (checklist: hide API keys, purge git secrets)
 .env
