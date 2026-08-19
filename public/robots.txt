@@ -1,0 +1,13 @@
+# Faro Cards - robots.txt (checklist producao #7)
+User-agent: *
+Allow: /$
+Allow: /privacidade
+Allow: /termos
+# Areas autenticadas nao devem ser indexadas
+Disallow: /painel
+Disallow: /estudar
+Disallow: /trilhas
+Disallow: /importar
+Disallow: /obrigado
+
+Sitemap: https://farocards.app/sitemap.xml

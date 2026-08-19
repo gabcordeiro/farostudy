@@ -1,0 +1,13 @@
+{
+  "name": "Faro Cards",
+  "short_name": "Faro",
+  "description": "Repeticao espacada para concursos e idiomas",
+  "start_url": "/painel",
+  "display": "standalone",
+  "background_color": "#0B0F17",
+  "theme_color": "#0B0F17",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

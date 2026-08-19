@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0F17" />
+
+    <!-- Favicon set (checklist producao #6) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Fontes proprias (evita Inter/Geist/Space Grotesk) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- SEO base (sobrescrito por pagina via <SEO/> / react-helmet) -->
+    <title>Faro Cards - Repeticao espacada para concursos e idiomas</title>
+    <meta
+      name="description"
+      content="Faro Cards transforma editais e textos em flashcards com IA e agenda suas revisoes por repeticao espacada. Estude no ritmo certo."
+    />
+    <link rel="canonical" href="https://farocards.app/" />
+
+    <!-- Open Graph (checklist producao #5) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Faro Cards" />
+    <meta property="og:title" content="Faro Cards - Repeticao espacada" />
+    <meta
+      property="og:description"
+      content="Gere flashcards com IA a partir de editais, textos e arquivos .apkg. Acompanhe sua ofensiva e sua curva de retencao."
+    />
+    <meta property="og:image" content="https://farocards.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Faro Cards precisa de JavaScript habilitado para funcionar.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

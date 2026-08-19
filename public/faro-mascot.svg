@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Faro, o mascote Basset Hound">
+  <!--
+    Placeholder geometrico do mascote "Faro" (Basset Hound).
+    Substitua por /faro-mascot.png (PNG transparente, comprimido) quando disponivel
+    e ajuste o default de <Mascot/>. Paleta Slate/Indigo/Laranja.
+  -->
+  <defs>
+    <clipPath id="round"><rect x="0" y="0" width="240" height="240" rx="4"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="240" height="240" fill="#111725"/>
+    <!-- corpo -->
+    <path d="M60 176 L120 150 L180 176 L168 208 L72 208 Z" fill="#3F3BAE"/>
+    <!-- cabeca -->
+    <path d="M84 92 L156 92 L164 148 L120 168 L76 148 Z" fill="#5B57D6"/>
+    <!-- focinho -->
+    <path d="M100 140 L140 140 L132 164 L108 164 Z" fill="#E7EAF0"/>
+    <path d="M112 152 L128 152 L120 162 Z" fill="#0B0F17"/>
+    <!-- orelhas longas (basset) -->
+    <path d="M84 96 L60 100 L58 158 L82 150 Z" fill="#F2762E"/>
+    <path d="M156 96 L180 100 L182 158 L158 150 Z" fill="#F2762E"/>
+    <!-- olhos -->
+    <rect x="102" y="112" width="10" height="10" fill="#0B0F17"/>
+    <rect x="128" y="112" width="10" height="10" fill="#0B0F17"/>
+    <!-- sobrancelha de foco -->
+    <rect x="100" y="104" width="14" height="4" fill="#171F30"/>
+    <rect x="126" y="104" width="14" height="4" fill="#171F30"/>
+  </g>
+</svg>

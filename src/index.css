@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    /* Fundo Slate escuro - nunca branco puro (regra #3). */
+    background-color: theme("colors.ink.900");
+    color: theme("colors.paper");
+    font-family: theme("fontFamily.sans");
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Foco visivel e consistente (acessibilidade). */
+  :focus-visible {
+    outline: 2px solid theme("colors.focus.soft");
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: theme("colors.focus.DEFAULT");
+    color: theme("colors.paper");
+  }
+}
+
+@layer utilities {
+  /* Respeita usuarios que pedem menos movimento (sem hover/anim exageradas). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
