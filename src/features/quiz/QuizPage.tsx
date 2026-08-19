@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { IconQuiz } from "@/components/icons";
 import { useToast } from "@/components/Toast";
+import { AppFunctionError } from "@/lib/functionError";
 import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
@@ -48,6 +49,7 @@ export default function QuizPage() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsCredits, setNeedsCredits] = useState(false);
   const [rawItems, setRawItems] = useState<(QuizItem & { deckId: string })[]>([]);
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -79,6 +81,7 @@ export default function QuizPage() {
 
   async function handleStart() {
     setError(null);
+    setNeedsCredits(false);
     if (!deckId) {
       setError("Selecione uma trilha.");
       return;
@@ -101,6 +104,7 @@ export default function QuizPage() {
       dismiss(progressId);
       const message = (err as Error).message ?? "Falha ao gerar o quiz.";
       setError(message);
+      if (err instanceof AppFunctionError && err.insufficientCredits) setNeedsCredits(true);
       notify(message, "error");
     } finally {
       setBusy(false);
@@ -207,6 +211,14 @@ export default function QuizPage() {
             {error ? (
               <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
                 {error}
+                {needsCredits ? (
+                  <>
+                    {" "}
+                    <Link to="/planos" className="underline underline-offset-2">
+                      Ver planos
+                    </Link>
+                  </>
+                ) : null}
               </p>
             ) : null}
 

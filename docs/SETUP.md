@@ -83,3 +83,45 @@ Nao precisa criar novos secrets no Supabase: `generate-quiz` usa o mesmo
 - **Login persistente**: ja e o comportamento default via `persistSession=true`
   no client Supabase. O `AuthProvider` tambem chama `refreshSession()` no boot
   para renovar o token e evitar o erro "JWT issued at future" (clock skew).
+
+## 8. Papeis de usuario e creditos (migrations 0004 e 0005)
+
+Ja aplicadas no projeto (`sfzwudfivragjmqaxjrh`) via MCP. Se for replicar em
+outro projeto Supabase, rode na ordem pelo SQL Editor:
+`0004_roles_and_credits.sql` depois `0005_refund_credits.sql`.
+
+O que isso cria:
+
+- `profiles.role` (`user` | `admin`). Toda conta nova nasce `user`.
+- `credit_ledger` (livro-razao append-only) + `v_credit_balance` (saldo).
+- `credit_plans` (planos publicos) + `credit_requests` (pedido de compra).
+- RPCs `security definer`: `consume_credits`, `refund_credits`,
+  `grant_credits`, `set_user_role`, `resolve_credit_request`,
+  `admin_list_users`.
+
+**Tornar alguem admin** (nao tem UI para o primeiro admin, e ovo-e-galinha):
+no SQL Editor,
+```sql
+update public.profiles set role = 'admin'
+where id = (select id from auth.users where email = 'seu-email@exemplo.com');
+```
+Depois disso a pessoa ve o link **Admin** na sidebar (`/admin`), com abas de
+Usuarios, Solicitacoes e Planos.
+
+**Custo de credito**: cada chamada a `generate-cards` ou `generate-quiz`
+consome 1 credito (`GENERATION_COST` no topo de cada `index.ts`). Se o Gemini
+falhar depois de ja ter cobrado, a function estorna automaticamente via
+`refund_credits`.
+
+**Pagamento real**: por enquanto o fluxo e manual -- o usuario "solicita" um
+plano em `/planos`, o pedido aparece em `/admin` > Solicitacoes, e aprovar
+credita os pontos automaticamente. Para automatizar com um gateway de
+pagamento de verdade (Stripe ou similar), sera preciso:
+1. Criar a conta no gateway e pegar as chaves (nunca vao para o frontend).
+2. Nova edge function `create-checkout-session` (recebe planId, cria uma
+   sessao de checkout) e `payment-webhook` (recebe a confirmacao do gateway
+   e chama `grant_credits` com a `service_role` key).
+3. Trocar o botao "Solicitar" em `/planos` para redirecionar ao checkout.
+
+Quando tiver as chaves, e um pedido rapido de implementar -- o schema de
+creditos ja esta pronto para isso.

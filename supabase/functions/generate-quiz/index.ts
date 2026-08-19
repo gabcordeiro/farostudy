@@ -8,6 +8,7 @@ import { corsHeaders, json } from "../_shared/cors.ts";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GENERATION_COST = 1;
 
 interface Choice {
   text: string;
@@ -145,10 +146,17 @@ Deno.serve(async (req) => {
   if (cardsErr) return json({ error: "Falha ao ler cards", detail: cardsErr.message }, 400);
   if (!cards || cards.length === 0) return json({ items: [] });
 
+  const { error: creditErr } = await supabase.rpc("consume_credits", {
+    amount: GENERATION_COST,
+    reason: "generate-quiz",
+  });
+  if (creditErr) return json({ error: "Creditos insuficientes", detail: creditErr.message }, 402);
+
   let choicesById: Record<string, Choice[]>;
   try {
     choicesById = await callGemini(apiKey, cards as CardRow[]);
   } catch (err) {
+    await supabase.rpc("refund_credits", { amount: GENERATION_COST, reason: "estorno: falha no Gemini" });
     return json({ error: "Falha ao gerar o quiz", detail: (err as Error).message }, 502);
   }
 

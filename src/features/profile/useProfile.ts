@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
+import type { UserRole } from "@/lib/database.types";
 
 export interface ProfileRow {
   id: string;
@@ -12,6 +13,7 @@ export interface ProfileRow {
   avatar_url: string | null;
   locale: string;
   timezone: string;
+  role: UserRole;
 }
 
 interface UpdateInput {
@@ -31,7 +33,7 @@ export function useProfile() {
     const res = await withJwtRetry(() =>
       supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, locale, timezone")
+        .select("id, display_name, avatar_url, locale, timezone, role")
         .eq("id", user.id)
         .maybeSingle(),
     );
@@ -53,7 +55,7 @@ export function useProfile() {
           .from("profiles")
           .update(patch)
           .eq("id", user.id)
-          .select("id, display_name, avatar_url, locale, timezone")
+          .select("id, display_name, avatar_url, locale, timezone, role")
           .single(),
       );
       if (res.error) {

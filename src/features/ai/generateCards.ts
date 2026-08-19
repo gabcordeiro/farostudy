@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/lib/supabase";
 import { aiGenerateSchema, type AiGenerateInput } from "@/lib/validation";
+import { AppFunctionError, describeFunctionError } from "@/lib/functionError";
 
 export interface GenerateResult {
   created: number;
@@ -15,7 +16,7 @@ export async function generateCards(input: AiGenerateInput): Promise<GenerateRes
   const { data, error } = await supabase.functions.invoke<GenerateResult>("generate-cards", {
     body: payload,
   });
-  if (error) throw error;
+  if (error) throw new AppFunctionError(await describeFunctionError(error));
   if (!data) throw new Error("Resposta vazia da funcao");
   return data;
 }

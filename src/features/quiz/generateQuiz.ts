@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { AppFunctionError, describeFunctionError } from "@/lib/functionError";
 
 export interface QuizChoice {
   text: string;
@@ -17,7 +18,7 @@ export async function generateQuiz(input: { deckId: string; count?: number }): P
   const { data, error } = await supabase.functions.invoke<QuizResult>("generate-quiz", {
     body: input,
   });
-  if (error) throw error;
+  if (error) throw new AppFunctionError(await describeFunctionError(error));
   if (!data) throw new Error("Resposta vazia do quiz");
   return data;
 }

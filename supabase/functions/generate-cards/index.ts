@@ -17,6 +17,7 @@ import { corsHeaders, json } from "../_shared/cors.ts";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GENERATION_COST = 1;
 
 interface GeneratedCard {
   front: string;
@@ -128,10 +129,20 @@ Deno.serve(async (req) => {
   if (deckErr) return json({ error: "Falha ao validar o deck" }, 400);
   if (!deck) return json({ error: "Deck nao encontrado" }, 404);
 
+  // Cobra 1 credito por geracao (so depois de validar o input, antes de
+  // chamar o Gemini -- requisicao invalida nao consome credito).
+  const { error: creditErr } = await supabase.rpc("consume_credits", {
+    amount: GENERATION_COST,
+    reason: "generate-cards",
+  });
+  if (creditErr) return json({ error: "Creditos insuficientes", detail: creditErr.message }, 402);
+
   let raw: GeneratedCard[];
   try {
     raw = await callGemini(apiKey, content, maxCards, mode);
   } catch (err) {
+    // Falha no Gemini apos ja ter cobrado -> devolve o credito.
+    await supabase.rpc("refund_credits", { amount: GENERATION_COST, reason: "estorno: falha no Gemini" });
     return json({ error: "Falha ao gerar cards", detail: (err as Error).message }, 502);
   }
 

@@ -4,6 +4,8 @@
  * Mantido a mao aqui para o scaffold compilar sem a CLI.
  */
 export type CardState = "new" | "learning" | "review" | "relearning" | "suspended";
+export type UserRole = "user" | "admin";
+export type CreditRequestStatus = "pending" | "approved" | "rejected";
 
 export interface Database {
   public: {
@@ -15,6 +17,7 @@ export interface Database {
           avatar_url: string | null;
           locale: string;
           timezone: string;
+          role: UserRole;
           accepted_tos_at: string | null;
           accepted_privacy_at: string | null;
           created_at: string;
@@ -125,6 +128,54 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["quiz_sets"]["Row"]>;
         Relationships: [];
       };
+      credit_plans: {
+        Row: {
+          id: string;
+          name: string;
+          credits: number;
+          price_cents: number;
+          is_active: boolean;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          name: string;
+          credits: number;
+          price_cents: number;
+          is_active?: boolean;
+          position?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["credit_plans"]["Row"]>;
+        Relationships: [];
+      };
+      credit_ledger: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount: number;
+          reason: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      credit_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan_id: string;
+          status: CreditRequestStatus;
+          created_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: { user_id: string; plan_id: string; status?: "pending" };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {
@@ -143,8 +194,45 @@ export interface Database {
         };
         Relationships: [];
       };
+      v_credit_balance: {
+        Row: { user_id: string; balance: number };
+        Relationships: [];
+      };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      grant_credits: {
+        Args: { target_user: string; amount: number; reason: string };
+        Returns: number;
+      };
+      consume_credits: {
+        Args: { amount: number; reason: string };
+        Returns: number;
+      };
+      refund_credits: {
+        Args: { amount: number; reason: string };
+        Returns: number;
+      };
+      set_user_role: {
+        Args: { target_user: string; new_role: UserRole };
+        Returns: void;
+      };
+      resolve_credit_request: {
+        Args: { request_id: string; approve: boolean };
+        Returns: void;
+      };
+      admin_list_users: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          email: string | null;
+          display_name: string | null;
+          avatar_url: string | null;
+          role: UserRole;
+          balance: number;
+          created_at: string;
+        }[];
+      };
+    };
     Enums: { card_state: CardState };
   };
 }

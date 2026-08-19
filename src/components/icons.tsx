@@ -161,3 +161,28 @@ export const IconPlus = (p: IconProps) => (
     <path d="M12 5v14M5 12h14" />
   </Base>
 );
+
+export const IconCoin = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <path d="M9.5 15c0 1 1 1.5 2.5 1.5s2.5-.6 2.5-1.6c0-2.4-5-1-5-3.4 0-1 1-1.6 2.5-1.6s2.5.5 2.5 1.5M12 7.5v1M12 15.5v1" />
+  </Base>
+);
+
+export const IconShield = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+  </Base>
+);
+
+export const IconCheck = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M4 12l5 5L20 6" />
+  </Base>
+);
+
+export const IconClose = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M5 5l14 14M19 5 5 19" />
+  </Base>
+);

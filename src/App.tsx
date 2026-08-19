@@ -5,7 +5,9 @@ import { Sidebar } from "@/components/Sidebar";
 import { CookieBanner } from "@/components/CookieBanner";
 import { Skeleton } from "@/components/Skeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { PageTransition } from "@/components/PageTransition";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
@@ -15,6 +17,9 @@ const QuizPage = lazy(() => import("@/features/quiz/QuizPage"));
 const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const DecksPage = lazy(() => import("@/features/decks/DecksPage"));
 const DeckDetailPage = lazy(() => import("@/features/decks/DeckDetailPage"));
+const AdminPage = lazy(() => import("@/features/admin/AdminPage"));
+const LandingPage = lazy(() => import("@/features/landing/LandingPage"));
+const PlansPage = lazy(() => import("@/features/billing/PlansPage"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const ThankYou = lazy(() => import("@/pages/ThankYou"));
@@ -46,6 +51,19 @@ function AppRoute({ children }: { children: ReactNode }) {
   );
 }
 
+/** Rota autenticada + exige papel admin. */
+function AdminAppRoute({ children }: { children: ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AdminRoute>
+        <AppLayout>
+          <PageTransition>{children}</PageTransition>
+        </AppLayout>
+      </AdminRoute>
+    </ProtectedRoute>
+  );
+}
+
 function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -67,22 +85,29 @@ function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
+/** "/" mostra a landing publica; usuario logado vai direto ao painel. */
+function HomeRoute() {
+  const { session, loading } = useAuth();
+  if (loading) return <RouteFallback />;
+  if (session) return <Navigate to="/painel" replace />;
+  return <LandingPage />;
+}
+
 export default function App() {
   return (
     <>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          {/* Auth (publicas) */}
+          {/* Publicas */}
+          <Route path="/" element={<HomeRoute />} />
+          <Route path="/planos" element={<PlansPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-
-          {/* Rotas legais sem layout de app */}
           <Route path="/privacidade" element={<Privacy />} />
           <Route path="/termos" element={<Terms />} />
           <Route path="/obrigado" element={<ThankYou />} />
 
           {/* App (autenticadas) */}
-          <Route path="/" element={<Navigate to="/painel" replace />} />
           <Route path="/painel" element={<AppRoute><Dashboard /></AppRoute>} />
           <Route path="/importar" element={<AppRoute><GeneratePage /></AppRoute>} />
           <Route path="/estudar" element={<AppRoute><StudyPage /></AppRoute>} />
@@ -90,6 +115,9 @@ export default function App() {
           <Route path="/perfil" element={<AppRoute><ProfilePage /></AppRoute>} />
           <Route path="/trilhas" element={<AppRoute><DecksPage /></AppRoute>} />
           <Route path="/trilhas/:deckId" element={<AppRoute><DeckDetailPage /></AppRoute>} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<AdminAppRoute><AdminPage /></AdminAppRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconRoute, IconWand } from "@/components/icons";
 import { useToast } from "@/components/Toast";
+import { AppFunctionError } from "@/lib/functionError";
 import { useDecks } from "./useDecks";
 import { generateCards, type GenerateResult } from "./generateCards";
 
@@ -28,6 +29,7 @@ export default function GeneratePage() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsCredits, setNeedsCredits] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
 
@@ -56,6 +58,7 @@ export default function GeneratePage() {
 
   async function handleGenerate() {
     setError(null);
+    setNeedsCredits(false);
     setResult(null);
     if (content.trim().length < 1) {
       setError("Cole um texto ou JSON para gerar os cards.");
@@ -80,6 +83,7 @@ export default function GeneratePage() {
     } catch (err) {
       const message = (err as Error).message ?? "Falha ao gerar os cards.";
       setError(message);
+      if (err instanceof AppFunctionError && err.insufficientCredits) setNeedsCredits(true);
       dismiss(progressId);
       notify(message, "error");
     } finally {
@@ -203,6 +207,14 @@ export default function GeneratePage() {
         {error ? (
           <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
             {error}
+            {needsCredits ? (
+              <>
+                {" "}
+                <Link to="/planos" className="underline underline-offset-2">
+                  Ver planos
+                </Link>
+              </>
+            ) : null}
           </p>
         ) : null}
 
