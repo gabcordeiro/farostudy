@@ -25,14 +25,20 @@ jobs:
         with:
           version: latest
 
+      # --no-verify-jwt: a checagem de JWT no gateway do Supabase tambem
+      # bloqueia o preflight CORS (OPTIONS nunca carrega Authorization),
+      # o que quebra a chamada real do navegador com "Missing authorization
+      # header". As functions ja validam o JWT internamente (ver
+      # supabase/functions/*/index.ts), entao a checagem do gateway e
+      # redundante e so atrapalha.
       - name: Deploy generate-cards
-        run: supabase functions deploy generate-cards --project-ref "$SUPABASE_PROJECT_ID"
+        run: supabase functions deploy generate-cards --no-verify-jwt --project-ref "$SUPABASE_PROJECT_ID"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
       - name: Deploy generate-quiz
-        run: supabase functions deploy generate-quiz --project-ref "$SUPABASE_PROJECT_ID"
+        run: supabase functions deploy generate-quiz --no-verify-jwt --project-ref "$SUPABASE_PROJECT_ID"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
