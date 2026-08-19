@@ -8,7 +8,7 @@
  */
 type MascotMood = "default" | "search" | "sleepy" | "cheer";
 
-const DEFAULT_SRC = "/faro-mascot.svg"; // trocar por "/faro-mascot.png" com o asset final
+const DEFAULT_SRC = "/faro-mascot.png"; // trocar por "/faro-mascot.png" com o asset final
 
 const SIZES = { sm: 40, md: 96, lg: 160, xl: 220 } as const;
 
