@@ -148,6 +148,34 @@ prometer saldo que ainda nao entrou.
    `/admin` ou direto na tabela `payments` que a linha ficou `approved` e que
    entrou uma (uma so) linha em `credit_ledger`.
 
+> **Marque so o evento "Pagamentos"** na lista do painel. A function trata
+> apenas `type: "payment"` e responde "ignorado" para qualquer outro; assinar
+> os demais so gera chamadas descartadas.
+>
+> **Teste e producao tem segredos diferentes.** O painel separa "Modo de
+> teste" e "Modo de producao", cada um com sua assinatura secreta. O segredo
+> guardado no Supabase precisa ser do mesmo modo do access token, senao toda
+> notificacao e rejeitada com 401 na validacao de assinatura.
+>
+> **O botao "Simular notificacao" nao prova muita coisa.** Ele manda um id de
+> pagamento que nao existe na API real, entao a function responde
+> `200 {"ignored": true, "reason": "payment_not_found"}`. Isso e o certo, nao
+> uma falha -- e a resposta 200 e proposital, para a notificacao sair da fila
+> em vez de ser reentregue para sempre. O teste que vale e pagar com cartao
+> de teste de verdade.
+
+**Politica de retentativa** (`mercadopago-webhook`): o Mercado Pago reenfileira
+a notificacao a cada resposta que nao for 2xx. Por isso a function so devolve
+erro quando repetir tem chance de resolver:
+
+| Situacao | Resposta | Por que |
+| --- | --- | --- |
+| Pagamento nao existe (404) | 200 | Nunca vai existir; retentar e inutil |
+| Credencial rejeitada (401/403) | 200 + log | Pede correcao de config, nao fila |
+| `external_reference` desconhecida | 200 | UUID valido que nao e nosso |
+| Rate limit / erro do MP (429, 5xx) | 502 | Transitorio: retentar ajuda |
+| Erro de banco | 500 | Transitorio: retentar ajuda |
+
 **Por que uma RPC nova em vez de `grant_credits`**: `grant_credits` exige
 `is_admin(auth.uid())`, e o webhook roda com service-role, onde `auth.uid()`
 e NULL. Dai a `settle_mercadopago_payment` (migracao `0007_payments.sql`),

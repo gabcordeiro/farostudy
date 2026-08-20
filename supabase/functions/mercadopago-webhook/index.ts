@@ -104,10 +104,29 @@ Deno.serve(async (req) => {
   const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
+
+  // O Mercado Pago reenfileira a notificacao a cada resposta que nao for 2xx.
+  // Entao so vale devolver erro quando repetir tem chance de dar certo; o
+  // resto precisa sair da fila com 200, mesmo nao tendo creditado nada.
   if (!mpRes.ok) {
-    const detail = await mpRes.text();
-    // Nao-2xx: o Mercado Pago reenfileira e tentamos de novo depois.
-    return json({ error: "Falha ao consultar o pagamento", detail: detail.slice(0, 300) }, 502);
+    const detail = (await mpRes.text()).slice(0, 300);
+
+    // 404: nao existe e nao vai passar a existir (e o caso do "Simular
+    // notificacao" do painel, que manda um id ficticio). Retentar e inutil.
+    if (mpRes.status === 404) {
+      return json({ ignored: true, reason: "payment_not_found" }, 200);
+    }
+
+    // 401/403: credencial errada ou de outro modo (teste x producao).
+    // Retentar com a mesma credencial repete o mesmo erro para sempre --
+    // isso pede correcao de configuracao, nao fila.
+    if (mpRes.status === 401 || mpRes.status === 403) {
+      console.error("Credencial do Mercado Pago rejeitada:", mpRes.status, detail);
+      return json({ ignored: true, reason: "bad_credentials" }, 200);
+    }
+
+    // 429 e 5xx: transitorios de verdade. Aqui sim vale reentregar.
+    return json({ error: "Falha ao consultar o pagamento", detail }, 502);
   }
 
   const payment = await mpRes.json();
@@ -133,8 +152,16 @@ Deno.serve(async (req) => {
     p_status: status,
   });
 
+  // Erro de banco e transitorio (indisponibilidade, timeout): 500 para o
+  // Mercado Pago reentregar.
   if (error) {
     return json({ error: "Falha ao liquidar o pagamento", detail: error.message }, 500);
+  }
+
+  // null = a linha nao existe em `payments`. UUID valido que nunca foi nosso;
+  // permanente, entao sai da fila com 200 em vez de ficar sendo reentregue.
+  if (credited === null) {
+    return json({ ignored: true, reason: "unknown_payment_reference" }, 200);
   }
 
   // credited=false tambem e 200: ou era duplicata, ou o pagamento nao foi
