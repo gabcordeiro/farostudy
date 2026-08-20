@@ -16,6 +16,7 @@ import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "@/features/ai/useDecks";
 import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
 import { useQuizSets } from "./useQuizSets";
@@ -43,6 +44,7 @@ export default function QuizPage() {
   const { user } = useAuth();
   const { notify, dismiss } = useToast();
   const { decks, loading: decksLoading } = useDecks();
+  const { balance } = useCredits();
   const [deckId, setDeckId] = useState("");
   const [count, setCount] = useState(10);
   const { sets: savedSets, loading: setsLoading, save: saveSet } = useQuizSets(deckId || undefined);
@@ -206,6 +208,7 @@ export default function QuizPage() {
                 onChange={(e) => setCount(Number(e.target.value))}
                 className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
               />
+              <p className="mt-1 text-2xs text-slate-muted">Entre 1 e 20 perguntas.</p>
             </div>
 
             {error ? (
@@ -222,14 +225,28 @@ export default function QuizPage() {
               </p>
             ) : null}
 
-            <button
-              type="button"
-              onClick={handleStart}
-              disabled={!deckId}
-              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
-            >
-              Gerar novo quiz
-            </button>
+            <div>
+              <p className={`mb-2 text-2xs ${balance === 0 ? "text-warn" : "text-slate-muted"}`}>
+                Essa geração usa 1 crédito
+                {balance !== null ? ` · você tem ${balance} ${balance === 1 ? "crédito" : "créditos"}` : ""}
+                {balance === 0 ? (
+                  <>
+                    {" "}
+                    <Link to="/planos" className="underline underline-offset-2">
+                      Ver planos
+                    </Link>
+                  </>
+                ) : null}
+              </p>
+              <button
+                type="button"
+                onClick={handleStart}
+                disabled={!deckId}
+                className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              >
+                Gerar novo quiz
+              </button>
+            </div>
           </div>
 
           {deckId ? (

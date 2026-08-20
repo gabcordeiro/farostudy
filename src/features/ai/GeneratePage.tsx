@@ -11,6 +11,7 @@ import { renderCardHtml } from "@/lib/sanitize";
 import { IconRoute, IconWand } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
+import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "./useDecks";
 import { generateCards, type GenerateResult } from "./generateCards";
 
@@ -19,6 +20,7 @@ const NEW_DECK_VALUE = "__new__";
 
 export default function GeneratePage() {
   const { decks, loading: decksLoading, createDeck } = useDecks();
+  const { balance } = useCredits();
   const { notify, dismiss } = useToast();
   const [deckId, setDeckId] = useState("");
   const [creatingDeck, setCreatingDeck] = useState(false);
@@ -105,7 +107,7 @@ export default function GeneratePage() {
         <div>
           <h1 className="font-display text-2xl text-paper">Gerar cards com IA</h1>
           <p className="text-sm text-slate-muted">
-            Cole um texto ou um JSON e a IA monta os flashcards na sua trilha.
+            Cole um texto e a IA monta os flashcards na sua trilha.
           </p>
         </div>
       </header>
@@ -152,36 +154,17 @@ export default function GeneratePage() {
           ) : null}
         </div>
 
-        {/* Modo + quantidade */}
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <label className="mb-1 block text-sm text-slate-soft">Entrada</label>
-            <div className="inline-flex overflow-hidden rounded-sm border border-hairline">
-              {(["text", "json"] as Mode[]).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={`px-4 py-2 text-sm ${
-                    mode === m ? "bg-focus text-paper" : "bg-surface text-slate-soft"
-                  }`}
-                >
-                  {m === "text" ? "Texto" : "JSON"}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-slate-soft">Máximo de cards</label>
-            <input
-              type="number"
-              min={1}
-              max={100}
-              value={maxCards}
-              onChange={(e) => setMaxCards(Number(e.target.value))}
-              className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-            />
-          </div>
+        {/* Máximo de cards */}
+        <div>
+          <label className="mb-1 block text-sm text-slate-soft">Máximo de cards</label>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={maxCards}
+            onChange={(e) => setMaxCards(Number(e.target.value))}
+            className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+          />
         </div>
 
         {/* Conteúdo */}
@@ -189,6 +172,13 @@ export default function GeneratePage() {
           <label className="mb-1 block text-sm text-slate-soft">
             {mode === "text" ? "Texto de origem" : "JSON de origem"}
           </label>
+          {mode === "json" ? (
+            <p className="mb-1 text-2xs text-slate-muted">
+              Formato para colar uma lista de perguntas e respostas já estruturada
+              (exportada de outra ferramenta). Se não souber o que é isso, use o modo
+              texto normal.
+            </p>
+          ) : null}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -201,7 +191,16 @@ export default function GeneratePage() {
             }
             className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 font-mono text-sm text-paper outline-none focus:border-focus"
           />
-          <p className="mt-1 text-2xs text-slate-muted">{content.length}/50000</p>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <p className="text-2xs text-slate-muted">{content.length}/50000</p>
+            <button
+              type="button"
+              onClick={() => setMode(mode === "text" ? "json" : "text")}
+              className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+            >
+              {mode === "text" ? "Colar uma lista já pronta (avançado)" : "‹ Voltar para texto"}
+            </button>
+          </div>
         </div>
 
         {error ? (
@@ -218,15 +217,29 @@ export default function GeneratePage() {
           </p>
         ) : null}
 
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={busy}
-          className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
-        >
-          <IconWand className="h-[18px] w-[18px]" />
-          {busy ? "Gerando..." : "Gerar cards"}
-        </button>
+        <div>
+          <p className={`mb-2 text-2xs ${balance === 0 ? "text-warn" : "text-slate-muted"}`}>
+            Essa geração usa 1 crédito
+            {balance !== null ? ` · você tem ${balance} ${balance === 1 ? "crédito" : "créditos"}` : ""}
+            {balance === 0 ? (
+              <>
+                {" "}
+                <Link to="/planos" className="underline underline-offset-2">
+                  Ver planos
+                </Link>
+              </>
+            ) : null}
+          </p>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={busy}
+            className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+          >
+            <IconWand className="h-[18px] w-[18px]" />
+            {busy ? "Gerando..." : "Gerar cards"}
+          </button>
+        </div>
       </div>
 
       {/* Resultado */}
