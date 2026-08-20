@@ -97,11 +97,27 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(8px) scale(0.98)" },
           to: { opacity: "1", transform: "translateY(0) scale(1)" },
         },
+        // Onda de brilho da esquerda para a direita, sem piscar: o bloco
+        // mantem opacidade constante e so a faixa clara viaja por cima.
+        //
+        // Os numeros parecem invertidos de proposito: com background-size
+        // maior que a caixa, a porcentagem de background-position e calculada
+        // sobre (largura_da_caixa - largura_da_imagem), que e negativa. Logo
+        // porcentagem MAIOR desloca a imagem para a ESQUERDA. Comecar em 250%
+        // (faixa fora, a esquerda) e terminar em -150% (fora, a direita) e o
+        // que faz a onda correr da esquerda para a direita -- conferido
+        // medindo a coluna mais clara quadro a quadro.
+        shimmer: {
+          from: { backgroundPosition: "250% 0" },
+          to: { backgroundPosition: "-150% 0" },
+        },
       },
       animation: {
         "fade-in": "fade-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both",
         "rise-in": "rise-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both",
         "toast-in": "toast-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        // Lento e constante: linear para nao acelerar/frear no meio do curso.
+        shimmer: "shimmer 2.4s linear infinite",
       },
     },
   },

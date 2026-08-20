@@ -1,9 +1,10 @@
 /**
  * Página de planos (créditos). Pública: visitantes veem preços, usuários
- * logados podem solicitar -- um admin aprova em /admin até o gateway de
- * pagamento real (Stripe ou similar) ser conectado com as chaves do dono.
+ * logados compram via Mercado Pago (Checkout Pro). O pedido manual continua
+ * disponível como reserva -- um admin aprova em /admin.
  */
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
 import { Skeleton } from "@/components/Skeleton";
@@ -12,6 +13,7 @@ import { useToast } from "@/components/Toast";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { usePlans } from "./usePlans";
 import { useCredits } from "./useCredits";
+import { startCheckout } from "./startCheckout";
 
 function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -22,6 +24,33 @@ export default function PlansPage() {
   const { balance } = useCredits();
   const { plans, requests, loading, requestPlan } = usePlans();
   const { notify } = useToast();
+  const [searchParams] = useSearchParams();
+  const [buyingId, setBuyingId] = useState<string | null>(null);
+
+  // Retorno do Mercado Pago. Quem credita e o webhook, nao esta navegacao --
+  // por isso a mensagem de sucesso fala em "confirmando", sem prometer saldo.
+  const paymentStatus = searchParams.get("pagamento");
+  useEffect(() => {
+    if (!paymentStatus) return;
+    if (paymentStatus === "approved") {
+      notify("Pagamento recebido. Assim que o Mercado Pago confirmar, seus créditos entram.", "success");
+    } else if (paymentStatus === "pending") {
+      notify("Pagamento pendente. Os créditos entram quando for confirmado.", "info");
+    } else if (paymentStatus === "failure") {
+      notify("O pagamento não foi concluído. Nada foi cobrado.", "error");
+    }
+  }, [paymentStatus, notify]);
+
+  async function handleBuy(planId: string) {
+    setBuyingId(planId);
+    try {
+      const { checkoutUrl } = await startCheckout(planId);
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      setBuyingId(null);
+      notify((err as Error).message ?? "Não foi possível abrir o checkout.", "error");
+    }
+  }
 
   async function handleRequest(planId: string) {
     const ok = await requestPlan(planId);
@@ -109,18 +138,31 @@ export default function PlansPage() {
                       >
                         Entrar para comprar
                       </Link>
-                    ) : pending ? (
-                      <p className="rounded-sm border border-focus/40 bg-focus/10 py-2.5 text-center text-2xs text-focus-soft">
-                        Pedido enviado, aguardando aprovacao
-                      </p>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => void handleRequest(plan.id)}
-                        className="w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
-                      >
-                        Solicitar
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          disabled={buyingId !== null}
+                          onClick={() => void handleBuy(plan.id)}
+                          className="w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                        >
+                          {buyingId === plan.id ? "Abrindo checkout..." : "Comprar"}
+                        </button>
+                        <p className="mt-2 text-center text-2xs text-slate-muted">Pix ou cartão</p>
+                        {pending ? (
+                          <p className="mt-2 text-center text-2xs text-focus-soft">
+                            Você já tem um pedido manual aguardando aprovação.
+                          </p>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void handleRequest(plan.id)}
+                            className="mt-2 block w-full text-center text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+                          >
+                            Pedir aprovação manual
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -130,8 +172,9 @@ export default function PlansPage() {
         )}
 
         <p className="mt-6 text-2xs text-slate-muted">
-          Pagamento automático chega em breve. Por enquanto, seu pedido e revisado
-          manualmente e os créditos são liberados na sua conta assim que aprovado.
+          Pagamento por Pix ou cartão via Mercado Pago. Os créditos entram na sua conta
+          assim que o pagamento é confirmado — em geral na hora. Se preferir, você ainda
+          pode pedir aprovação manual e um administrador libera os créditos.
         </p>
       </section>
     </main>

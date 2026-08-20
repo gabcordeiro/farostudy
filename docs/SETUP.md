@@ -113,15 +113,53 @@ consome 1 credito (`GENERATION_COST` no topo de cada `index.ts`). Se o Gemini
 falhar depois de ja ter cobrado, a function estorna automaticamente via
 `refund_credits`.
 
-**Pagamento real**: por enquanto o fluxo e manual -- o usuario "solicita" um
-plano em `/planos`, o pedido aparece em `/admin` > Solicitacoes, e aprovar
-credita os pontos automaticamente. Para automatizar com um gateway de
-pagamento de verdade (Stripe ou similar), sera preciso:
-1. Criar a conta no gateway e pegar as chaves (nunca vao para o frontend).
-2. Nova edge function `create-checkout-session` (recebe planId, cria uma
-   sessao de checkout) e `payment-webhook` (recebe a confirmacao do gateway
-   e chama `grant_credits` com a `service_role` key).
-3. Trocar o botao "Solicitar" em `/planos` para redirecionar ao checkout.
+## 9. Pagamento via Mercado Pago (Checkout Pro)
 
-Quando tiver as chaves, e um pedido rapido de implementar -- o schema de
-creditos ja esta pronto para isso.
+O codigo esta pronto e publicado. Falta so a configuracao, que depende de
+credenciais que so o dono da conta tem.
+
+**Fluxo**: `/planos` > botao "Comprar" > edge function `create-payment` cria a
+cobranca e devolve a URL do Checkout Pro > o usuario paga (Pix ou cartao) >
+o Mercado Pago chama a edge function `mercadopago-webhook` > ela confere o
+pagamento na API e chama `settle_mercadopago_payment`, que lanca os creditos.
+
+O retorno do navegador (`/planos?pagamento=approved`) e so navegacao: quem
+credita e o webhook. Por isso a mensagem na tela fala em "confirmando", sem
+prometer saldo que ainda nao entrou.
+
+**Passo a passo:**
+
+1. No painel do Mercado Pago (Suas integracoes > sua aplicacao), copie o
+   **Access Token**. Comece pelo de **teste**; troque pelo de producao depois
+   de validar com os cartoes de teste.
+2. Em Notificacoes > **Webhooks**, cadastre a URL abaixo e assine o evento
+   `payment`. O painel gera uma **chave secreta** -- copie tambem.
+   ```
+   https://<project-ref>.supabase.co/functions/v1/mercadopago-webhook
+   ```
+3. No painel do Supabase, em Edge Functions > Secrets, defina:
+   ```
+   MERCADOPAGO_ACCESS_TOKEN=<access token>
+   MERCADOPAGO_WEBHOOK_SECRET=<chave secreta do webhook>
+   APP_ORIGIN=https://farostudy.vercel.app
+   ```
+   `SUPABASE_SERVICE_ROLE_KEY` ja e injetada automaticamente nas functions.
+4. Teste com as **contas e cartoes de teste** do painel. Confira em
+   `/admin` ou direto na tabela `payments` que a linha ficou `approved` e que
+   entrou uma (uma so) linha em `credit_ledger`.
+
+**Por que uma RPC nova em vez de `grant_credits`**: `grant_credits` exige
+`is_admin(auth.uid())`, e o webhook roda com service-role, onde `auth.uid()`
+e NULL. Dai a `settle_mercadopago_payment` (migracao `0007_payments.sql`),
+que tambem e **idempotente** -- o Mercado Pago reenvia a mesma notificacao
+varias vezes, e sem isso o cliente ganharia credito repetido a cada reenvio.
+A trava e dupla: a funcao sai cedo se o pagamento ja estiver aprovado, e ha
+um indice unico em `(provider, provider_payment_id)` no banco.
+
+**Fluxo manual continua vivo** como reserva: o link "Pedir aprovacao manual"
+em `/planos` cria um pedido que aparece em `/admin` > Solicitacoes. Serve
+para cortesia, correcao de erro ou se o gateway estiver fora do ar.
+
+**Pendencia que nao e de codigo**: para cobrar de forma regular no Brasil e
+emitir nota fiscal de servico, e preciso CNPJ (um MEI ja resolve). Sem isso,
+mesmo com o gateway funcionando, a receita fica sem nota.
