@@ -34,6 +34,7 @@ export default function StudyPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [done, setDone] = useState({ reviewed: 0, correct: 0 });
+  const [showHints, setShowHints] = useState(false);
 
   const current: StudyCardRow | undefined = queue[index];
 
@@ -187,9 +188,18 @@ export default function StudyPage() {
               >
                 Mostrar resposta
               </button>
-              <p className="hidden text-center text-2xs text-slate-muted sm:block">
-                Dica: aperte <kbd className="font-mono text-slate-soft">espaço</kbd> para revelar
-              </p>
+              <button
+                type="button"
+                onClick={() => setShowHints((v) => !v)}
+                className="block w-full text-center text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+              >
+                Atalhos de teclado
+              </button>
+              {showHints ? (
+                <p className="text-center text-2xs text-slate-muted">
+                  Dica: aperte <kbd className="font-mono text-slate-soft">espaço</kbd> para revelar
+                </p>
+              ) : null}
             </>
           ) : (
             <>
@@ -207,10 +217,19 @@ export default function StudyPage() {
                   </button>
                 ))}
               </div>
-              <p className="hidden text-center text-2xs text-slate-muted sm:block">
-                Dica: use as teclas <kbd className="font-mono text-slate-soft">1</kbd> a{" "}
-                <kbd className="font-mono text-slate-soft">4</kbd> para avaliar
-              </p>
+              <button
+                type="button"
+                onClick={() => setShowHints((v) => !v)}
+                className="block w-full text-center text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+              >
+                Atalhos de teclado
+              </button>
+              {showHints ? (
+                <p className="text-center text-2xs text-slate-muted">
+                  Dica: use as teclas <kbd className="font-mono text-slate-soft">1</kbd> a{" "}
+                  <kbd className="font-mono text-slate-soft">4</kbd> para avaliar
+                </p>
+              ) : null}
             </>
           )}
         </div>
