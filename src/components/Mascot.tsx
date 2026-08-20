@@ -2,13 +2,15 @@
  * Mascote "Faro" (Basset Hound geometrico).
  * Renderizado em pontos estrategicos: login, empty states, loading e logo.
  * SEMPRE com alt text (checklist produção #9).
- *
- * Quando o PNG transparente final estiver disponível, coloque-o em
- * `public/faro-mascot.png` e troque DEFAULT_SRC. O SVG placeholder já renderiza.
  */
 type MascotMood = "default" | "search" | "sleepy" | "cheer";
 
-const DEFAULT_SRC = "/faro-mascot.svg"; // trocar por "/faro-mascot.png" com o asset final
+const MOOD_SRC: Record<MascotMood, string> = {
+  default: "/mascot-default.png",
+  search: "/mascot-search.png",
+  sleepy: "/mascot-sleepy.png",
+  cheer: "/mascot-cheer.png",
+};
 
 const SIZES = { sm: 40, md: 96, lg: 160, xl: 220 } as const;
 
@@ -31,7 +33,7 @@ export function Mascot({ size = "md", mood = "default", className, alt }: Mascot
   const px = SIZES[size];
   return (
     <img
-      src={DEFAULT_SRC}
+      src={MOOD_SRC[mood]}
       width={px}
       height={px}
       loading="lazy"

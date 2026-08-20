@@ -12,7 +12,7 @@ export default function NotFound() {
         path="/404"
         noindex
       />
-      <Mascot size="xl" mood="search" alt="Faro farejando uma página que não existe" />
+      <Mascot size="xl" mood="sleepy" alt="Faro triste, a página que você procura não existe" />
       <div className="space-y-2">
         <p className="font-mono text-sm text-action">404</p>
         <h1 className="font-display text-3xl text-paper">O Faro não achou essa trilha</h1>

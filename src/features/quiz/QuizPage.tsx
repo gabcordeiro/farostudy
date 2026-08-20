@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
+import { Mascot } from "@/components/Mascot";
 import { IconQuiz } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
@@ -287,6 +288,10 @@ export default function QuizPage() {
 
       {busy ? (
         <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Mascot mood="cheer" size="sm" alt="Faro animado, preparando o quiz" />
+            <p className="text-sm text-slate-muted">O Faro está preparando as perguntas...</p>
+          </div>
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />

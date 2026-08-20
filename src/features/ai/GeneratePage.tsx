@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
+import { Mascot } from "@/components/Mascot";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconRoute, IconWand } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -244,10 +245,16 @@ export default function GeneratePage() {
 
       {/* Resultado */}
       {busy ? (
-        <div className="mt-6 space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
+        <div className="mt-6 space-y-3">
+          <div className="flex items-center gap-3">
+            <Mascot mood="cheer" size="sm" alt="Faro animado, gerando seus cards" />
+            <p className="text-sm text-slate-muted">O Faro está montando seus cards...</p>
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
         </div>
       ) : null}
 
