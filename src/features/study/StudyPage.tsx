@@ -171,7 +171,7 @@ export default function StudyPage() {
         </div>
       ) : current ? (
         <div className="space-y-4">
-          <StudyCard card={current} showBack={showBack} />
+          <StudyCard key={current.id} card={current} showBack={showBack} />
 
           {saveError ? (
             <p role="alert" className="text-2xs text-bad">

@@ -10,7 +10,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { Mascot } from "@/components/Mascot";
-import { IconQuiz } from "@/components/icons";
+import { IconCheck, IconClose, IconQuiz } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
 import { renderCardHtml } from "@/lib/sanitize";
@@ -21,6 +21,8 @@ import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "@/features/ai/useDecks";
 import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
 import { useQuizSets } from "./useQuizSets";
+
+const LETTERS = ["A", "B", "C", "D"];
 
 interface DisplayItem extends QuizItem {
   deckId: string;
@@ -300,13 +302,30 @@ export default function QuizPage() {
 
       {current ? (
         <div className="space-y-4">
-          <p className="text-2xs uppercase tracking-wider text-slate-muted">{progress}</p>
-          <article className="rounded-md border border-hairline bg-elevated p-5">
+          {/* Progresso + placar corrente */}
+          <div>
+            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+              <p className="text-2xs uppercase tracking-wider text-slate-muted">{progress}</p>
+              <p className="text-2xs text-slate-muted">
+                Placar <span className="font-mono text-paper">{score.correct}/{score.total}</span>
+              </p>
+            </div>
+            <div className="h-1 w-full overflow-hidden rounded-sm bg-surface">
+              <div
+                className="h-full bg-focus transition-all duration-300"
+                style={{ width: `${((index + (answer !== null ? 1 : 0)) / items.length) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <article className="rounded-md border border-hairline bg-elevated px-5 py-6">
+            <p className="mb-2 text-2xs uppercase tracking-wider text-focus-soft">Pergunta</p>
             <div
-              className="text-base leading-relaxed text-paper"
+              className="text-xl leading-relaxed text-paper"
               dangerouslySetInnerHTML={{ __html: renderCardHtml(current.front) }}
             />
           </article>
+
           <ul className="space-y-2">
             {current.shuffled.map((ch, i) => {
               const chosen = answer === i;
@@ -319,15 +338,32 @@ export default function QuizPage() {
                   : chosen
                     ? "border-bad bg-bad/10"
                     : "border-hairline opacity-60";
+              const badgeTone = !revealed
+                ? "border-hairline text-slate-muted"
+                : isRight
+                  ? "border-good text-good"
+                  : chosen
+                    ? "border-bad text-bad"
+                    : "border-hairline text-slate-muted";
               return (
                 <li key={i}>
                   <button
                     type="button"
                     disabled={revealed}
                     onClick={() => void handleAnswer(i)}
-                    className={`w-full rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper ${tone}`}
+                    className={`flex w-full items-center gap-3 rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper transition-colors duration-150 ${tone}`}
                   >
-                    {ch.text}
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border font-mono text-2xs ${badgeTone}`}
+                    >
+                      {LETTERS[i]}
+                    </span>
+                    <span className="flex-1">{ch.text}</span>
+                    {revealed && isRight ? (
+                      <IconCheck className="h-4 w-4 shrink-0 text-good" title="Resposta correta" />
+                    ) : revealed && chosen ? (
+                      <IconClose className="h-4 w-4 shrink-0 text-bad" title="Resposta errada" />
+                    ) : null}
                   </button>
                 </li>
               );
@@ -335,10 +371,7 @@ export default function QuizPage() {
           </ul>
 
           {answer !== null ? (
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-2xs text-slate-muted">
-                Placar: {score.correct}/{score.total}
-              </p>
+            <div className="flex items-center justify-end gap-3">
               {isLast ? (
                 <Link
                   to="/painel"

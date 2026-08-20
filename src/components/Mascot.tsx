@@ -40,7 +40,10 @@ export function Mascot({ size = "md", mood = "default", className, alt }: Mascot
       decoding="async"
       alt={alt ?? MOOD_ALT[mood]}
       className={className}
-      style={{ imageRendering: "auto" }}
+      // As artes sao 512x512 com o conteudo ocupando ~94% do canvas, entao
+      // todos os moods pesam igual na tela. O tamanho vai no style porque o
+      // preflight do Tailwind aplica `height:auto` e anularia o atributo.
+      style={{ width: px, height: px, objectFit: "contain" }}
     />
   );
 }

@@ -40,11 +40,16 @@ function clampCard(c: GeneratedCard): GeneratedCard | null {
 }
 
 async function callGemini(apiKey: string, content: string, maxCards: number, mode: string) {
-  const instruction = `Voce e um gerador de flashcards para estudo (concursos e idiomas).
-A partir do ${mode === "json" ? "JSON" : "texto"} abaixo, produza ate ${maxCards} flashcards
-objetivos, sem repeticao, com pergunta clara na frente e resposta concisa no verso.
+  const instruction = `Você é um gerador de flashcards para estudo (concursos e idiomas).
+A partir do ${mode === "json" ? "JSON" : "texto"} abaixo, produza até ${maxCards} flashcards
+objetivos, sem repetição, com pergunta clara na frente e resposta concisa no verso.
+
+IDIOMA: escreva em português do Brasil com ortografia e acentuação corretas.
+Use acentos e cedilha sempre que a palavra exigir (é, á, ã, ó, ê, ç, ú, í).
+Nunca escreva "e" no lugar de "é", nem omita acentos para simplificar.
+
 Responda SOMENTE com um array JSON de objetos {front, back, hint, tags}.
-Conteudo:
+Conteúdo:
 """${content}"""`;
 
   const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {

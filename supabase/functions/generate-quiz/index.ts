@@ -37,10 +37,13 @@ async function callGemini(apiKey: string, cards: CardRow[]): Promise<Record<stri
   const list = cards
     .map((c) => `${c.id} | Frente: ${c.front.slice(0, 400)} | Resposta: ${c.back.slice(0, 400)}`)
     .join("\n");
-  const instruction = `Para cada card abaixo, gere 4 alternativas de multipla escolha:
+  const instruction = `Para cada card abaixo, gere 4 alternativas de múltipla escolha:
 - Exatamente 1 alternativa DEVE ser correta (isCorrect: true).
-- As demais devem ser plausiveis mas incorretas.
-- Nao repita a resposta literalmente entre as incorretas.
+- As demais devem ser plausíveis mas incorretas.
+- Não repita a resposta literalmente entre as incorretas.
+- IDIOMA: escreva em português do Brasil com ortografia e acentuação corretas.
+  Use acentos e cedilha sempre que a palavra exigir (é, á, ã, ó, ê, ç, ú, í).
+  Nunca escreva "e" no lugar de "é", nem omita acentos para simplificar.
 - Retorne JSON exato: {"items":[{"cardId":"...","choices":[{"text":"...","isCorrect":true|false}]}]}.
 
 Cards:

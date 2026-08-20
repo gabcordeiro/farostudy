@@ -2,7 +2,7 @@
  * Componente puro do card em revisão. Renderiza frente/verso com escape
  * anti-XSS e oferece TTS (Web Speech API) para o texto visível.
  */
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconAudio } from "@/components/icons";
 import type { StudyCardRow } from "./useStudyQueue";
@@ -25,6 +25,9 @@ function speak(text: string, lang: string) {
 export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
   const readFront = useCallback(() => speak(card.front, lang), [card.front, lang]);
   const readBack = useCallback(() => speak(card.back, lang), [card.back, lang]);
+  // A dica so aparece se o usuario pedir -- mostrar de graca mata o proposito.
+  // O estado zera a cada card porque StudyPage monta com key={card.id}.
+  const [showHint, setShowHint] = useState(false);
 
   return (
     <article className="rounded-md border border-hairline bg-elevated">
@@ -54,7 +57,17 @@ export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
         </div>
 
         {card.hint && !showBack ? (
-          <p className="mt-4 text-sm italic text-slate-muted">Dica: {card.hint}</p>
+          showHint ? (
+            <p className="mt-4 text-sm italic text-slate-muted">Dica: {card.hint}</p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowHint(true)}
+              className="mt-4 text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+            >
+              Ver dica
+            </button>
+          )
         ) : null}
 
         {showBack ? (
