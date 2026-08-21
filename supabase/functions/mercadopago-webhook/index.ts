@@ -36,13 +36,20 @@ function toHex(buf: ArrayBuffer): string {
  * Formato: `ts=1704908010,v1=<hmac hex>`; o manifest assinado e
  * `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`.
  */
+interface SignatureCheck {
+  valid: boolean;
+  manifest: string;
+  computed: string;
+  received: string;
+}
+
 async function signatureIsValid(
   secret: string,
   signatureHeader: string | null,
   requestId: string | null,
   dataId: string,
-): Promise<boolean> {
-  if (!signatureHeader) return false;
+): Promise<SignatureCheck> {
+  if (!signatureHeader) return { valid: false, manifest: "", computed: "", received: "" };
 
   let ts = "";
   let v1 = "";
@@ -53,7 +60,7 @@ async function signatureIsValid(
     if (key === "ts") ts = value ?? "";
     if (key === "v1") v1 = value ?? "";
   }
-  if (!ts || !v1) return false;
+  if (!ts || !v1) return { valid: false, manifest: "", computed: "", received: v1 };
 
   const manifest = `id:${dataId};request-id:${requestId ?? ""};ts:${ts};`;
   const key = await crypto.subtle.importKey(
@@ -64,7 +71,8 @@ async function signatureIsValid(
     ["sign"],
   );
   const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(manifest));
-  return safeEqual(toHex(mac), v1.toLowerCase());
+  const computed = toHex(mac);
+  return { valid: safeEqual(computed, v1.toLowerCase()), manifest, computed, received: v1.toLowerCase() };
 }
 
 Deno.serve(async (req) => {
@@ -106,18 +114,22 @@ Deno.serve(async (req) => {
 
   const signatureHeader = req.headers.get("x-signature");
   const requestId = req.headers.get("x-request-id");
-  const valid = await signatureIsValid(webhookSecret, signatureHeader, requestId, dataId);
-  if (!valid) {
+  const check = await signatureIsValid(webhookSecret, signatureHeader, requestId, dataId);
+  if (!check.valid) {
     // Log temporario para diagnosticar uma assinatura que falha só na
     // notificacao real (o "Simular notificacao" do painel valida OK) --
-    // sem logar o segredo, só o que ajuda a comparar contra o manifest
-    // esperado. Remover depois de confirmar a causa.
+    // sem logar o segredo, só o manifest, o hash que a gente calculou e o
+    // que o Mercado Pago mandou, pra comparar. Tambem loga todos os headers
+    // recebidos, pra descartar algum proxy/gateway reescrevendo x-request-id
+    // no caminho. Remover depois de confirmar a causa.
     console.error("Assinatura invalida", {
-      dataId,
-      kind,
+      manifest: check.manifest,
+      computedHex: check.computed,
+      receivedHex: check.received,
       signatureHeader,
       requestId,
       queryString: url.search,
+      allHeaders: Object.fromEntries(req.headers.entries()),
     });
     return json({ error: "Assinatura invalida" }, 401);
   }
