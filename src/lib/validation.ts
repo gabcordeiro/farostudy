@@ -93,3 +93,22 @@ export const authEmailSchema = z.object({
     .min(8, "Mínimo de 8 caracteres")
     .max(72, "Máximo de 72 caracteres"),
 });
+
+export const authSignupSchema = z
+  .object({
+    fullName: z.string().trim().min(1, "Nome obrigatório").max(80),
+    email: z.string().trim().toLowerCase().email("E-mail inválido"),
+    password: z
+      .string()
+      .min(8, "Mínimo de 8 caracteres")
+      .max(72, "Máximo de 72 caracteres"),
+    confirmPassword: z.string().min(1, "Confirme sua senha"),
+    tosAccepted: z
+      .boolean()
+      .refine((v) => v, "É preciso aceitar os Termos e a Política de Privacidade"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
+export type AuthSignupInput = z.infer<typeof authSignupSchema>;

@@ -1,16 +1,31 @@
 /**
  * Login / Cadastro (Supabase Auth): email+senha e Google OAuth.
  * Mascote ao lado do formulario (regra de UI #1). Validação Zod + estados de erro.
+ * Cadastro pede nome completo, confirmação de senha, foto (opcional) e
+ * consentimento explícito de Termos/Privacidade (LGPD) -- ver
+ * handle_new_user() em supabase/migrations/0009_signup_consent.sql, que
+ * grava accepted_tos_at/accepted_privacy_at a partir do metadata do signUp.
  */
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { authEmailSchema } from "@/lib/validation";
+import { authEmailSchema, authSignupSchema, validateAvatarFile } from "@/lib/validation";
 import { useAuth } from "./AuthProvider";
 import { Mascot } from "@/components/Mascot";
+import { Avatar } from "@/components/Avatar";
+import { IconUpload } from "@/components/icons";
 
 type Mode = "signin" | "signup";
 type LocationState = { from?: string };
+
+interface FieldErrors {
+  email?: string;
+  password?: string;
+  fullName?: string;
+  confirmPassword?: string;
+  tosAccepted?: string;
+  avatar?: string;
+}
 
 function GoogleMark() {
   return (
@@ -23,6 +38,21 @@ function GoogleMark() {
   );
 }
 
+/** Best-effort: a conta já existe nesse ponto, então uma falha aqui não bloqueia o cadastro. */
+async function uploadSignupAvatar(userId: string, file: File) {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
+  const path = `${userId}/avatar-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return;
+  const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+  await supabase
+    .from("profiles")
+    .update({ avatar_url: `${pub.publicUrl}?t=${Date.now()}` })
+    .eq("id", userId);
+}
+
 export function LoginPage() {
   const { session, loading } = useAuth();
   const location = useLocation();
@@ -31,55 +61,136 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fullName, setFullName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [tosAccepted, setTosAccepted] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Preview local do arquivo escolhido -- nunca sobe pro Storage antes do
+  // envio (a policy do bucket exige uma sessão autenticada que só existe
+  // depois do signUp, e nem sempre logo em seguida -- ver handleSubmit).
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(avatarFile);
+    setAvatarPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [avatarFile]);
+
   if (!loading && session) return <Navigate to={from} replace />;
 
   const redirectTo = `${window.location.origin}/auth/callback`;
+
+  function switchMode(next: Mode) {
+    setMode(next);
+    setFormError(null);
+    setNotice(null);
+    setFieldErrors({});
+  }
+
+  function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite re-selecionar o mesmo arquivo
+    if (!file) return;
+    const check = validateAvatarFile(file);
+    if (!check.ok) {
+      setFieldErrors((prev) => ({ ...prev, avatar: check.error }));
+      return;
+    }
+    setFieldErrors((prev) => ({ ...prev, avatar: undefined }));
+    setAvatarFile(file);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
     setNotice(null);
 
-    const parsed = authEmailSchema.safeParse({ email, password });
+    if (mode === "signin") {
+      const parsed = authEmailSchema.safeParse({ email, password });
+      if (!parsed.success) {
+        const errs: FieldErrors = {};
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0];
+          if (key === "email") errs.email = issue.message;
+          if (key === "password") errs.password = issue.message;
+        }
+        setFieldErrors(errs);
+        return;
+      }
+      setFieldErrors({});
+      setBusy(true);
+      try {
+        const { error } = await supabase.auth.signInWithPassword(parsed.data);
+        if (error) throw error;
+      } catch {
+        // Mensagem generica para não facilitar enumeracao de contas.
+        setFormError("E-mail ou senha inválidos.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    const parsed = authSignupSchema.safeParse({
+      fullName,
+      email,
+      password,
+      confirmPassword,
+      tosAccepted,
+    });
     if (!parsed.success) {
-      const errs: { email?: string; password?: string } = {};
+      const errs: FieldErrors = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0];
         if (key === "email") errs.email = issue.message;
         if (key === "password") errs.password = issue.message;
+        if (key === "confirmPassword") errs.confirmPassword = issue.message;
+        if (key === "fullName") errs.fullName = issue.message;
+        if (key === "tosAccepted") errs.tosAccepted = issue.message;
       }
       setFieldErrors(errs);
       return;
     }
     setFieldErrors({});
     setBusy(true);
-
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword(parsed.data);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          ...parsed.data,
-          options: { emailRedirectTo: redirectTo },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          setNotice("Enviamos um e-mail de confirmação. Verifique sua caixa de entrada.");
-        }
+      const { data, error } = await supabase.auth.signUp({
+        email: parsed.data.email,
+        password: parsed.data.password,
+        options: {
+          emailRedirectTo: redirectTo,
+          // handle_new_user() lê esse metadata pra gravar nome e consentimento
+          // já na criação do profile (0009_signup_consent.sql).
+          data: { name: parsed.data.fullName, tos_accepted: true },
+        },
+      });
+      if (error) throw error;
+
+      // Só dá pra subir a foto agora se já existe sessão (confirmação de
+      // e-mail desligada no projeto) -- sem isso não há auth.uid() pra
+      // policy do bucket `avatars` aceitar o upload. Com confirmação
+      // exigida, o usuário adiciona a foto depois em Perfil (fluxo pronto).
+      if (data.session && data.user && avatarFile) {
+        await uploadSignupAvatar(data.user.id, avatarFile);
+      }
+
+      if (!data.session) {
+        setNotice(
+          avatarFile
+            ? "Enviamos um e-mail de confirmação. Verifique sua caixa de entrada. Você poderá adicionar sua foto depois, em Perfil."
+            : "Enviamos um e-mail de confirmação. Verifique sua caixa de entrada.",
+        );
       }
     } catch (err) {
-      // Mensagem generica para não facilitar enumeracao de contas.
-      setFormError(
-        mode === "signin"
-          ? "E-mail ou senha inválidos."
-          : (err as Error).message ?? "Não foi possível criar a conta.",
-      );
+      setFormError((err as Error).message ?? "Não foi possível criar a conta.");
     } finally {
       setBusy(false);
     }
@@ -162,6 +273,53 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {mode === "signup" ? (
+              <div>
+                <label htmlFor="fullName" className="mb-1 block text-sm text-slate-soft">
+                  Nome completo
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  autoComplete="name"
+                  maxLength={80}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  aria-invalid={!!fieldErrors.fullName}
+                  className={`w-full rounded-sm border bg-ink-800 px-3 py-2 text-sm text-paper outline-none focus:border-focus ${
+                    fieldErrors.fullName ? "border-bad" : "border-slate-border"
+                  }`}
+                />
+                {fieldErrors.fullName ? (
+                  <p className="mt-1 text-2xs text-bad">{fieldErrors.fullName}</p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {mode === "signup" ? (
+              <div>
+                <label className="mb-1 block text-sm text-slate-soft">
+                  Foto de perfil <span className="text-slate-muted">(opcional)</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <Avatar size="md" url={avatarPreviewUrl} name={fullName} />
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper hover:border-slate-muted">
+                    <IconUpload className="h-4 w-4" />
+                    {avatarFile ? "Trocar" : "Escolher"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={handleAvatarChange}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-2xs text-slate-muted">
+                  {fieldErrors.avatar ?? "PNG, JPG ou WebP, até 2 MB. Pode adicionar depois também."}
+                </p>
+              </div>
+            ) : null}
+
             <div>
               <label htmlFor="email" className="mb-1 block text-sm text-slate-soft">
                 E-mail
@@ -202,6 +360,56 @@ export function LoginPage() {
               ) : null}
             </div>
 
+            {mode === "signup" ? (
+              <div>
+                <label htmlFor="confirmPassword" className="mb-1 block text-sm text-slate-soft">
+                  Confirmar senha
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  aria-invalid={!!fieldErrors.confirmPassword}
+                  className={`w-full rounded-sm border bg-ink-800 px-3 py-2 text-sm text-paper outline-none focus:border-focus ${
+                    fieldErrors.confirmPassword ? "border-bad" : "border-slate-border"
+                  }`}
+                />
+                {fieldErrors.confirmPassword ? (
+                  <p className="mt-1 text-2xs text-bad">{fieldErrors.confirmPassword}</p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {mode === "signup" ? (
+              <div>
+                <label className="flex items-start gap-2 text-2xs text-slate-muted">
+                  <input
+                    type="checkbox"
+                    checked={tosAccepted}
+                    onChange={(e) => setTosAccepted(e.target.checked)}
+                    aria-invalid={!!fieldErrors.tosAccepted}
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-slate-border bg-ink-800 text-action focus:ring-focus"
+                  />
+                  <span>
+                    Li e aceito os{" "}
+                    <Link to="/termos" className="underline underline-offset-2">
+                      Termos
+                    </Link>{" "}
+                    e a{" "}
+                    <Link to="/privacidade" className="underline underline-offset-2">
+                      Política de Privacidade
+                    </Link>
+                    .
+                  </span>
+                </label>
+                {fieldErrors.tosAccepted ? (
+                  <p className="mt-1 text-2xs text-bad">{fieldErrors.tosAccepted}</p>
+                ) : null}
+              </div>
+            ) : null}
+
             {formError ? (
               <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
                 {formError}
@@ -226,28 +434,26 @@ export function LoginPage() {
             {mode === "signin" ? "Não tem conta?" : "Já tem conta?"}{" "}
             <button
               type="button"
-              onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
-                setFormError(null);
-                setNotice(null);
-              }}
+              onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
               className="text-action underline underline-offset-2"
             >
               {mode === "signin" ? "Criar agora" : "Entrar"}
             </button>
           </p>
 
-          <p className="mt-6 text-2xs leading-relaxed text-slate-muted">
-            Ao continuar você concorda com os{" "}
-            <Link to="/termos" className="underline underline-offset-2">
-              Termos
-            </Link>{" "}
-            e a{" "}
-            <Link to="/privacidade" className="underline underline-offset-2">
-              Política de Privacidade
-            </Link>
-            .
-          </p>
+          {mode === "signin" ? (
+            <p className="mt-6 text-2xs leading-relaxed text-slate-muted">
+              Ao continuar você concorda com os{" "}
+              <Link to="/termos" className="underline underline-offset-2">
+                Termos
+              </Link>{" "}
+              e a{" "}
+              <Link to="/privacidade" className="underline underline-offset-2">
+                Política de Privacidade
+              </Link>
+              .
+            </p>
+          ) : null}
         </div>
       </section>
     </main>
