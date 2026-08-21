@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import type { ReactNode } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { Mascot } from "@/components/Mascot";
@@ -12,6 +11,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { WelcomeTour } from "@/features/help/WelcomeTour";
+import type { AppOutletContext } from "@/lib/appOutletContext";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
@@ -45,30 +45,6 @@ function RouteFallback() {
   );
 }
 
-/** Rota autenticada com layout de app (sidebar + CTA mobile + transição). */
-function AppRoute({ children }: { children: ReactNode }) {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <PageTransition>{children}</PageTransition>
-      </AppLayout>
-    </ProtectedRoute>
-  );
-}
-
-/** Rota autenticada + exige papel admin. */
-function AdminAppRoute({ children }: { children: ReactNode }) {
-  return (
-    <ProtectedRoute>
-      <AdminRoute>
-        <AppLayout>
-          <PageTransition>{children}</PageTransition>
-        </AppLayout>
-      </AdminRoute>
-    </ProtectedRoute>
-  );
-}
-
 /** Cabeçalho enxuto do mobile: so a marca, ja que a navegação foi para o rodapé. */
 function MobileHeader() {
   return (
@@ -79,7 +55,13 @@ function MobileHeader() {
   );
 }
 
-function AppLayout({ children }: { children: ReactNode }) {
+/**
+ * Layout persistente do app autenticado: monta uma vez (via rota-pai com
+ * <Outlet/>) e sobrevive à troca entre /painel, /importar etc. -- diferente
+ * de antes, quando cada rota recriava o layout do zero. Isso é o que permite
+ * o tour de boas-vindas navegar de aba em aba sem perder o próprio estado.
+ */
+function AppLayout() {
   const { profile, loading: profileLoading, update } = useProfile();
   const [tourOpen, setTourOpen] = useState(false);
 
@@ -95,7 +77,11 @@ function AppLayout({ children }: { children: ReactNode }) {
         <Sidebar />
       </div>
       <MobileHeader />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 pb-20 md:pb-0">
+        <PageTransition>
+          <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
+        </PageTransition>
+      </main>
       <MobileNav />
 
       <WelcomeTour
@@ -129,18 +115,24 @@ export default function App() {
           <Route path="/termos" element={<Terms />} />
           <Route path="/obrigado" element={<ThankYou />} />
 
-          {/* App (autenticadas) */}
-          <Route path="/painel" element={<AppRoute><Dashboard /></AppRoute>} />
-          <Route path="/importar" element={<AppRoute><GeneratePage /></AppRoute>} />
-          <Route path="/estudar" element={<AppRoute><StudyPage /></AppRoute>} />
-          <Route path="/quiz" element={<AppRoute><QuizPage /></AppRoute>} />
-          <Route path="/perfil" element={<AppRoute><ProfilePage /></AppRoute>} />
-          <Route path="/ajuda" element={<AppRoute><HelpPage /></AppRoute>} />
-          <Route path="/trilhas" element={<AppRoute><DecksPage /></AppRoute>} />
-          <Route path="/trilhas/:deckId" element={<AppRoute><DeckDetailPage /></AppRoute>} />
+          {/* App (autenticadas). Rota-pai com <Outlet/>: o layout monta uma
+              vez só e sobrevive à troca entre essas abas -- é o que deixa o
+              tour de boas-vindas navegar de página em página sem se perder. */}
+          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path="/painel" element={<Dashboard />} />
+            <Route path="/importar" element={<GeneratePage />} />
+            <Route path="/estudar" element={<StudyPage />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/ajuda" element={<HelpPage />} />
+            <Route path="/trilhas" element={<DecksPage />} />
+            <Route path="/trilhas/:deckId" element={<DeckDetailPage />} />
+          </Route>
 
           {/* Admin */}
-          <Route path="/admin" element={<AdminAppRoute><AdminPage /></AdminAppRoute>} />
+          <Route element={<ProtectedRoute><AdminRoute><AppLayout /></AdminRoute></ProtectedRoute>}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>

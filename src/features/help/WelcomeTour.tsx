@@ -5,6 +5,7 @@
  * Pode ser reaberto a qualquer momento pela página de Ajuda.
  */
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Mascot } from "@/components/Mascot";
 import { TOUR_STEPS } from "./content";
@@ -26,6 +27,13 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
     if (open) setStep(0);
   }, [open]);
 
+  // Cada passo mostra a aba de verdade por trás do modal, em vez de só
+  // descrever ela em texto.
+  useEffect(() => {
+    if (open && current) navigate(current.to);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- so no passo/abertura, nao a cada render do navigate
+  }, [open, step]);
+
   const finish = useCallback(() => {
     onFinish?.();
     onClose();
@@ -43,7 +51,12 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
 
   if (!open || !current) return null;
 
-  return (
+  // Portal pro body: sem isso, o modal renderiza dentro da árvore da página
+  // (que fica embrulhada pela transição de rota, animate-rise-in). Um
+  // transform aplicado por essa animação cria um novo containing block para
+  // "position: fixed" -- o modal deixa de cobrir a tela e vira um retângulo
+  // cinza preso dentro do conteúdo da página, sem o card visível.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -119,6 +132,7 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

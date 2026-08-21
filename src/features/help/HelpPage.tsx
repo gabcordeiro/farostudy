@@ -2,13 +2,12 @@
  * Ajuda: o que é o app, como começar, o que faz cada aba e dúvidas comuns.
  * Também permite reabrir o tour de boas-vindas.
  */
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
 import { IconHelp } from "@/components/icons";
+import { useAppOutletContext } from "@/lib/appOutletContext";
 import { SECTIONS } from "./content";
-import { WelcomeTour } from "./WelcomeTour";
 
 const FIRST_STEPS = [
   {
@@ -65,7 +64,7 @@ const FAQ = [
 ];
 
 export default function HelpPage() {
-  const [tourOpen, setTourOpen] = useState(false);
+  const { openTour } = useAppOutletContext();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -97,7 +96,7 @@ export default function HelpPage() {
           </p>
           <button
             type="button"
-            onClick={() => setTourOpen(true)}
+            onClick={openTour}
             className="mt-4 rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
           >
             Rever o tour de boas-vindas
@@ -181,8 +180,6 @@ export default function HelpPage() {
           ))}
         </div>
       </section>
-
-      <WelcomeTour open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
