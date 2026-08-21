@@ -41,10 +41,10 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-hairline bg-surface md:w-60">
-      <div className="flex items-center gap-2.5 border-b border-hairline px-4 py-4">
+      <Link to="/painel" className="flex items-center gap-2.5 border-b border-hairline px-4 py-4">
         <Mascot size="sm" alt="Faro Study" />
         <span className="font-display text-lg tracking-tight text-paper">Faro Study</span>
-      </div>
+      </Link>
       <nav className="flex-1 p-2" aria-label="Navegação principal">
         <ul className="space-y-1">
           {NAV.map(({ to, label, Icon }) => (

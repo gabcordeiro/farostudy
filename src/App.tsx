@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { Mascot } from "@/components/Mascot";
@@ -48,10 +48,13 @@ function RouteFallback() {
 /** Cabeçalho enxuto do mobile: so a marca, ja que a navegação foi para o rodapé. */
 function MobileHeader() {
   return (
-    <div className="flex items-center gap-2.5 border-b border-hairline bg-surface px-4 py-3 md:hidden">
+    <Link
+      to="/painel"
+      className="flex items-center gap-2.5 border-b border-hairline bg-surface px-4 py-3 md:hidden"
+    >
       <Mascot size="sm" alt="Faro Study" />
       <span className="font-display text-base tracking-tight text-paper">Faro Study</span>
-    </div>
+    </Link>
   );
 }
 
