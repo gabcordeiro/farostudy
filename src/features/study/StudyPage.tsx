@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { schedule, type Rating } from "@/lib/srs";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useDecks } from "@/features/ai/useDecks";
 import { StudyCard } from "./StudyCard";
 import { useStudyQueue, type StudyCardRow } from "./useStudyQueue";
 
@@ -23,9 +24,10 @@ const RATINGS: { rating: Rating; label: string; hint: string; tone: string }[] =
 ];
 
 export default function StudyPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const deckId = searchParams.get("deck") ?? undefined;
   const { user } = useAuth();
+  const { decks } = useDecks();
   const { queue, loading, error, setQueue } = useStudyQueue(deckId);
 
   const [index, setIndex] = useState(0);
@@ -37,6 +39,14 @@ export default function StudyPage() {
   const [showHints, setShowHints] = useState(false);
 
   const current: StudyCardRow | undefined = queue[index];
+
+  // Trocar de trilha reinicia a sessão -- os cards da fila mudam por baixo,
+  // entao o indice e o placar antigos nao fazem mais sentido.
+  useEffect(() => {
+    setIndex(0);
+    setShowBack(false);
+    setDone({ reviewed: 0, correct: 0 });
+  }, [deckId]);
 
   const advance = useCallback(() => {
     setShowBack(false);
@@ -154,6 +164,27 @@ export default function StudyPage() {
           </p>
         </div>
       </header>
+
+      <div className="mb-6">
+        <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">
+          Trilha
+        </label>
+        <select
+          value={deckId ?? ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchParams(value ? { deck: value } : {});
+          }}
+          className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus sm:w-64"
+        >
+          <option value="">Todas as trilhas</option>
+          {decks.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.title}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading ? (
         <div className="space-y-3">

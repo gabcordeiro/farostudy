@@ -3,7 +3,7 @@
  * Cola texto ou JSON, escolhe (ou cria) a trilha e o Faro devolve os flashcards.
  * Upload de .apkg fica como próximo passo (parsing do pacote Anki no backend).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
@@ -35,6 +35,18 @@ export default function GeneratePage() {
   const [needsCredits, setNeedsCredits] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
+
+  // Fechar a aba nao cancela a geracao no servidor (o credito ja foi
+  // debitado e os cards sao inseridos direto pela edge function), mas o
+  // usuario perde a confirmacao na tela. Avisa antes de sair sem querer.
+  useEffect(() => {
+    if (!busy) return;
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [busy]);
 
   function handleDeckSelect(value: string) {
     if (value === NEW_DECK_VALUE) {

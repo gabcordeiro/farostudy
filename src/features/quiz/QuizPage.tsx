@@ -64,6 +64,18 @@ export default function QuizPage() {
   const current = items[index];
   const isLast = current && index === items.length - 1;
 
+  // Fechar a aba durante a geracao nao cancela a chamada no servidor -- o
+  // credito ja foi debitado -- mas o quiz gerado nunca chega a ser salvo
+  // (isso so acontece no retorno da funcao, aqui no cliente). Avisa antes.
+  useEffect(() => {
+    if (!busy) return;
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [busy]);
+
   // Se o usuário trocar de trilha, esconde a fila de perguntas em andamento.
   useEffect(() => {
     setItems([]);

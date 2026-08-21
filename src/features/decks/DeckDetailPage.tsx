@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { IconPencil, IconTrash } from "@/components/icons";
+import { IconDeck, IconPencil, IconTrash } from "@/components/icons";
 import { renderCardHtml } from "@/lib/sanitize";
 import { cardEditSchema, deckTitleSchema } from "@/lib/validation";
 import { useArmedAction } from "@/lib/useArmedAction";
@@ -177,9 +177,20 @@ export default function DeckDetailPage() {
             </button>
           </div>
         )}
-        <p className="mt-1 text-sm text-slate-muted">
-          {cards.length} {cards.length === 1 ? "card" : "cards"}
-        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-slate-muted">
+            {cards.length} {cards.length === 1 ? "card" : "cards"}
+          </p>
+          {cards.length > 0 ? (
+            <Link
+              to={`/estudar?deck=${deckId}`}
+              className="inline-flex items-center gap-1 text-2xs text-action underline underline-offset-2 hover:text-action-deep"
+            >
+              <IconDeck className="h-3.5 w-3.5" />
+              Estudar esta trilha
+            </Link>
+          ) : null}
+        </div>
       </header>
 
       {loading ? (
