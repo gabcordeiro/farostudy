@@ -68,7 +68,11 @@ export function LoginPage() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  // Tela dedicada pós-cadastro (em vez de um aviso dentro do formulário) --
+  // ver o comentário em handleSubmit sobre por que o texto precisa valer
+  // tanto pra e-mail novo quanto pra e-mail que já tem conta.
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [postSignupExtra, setPostSignupExtra] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Preview local do arquivo escolhido -- nunca sobe pro Storage antes do
@@ -91,7 +95,8 @@ export function LoginPage() {
   function switchMode(next: Mode) {
     setMode(next);
     setFormError(null);
-    setNotice(null);
+    setAwaitingConfirmation(false);
+    setPostSignupExtra(null);
     setFieldErrors({});
   }
 
@@ -111,7 +116,6 @@ export function LoginPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    setNotice(null);
 
     if (mode === "signin") {
       const parsed = authEmailSchema.safeParse({ email, password });
@@ -187,14 +191,11 @@ export function LoginPage() {
         // conta existente (ex.: criada antes via Google) -- o Supabase Auth
         // devolve uma resposta sem erro nesse caso, de propósito, pra não dar
         // pista de quais e-mails já têm conta. Como os dois casos são
-        // indistinguíveis aqui, o aviso precisa ser verdadeiro nos dois: não
-        // dá pra prometer "enviamos e-mail" (não é enviado quando a conta já
-        // existe) nem revelar que a conta já existe.
-        setNotice(
-          `Se esse e-mail ainda não tem conta, enviamos uma confirmação -- confira sua caixa de entrada. Se você já tem conta, é só entrar.${
-            avatarFile ? " Sua foto pode ser adicionada depois, em Perfil." : ""
-          }`,
-        );
+        // indistinguíveis aqui, o texto da tela de confirmação precisa valer
+        // pros dois: não dá pra prometer "enviamos e-mail" (não é enviado
+        // quando a conta já existe) nem revelar que a conta já existe.
+        setPostSignupExtra(avatarFile ? "Sua foto pode ser adicionada depois, em Perfil." : null);
+        setAwaitingConfirmation(true);
       }
     } catch (err) {
       setFormError((err as Error).message ?? "Não foi possível criar a conta.");
@@ -242,28 +243,63 @@ export function LoginPage() {
       {/* Formulario */}
       <section className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <Mascot size="sm" alt="Faro Study" />
-            <span className="font-display text-lg text-paper">Faro Study</span>
-          </div>
+          {awaitingConfirmation ? (
+            <div className="flex flex-col items-center gap-5 text-center">
+              <Mascot
+                size="xl"
+                mood="search"
+                alt="Faro de olho na caixa de entrada, esperando a confirmação chegar"
+              />
+              <div className="space-y-2">
+                <h1 className="font-display text-2xl text-paper">Quase lá</h1>
+                <p className="max-w-xs text-sm text-slate-muted">
+                  Se esse e-mail ainda não tem conta, mandamos uma confirmação --
+                  confira sua caixa de entrada (e o spam, por garantia). Se você já
+                  tem conta, é só entrar.
+                </p>
+                {postSignupExtra ? (
+                  <p className="max-w-xs text-2xs text-slate-muted">{postSignupExtra}</p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => switchMode("signin")}
+                className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Já confirmei, entrar
+              </button>
+              <button
+                type="button"
+                onClick={() => setAwaitingConfirmation(false)}
+                className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-paper"
+              >
+                Errou o e-mail? Tentar de novo
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+                <Mascot size="sm" alt="Faro Study" />
+                <span className="font-display text-lg text-paper">Faro Study</span>
+              </div>
 
-          <Link
-            to="/"
-            className="mb-4 inline-flex items-center gap-1.5 text-2xs text-slate-muted hover:text-paper"
-          >
-            &larr; Voltar
-          </Link>
+              <Link
+                to="/"
+                className="mb-4 inline-flex items-center gap-1.5 text-2xs text-slate-muted hover:text-paper"
+              >
+                &larr; Voltar
+              </Link>
 
-          <h1 className="font-display text-2xl text-paper">
-            {mode === "signin" ? "Entrar" : "Criar conta"}
-          </h1>
-          <p className="mt-1 text-sm text-slate-muted">
-            {mode === "signin"
-              ? "Acesse seu painel de estudos."
-              : "Leva menos de um minuto."}
-          </p>
+              <h1 className="font-display text-2xl text-paper">
+                {mode === "signin" ? "Entrar" : "Criar conta"}
+              </h1>
+              <p className="mt-1 text-sm text-slate-muted">
+                {mode === "signin"
+                  ? "Acesse seu painel de estudos."
+                  : "Leva menos de um minuto."}
+              </p>
 
-          <button
+              <button
             type="button"
             onClick={handleGoogle}
             disabled={busy}
@@ -422,11 +458,6 @@ export function LoginPage() {
                 {formError}
               </p>
             ) : null}
-            {notice ? (
-              <p role="status" className="rounded-sm border border-focus/40 bg-focus/10 px-3 py-2 text-2xs text-focus-soft">
-                {notice}
-              </p>
-            ) : null}
 
             <button
               type="submit"
@@ -461,6 +492,8 @@ export function LoginPage() {
               .
             </p>
           ) : null}
+            </>
+          )}
         </div>
       </section>
     </main>
