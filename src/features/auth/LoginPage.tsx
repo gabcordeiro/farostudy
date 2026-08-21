@@ -183,10 +183,17 @@ export function LoginPage() {
       }
 
       if (!data.session) {
+        // `data.session` também fica null quando o e-mail já pertence a uma
+        // conta existente (ex.: criada antes via Google) -- o Supabase Auth
+        // devolve uma resposta sem erro nesse caso, de propósito, pra não dar
+        // pista de quais e-mails já têm conta. Como os dois casos são
+        // indistinguíveis aqui, o aviso precisa ser verdadeiro nos dois: não
+        // dá pra prometer "enviamos e-mail" (não é enviado quando a conta já
+        // existe) nem revelar que a conta já existe.
         setNotice(
-          avatarFile
-            ? "Enviamos um e-mail de confirmação. Verifique sua caixa de entrada. Você poderá adicionar sua foto depois, em Perfil."
-            : "Enviamos um e-mail de confirmação. Verifique sua caixa de entrada.",
+          `Se esse e-mail ainda não tem conta, enviamos uma confirmação -- confira sua caixa de entrada. Se você já tem conta, é só entrar.${
+            avatarFile ? " Sua foto pode ser adicionada depois, em Perfil." : ""
+          }`,
         );
       }
     } catch (err) {
