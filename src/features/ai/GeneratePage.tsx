@@ -126,58 +126,60 @@ export default function GeneratePage() {
       </header>
 
       <div className="space-y-5 rounded-md border border-hairline bg-elevated p-5">
-        {/* Trilha */}
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <label className="text-sm text-slate-soft">Trilha</label>
-            <Link
-              to="/trilhas"
-              className="inline-flex items-center gap-1 text-2xs text-slate-muted hover:text-paper"
-            >
-              <IconRoute className="h-3.5 w-3.5" />
-              Gerenciar trilhas
-            </Link>
+        {/* Trilha + Máximo de cards: mesma linha -- são a configuração rápida
+            antes da tarefa principal (o texto), não merecem o mesmo peso dela. */}
+        <div className="flex flex-wrap items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-sm text-slate-soft">Trilha</label>
+              <Link
+                to="/trilhas"
+                className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+              >
+                <IconRoute className="h-3.5 w-3.5" />
+                Gerenciar trilhas
+              </Link>
+            </div>
+            {decksLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <select
+                value={creatingDeck ? NEW_DECK_VALUE : deckId}
+                onChange={(e) => handleDeckSelect(e.target.value)}
+                className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150 focus:border-focus"
+              >
+                <option value="">Selecione uma trilha...</option>
+                {decks.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.title}
+                  </option>
+                ))}
+                <option value={NEW_DECK_VALUE}>+ Criar nova trilha...</option>
+              </select>
+            )}
+            {creatingDeck ? (
+              <input
+                autoFocus
+                value={newDeckTitle}
+                onChange={(e) => setNewDeckTitle(e.target.value)}
+                placeholder="Nome da nova trilha (ex: Legislacao)"
+                maxLength={160}
+                className="mt-2 w-full animate-fade-in rounded-sm border border-focus bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150"
+              />
+            ) : null}
           </div>
-          {decksLoading ? (
-            <Skeleton className="h-10 w-full" />
-          ) : (
-            <select
-              value={creatingDeck ? NEW_DECK_VALUE : deckId}
-              onChange={(e) => handleDeckSelect(e.target.value)}
-              className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-            >
-              <option value="">Selecione uma trilha...</option>
-              {decks.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-              <option value={NEW_DECK_VALUE}>+ Criar nova trilha...</option>
-            </select>
-          )}
-          {creatingDeck ? (
-            <input
-              autoFocus
-              value={newDeckTitle}
-              onChange={(e) => setNewDeckTitle(e.target.value)}
-              placeholder="Nome da nova trilha (ex: Legislacao)"
-              maxLength={160}
-              className="mt-2 w-full animate-fade-in rounded-sm border border-focus bg-surface px-3 py-2 text-sm text-paper outline-none"
-            />
-          ) : null}
-        </div>
 
-        {/* Máximo de cards */}
-        <div>
-          <label className="mb-1 block text-sm text-slate-soft">Máximo de cards</label>
-          <input
-            type="number"
-            min={1}
-            max={100}
-            value={maxCards}
-            onChange={(e) => setMaxCards(Number(e.target.value))}
-            className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-          />
+          <div>
+            <label className="mb-1 block text-sm text-slate-soft">Máximo de cards</label>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={maxCards}
+              onChange={(e) => setMaxCards(Number(e.target.value))}
+              className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150 focus:border-focus"
+            />
+          </div>
         </div>
 
         {/* Conteúdo */}
@@ -202,14 +204,14 @@ export default function GeneratePage() {
                 ? "Cole aqui o trecho do edital, resumo ou matéria..."
                 : '[{"conceito":"...","definicao":"..."}]'
             }
-            className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 font-mono text-sm text-paper outline-none focus:border-focus"
+            className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 font-mono text-sm text-paper outline-none transition-colors duration-150 focus:border-focus"
           />
           <div className="mt-1 flex items-center justify-between gap-2">
             <p className="text-2xs text-slate-muted">{content.length}/50000</p>
             <button
               type="button"
               onClick={() => setMode(mode === "text" ? "json" : "text")}
-              className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+              className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 transition-colors duration-150 hover:text-slate-soft"
             >
               {mode === "text" ? "Colar uma lista já pronta (avançado)" : "‹ Voltar para texto"}
             </button>
@@ -247,7 +249,7 @@ export default function GeneratePage() {
             type="button"
             onClick={handleGenerate}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 transition-all duration-150 hover:bg-action-deep active:scale-[0.97] disabled:opacity-60 disabled:active:scale-100"
           >
             <IconWand className="h-[18px] w-[18px]" />
             {busy ? "Gerando..." : "Gerar cards"}
