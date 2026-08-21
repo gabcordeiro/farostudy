@@ -78,27 +78,49 @@ Deno.serve(async (req) => {
     return json({ error: "Credenciais do Mercado Pago nao configuradas" }, 500);
   }
 
-  let body: { type?: string; topic?: string; action?: string; data?: { id?: string | number } };
+  const url = new URL(req.url);
+
+  let body: { type?: string; topic?: string; action?: string; data?: { id?: string | number } } = {};
   try {
     body = await req.json();
   } catch {
-    return json({ error: "JSON invalido" }, 400);
+    // O evento "Pagamentos (legacy)" manda tudo na query string (id/topic),
+    // com corpo vazio ou irrelevante -- nao e erro, so um formato antigo.
   }
 
-  const kind = body.type ?? body.topic ?? "";
-  const dataId = body.data?.id?.toString() ?? "";
+  // Duas formas de notificacao do Mercado Pago pro mesmo evento: o formato
+  // novo (webhooks v2) manda { type, data: { id } } no corpo; o legado
+  // ("Pagamentos (legacy)") manda id/topic só na query string. Sem o
+  // fallback pra query string, a notificacao legada caia direto no
+  // "ignored" abaixo (kind vazio) e nunca chegava a liquidar nada -- e foi
+  // exatamente isso que aconteceu nos testes: a notificacao chegou (200 no
+  // log), mas o corpo nao tinha type/topic, entao nunca era validada nem
+  // processada.
+  const kind = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic") ?? "";
+  const dataId =
+    body.data?.id?.toString() ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "";
 
   // Outros topicos (merchant_order etc) nao interessam; responde 200 para o
   // Mercado Pago parar de reenviar.
   if (kind !== "payment" || !dataId) return json({ ignored: true }, 200);
 
-  const valid = await signatureIsValid(
-    webhookSecret,
-    req.headers.get("x-signature"),
-    req.headers.get("x-request-id"),
-    dataId,
-  );
-  if (!valid) return json({ error: "Assinatura invalida" }, 401);
+  const signatureHeader = req.headers.get("x-signature");
+  const requestId = req.headers.get("x-request-id");
+  const valid = await signatureIsValid(webhookSecret, signatureHeader, requestId, dataId);
+  if (!valid) {
+    // Log temporario para diagnosticar uma assinatura que falha só na
+    // notificacao real (o "Simular notificacao" do painel valida OK) --
+    // sem logar o segredo, só o que ajuda a comparar contra o manifest
+    // esperado. Remover depois de confirmar a causa.
+    console.error("Assinatura invalida", {
+      dataId,
+      kind,
+      signatureHeader,
+      requestId,
+      queryString: url.search,
+    });
+    return json({ error: "Assinatura invalida" }, 401);
+  }
 
   // A notificacao so traz o id -- o estado real vem da API.
   const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
