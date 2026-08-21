@@ -9,7 +9,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { Mascot } from "@/components/Mascot";
 import { renderCardHtml } from "@/lib/sanitize";
-import { IconRoute, IconWand } from "@/components/icons";
+import { IconPlus, IconRoute, IconWand } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
 import { useCredits } from "@/features/billing/useCredits";
@@ -17,7 +17,6 @@ import { useDecks } from "./useDecks";
 import { generateCards, type GenerateResult } from "./generateCards";
 
 type Mode = "text" | "json";
-const NEW_DECK_VALUE = "__new__";
 
 export default function GeneratePage() {
   const { decks, loading: decksLoading, createDeck } = useDecks();
@@ -49,13 +48,7 @@ export default function GeneratePage() {
   }, [busy]);
 
   function handleDeckSelect(value: string) {
-    if (value === NEW_DECK_VALUE) {
-      setCreatingDeck(true);
-      setDeckId("");
-    } else {
-      setCreatingDeck(false);
-      setDeckId(value);
-    }
+    setDeckId(value);
   }
 
   async function ensureDeck(): Promise<string | null> {
@@ -132,19 +125,53 @@ export default function GeneratePage() {
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center justify-between">
               <label className="text-sm text-slate-soft">Trilha</label>
-              <Link
-                to="/trilhas"
-                className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
-              >
-                <IconRoute className="h-3.5 w-3.5" />
-                Gerenciar trilhas
-              </Link>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreatingDeck(true);
+                    setDeckId("");
+                  }}
+                  className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+                >
+                  <IconPlus className="h-3.5 w-3.5" />
+                  Nova trilha
+                </button>
+                <Link
+                  to="/trilhas"
+                  className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+                >
+                  <IconRoute className="h-3.5 w-3.5" />
+                  Gerenciar trilhas
+                </Link>
+              </div>
             </div>
-            {decksLoading ? (
+            {creatingDeck ? (
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={newDeckTitle}
+                  onChange={(e) => setNewDeckTitle(e.target.value)}
+                  placeholder="Nome da nova trilha (ex: Legislacao)"
+                  maxLength={160}
+                  className="w-full animate-fade-in rounded-sm border border-focus bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreatingDeck(false);
+                    setNewDeckTitle("");
+                  }}
+                  className="shrink-0 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : decksLoading ? (
               <Skeleton className="h-10 w-full" />
             ) : (
               <select
-                value={creatingDeck ? NEW_DECK_VALUE : deckId}
+                value={deckId}
                 onChange={(e) => handleDeckSelect(e.target.value)}
                 className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150 focus:border-focus"
               >
@@ -154,19 +181,8 @@ export default function GeneratePage() {
                     {d.title}
                   </option>
                 ))}
-                <option value={NEW_DECK_VALUE}>+ Criar nova trilha...</option>
               </select>
             )}
-            {creatingDeck ? (
-              <input
-                autoFocus
-                value={newDeckTitle}
-                onChange={(e) => setNewDeckTitle(e.target.value)}
-                placeholder="Nome da nova trilha (ex: Legislacao)"
-                maxLength={160}
-                className="mt-2 w-full animate-fade-in rounded-sm border border-focus bg-surface px-3 py-2 text-sm text-paper outline-none transition-colors duration-150"
-              />
-            ) : null}
           </div>
 
           <div>

@@ -67,8 +67,10 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-title"
-      className={`fixed inset-0 z-50 flex items-end justify-center p-4 transition-colors duration-300 sm:items-center ${
-        isIntro ? "bg-page/80 sm:justify-center" : "bg-page/10 sm:justify-end sm:pr-12"
+      className={`fixed inset-0 z-50 flex items-end justify-center p-4 transition-colors duration-300 ${
+        isIntro
+          ? "bg-page/80 sm:items-center sm:justify-center"
+          : "bg-page/10 sm:items-end sm:justify-end sm:pb-12 sm:pr-12"
       }`}
     >
       <div
