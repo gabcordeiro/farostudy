@@ -51,6 +51,12 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
 
   if (!open || !current) return null;
 
+  // Passo 0 (boas-vindas, sem página específica pra mostrar) fica centralizado
+  // e mais opaco, como um modal comum. Do passo 1 em diante, cada um mostra
+  // uma aba de verdade por trás -- então o card vai pra direita e o fundo
+  // fica quase transparente, só o suficiente pra não brigar com o conteúdo.
+  const isIntro = step === 0;
+
   // Portal pro body: sem isso, o modal renderiza dentro da árvore da página
   // (que fica embrulhada pela transição de rota, animate-rise-in). Um
   // transform aplicado por essa animação cria um novo containing block para
@@ -61,9 +67,15 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-title"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-page/80 p-4 sm:items-center"
+      className={`fixed inset-0 z-50 flex items-end justify-center p-4 transition-colors duration-300 sm:items-center ${
+        isIntro ? "bg-page/80 sm:justify-center" : "bg-page/10 sm:justify-end sm:pr-12"
+      }`}
     >
-      <div className="w-full max-w-md animate-rise-in rounded-md border border-hairline bg-elevated p-6 shadow-pop">
+      <div
+        className={`w-full animate-rise-in rounded-md border border-hairline bg-elevated p-6 shadow-pop ${
+          isIntro ? "max-w-md" : "max-w-sm"
+        }`}
+      >
         <div className="flex justify-center">
           <Mascot size="lg" mood={current.mood} alt="" />
         </div>
