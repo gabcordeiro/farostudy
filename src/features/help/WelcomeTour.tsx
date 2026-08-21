@@ -63,19 +63,37 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
   // "position: fixed" -- o modal deixa de cobrir a tela e vira um retângulo
   // cinza preso dentro do conteúdo da página, sem o card visível.
   return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="tour-title"
-      className={`fixed inset-0 z-50 flex items-end justify-center p-4 transition-colors duration-300 ${
-        isIntro
-          ? "bg-page/80 sm:items-center sm:justify-center"
-          : "bg-page/10 sm:items-end sm:justify-end sm:pb-12 sm:pr-12"
-      }`}
-    >
+    <>
+      {/* So o fundo -- a posicao do card agora vive nele mesmo (abaixo),
+          nao em alinhamento flex daqui, porque align-items/justify-content
+          nao sao propriedades que o CSS sabe interpolar: a troca seria um
+          salto, nunca uma transicao. */}
       <div
-        className={`w-full animate-rise-in rounded-md border border-hairline bg-elevated p-6 shadow-pop ${
-          isIntro ? "max-w-md" : "max-w-sm"
+        className={`fixed inset-0 z-50 transition-colors duration-300 ${
+          isIntro ? "bg-page/80" : "bg-page/10"
+        }`}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-title"
+        // top/left/transform/width -- nunca com valor "auto" nos dois
+        // estados, senao a transicao correspondente nao anima (auto nao
+        // interpola). No passo 0 fica centralizado em qualquer tela; do
+        // passo 1 em diante vira bottom sheet no celular (mesmo padrao do
+        // menu "Mais" do MobileNav) e desliza pro canto inferior direito
+        // a partir do sm:.
+        //
+        // animate-fade-in (nao animate-rise-in) de proposito: rise-in anima
+        // transform (translateY), e com fill-mode "both" essa trava fica
+        // ativa pra sempre depois de tocar -- bloqueando qualquer transform
+        // vindo das classes de posicao abaixo (confirmado inspecionando o
+        // computed style: a matriz ficava sempre identidade, mesmo com as
+        // variaveis --tw-translate-x/y certas). fade-in so mexe em opacity.
+        className={`animate-fade-in fixed z-50 rounded-md border border-hairline bg-elevated p-6 shadow-pop transition-all duration-500 ease-fluid ${
+          isIntro
+            ? "left-1/2 top-1/2 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2"
+            : "left-1/2 top-[100%] w-screen max-w-none -translate-x-1/2 -translate-y-full sm:left-[calc(100%-3rem)] sm:top-[calc(100%-3rem)] sm:w-[calc(100vw-2rem)] sm:max-w-sm sm:-translate-x-full sm:-translate-y-full"
         }`}
       >
         <div className="flex justify-center">
@@ -146,7 +164,7 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
           </div>
         </div>
       </div>
-    </div>,
+    </>,
     document.body,
   );
 }
