@@ -277,7 +277,7 @@ export default function GeneratePage() {
       {busy ? (
         <div className="mt-6 space-y-3">
           <div className="flex items-center gap-3">
-            <Mascot mood="cheer" size="sm" alt="Faro animado, gerando seus cards" />
+            <Mascot mood="searching" size="sm" alt="Faro farejando, gerando seus cards" />
             <p className="text-sm text-slate-muted">O Faro está montando seus cards...</p>
           </div>
           <div className="space-y-2">

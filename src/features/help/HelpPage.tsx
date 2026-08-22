@@ -85,7 +85,7 @@ export default function HelpPage() {
 
       {/* O que é o app */}
       <section className="mb-10 flex flex-wrap items-center gap-6 rounded-md border border-hairline bg-elevated p-6">
-        <Mascot size="md" mood="search" alt="" />
+        <Mascot size="md" mood="playful" alt="" />
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg text-paper">O que é o Faro Study</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-slate-muted">

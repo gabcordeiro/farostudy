@@ -266,7 +266,7 @@ export default function StudyPage() {
         </div>
       ) : done.reviewed > 0 ? (
         <EmptyState
-          mood="cheer"
+          mood="proud"
           title="Sessão concluida"
           description={`Você revisou ${done.reviewed} cards com ${Math.round(
             (done.correct / done.reviewed) * 100,
@@ -282,7 +282,7 @@ export default function StudyPage() {
         />
       ) : (
         <EmptyState
-          mood="sleepy"
+          mood="yawning"
           title="Nada vencido por hoje"
           description="O Faro não encontrou cards vencidos para revisar agora. Gere novos cards ou volte depois."
           action={

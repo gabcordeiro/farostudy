@@ -3,12 +3,12 @@
  * Ex: "Você não tem cards para revisar hoje, que tal criar um?"
  */
 import type { ReactNode } from "react";
-import { Mascot } from "./Mascot";
+import { Mascot, type MascotMood } from "./Mascot";
 
 interface EmptyStateProps {
   title: string;
   description: string;
-  mood?: "search" | "sleepy" | "cheer";
+  mood?: MascotMood;
   action?: ReactNode;
 }
 

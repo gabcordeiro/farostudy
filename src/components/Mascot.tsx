@@ -3,13 +3,27 @@
  * Renderizado em pontos estrategicos: login, empty states, loading e logo.
  * SEMPRE com alt text (checklist produção #9).
  */
-type MascotMood = "default" | "search" | "sleepy" | "cheer";
+export type MascotMood =
+  | "default"
+  | "search"
+  | "sleepy"
+  | "cheer"
+  | "proud"
+  | "yawning"
+  | "winking"
+  | "playful"
+  | "searching";
 
 const MOOD_SRC: Record<MascotMood, string> = {
   default: "/mascot-default.png",
   search: "/mascot-search.png",
   sleepy: "/mascot-sleepy.png",
   cheer: "/mascot-cheer.png",
+  proud: "/mascot-proud.png",
+  yawning: "/mascot-yawning.png",
+  winking: "/mascot-winking.png",
+  playful: "/mascot-playful.png",
+  searching: "/mascot-searching.png",
 };
 
 const SIZES = { sm: 40, md: 96, lg: 160, xl: 220 } as const;
@@ -24,9 +38,14 @@ interface MascotProps {
 
 const MOOD_ALT: Record<MascotMood, string> = {
   default: "Faro, o mascote basset hound do Faro Study",
-  search: "Faro farejando novos cards para estudar",
+  search: "Faro pensativo, esperando você começar",
   sleepy: "Faro descansando enquanto seus cards carregam",
   cheer: "Faro comemorando sua sequência de estudos",
+  proud: "Faro orgulhoso do seu progresso",
+  yawning: "Faro bocejando, sem nada pendente agora",
+  winking: "Faro piscando, com uma dica",
+  playful: "Faro brincando, perseguindo uma borboleta",
+  searching: "Faro farejando o chão, procurando algo",
 };
 
 export function Mascot({ size = "md", mood = "default", className, alt }: MascotProps) {
