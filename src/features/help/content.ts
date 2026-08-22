@@ -11,6 +11,7 @@ import {
   IconUpload,
   IconUser,
 } from "@/components/icons";
+import type { MascotMood } from "@/components/Mascot";
 
 type IconComponent = typeof IconChart;
 
@@ -86,7 +87,7 @@ export const SECTIONS: SectionInfo[] = [
 export interface TourStep {
   title: string;
   body: string;
-  mood: "search" | "cheer" | "sleepy";
+  mood: MascotMood;
   /** Rota que o tour abre ao entrar nesse passo, para mostrar a aba de verdade. */
   to: string;
 }
@@ -101,25 +102,25 @@ export const TOUR_STEPS: TourStep[] = [
   {
     title: "1. Traga sua matéria",
     body: "Em Gerar, você cola um texto, um resumo ou parte do edital. A IA lê esse conteúdo e monta os flashcards prontos, dentro da trilha que você escolher.",
-    mood: "search",
+    mood: "searching",
     to: "/importar",
   },
   {
     title: "2. Organize em trilhas",
     body: "Cada trilha é uma matéria ou um tópico. Em Trilhas você vê todos os cards de cada uma e pode editar ou apagar o que quiser.",
-    mood: "search",
+    mood: "default",
     to: "/trilhas",
   },
   {
     title: "3. Estude todo dia",
     body: "Em Estudar aparecem só os cards que venceram hoje. Responda de cabeça, revele e avalie de Errei a Fácil: o que você erra volta logo, o que acerta demora mais para reaparecer.",
-    mood: "search",
+    mood: "winking",
     to: "/estudar",
   },
   {
     title: "4. Acompanhe sua evolução",
     body: "Em Evolução você vê sua ofensiva de dias seguidos e onde está esquecendo mais. Pronto: é só começar. Qualquer dúvida, a aba Ajuda tem tudo isso de novo com calma.",
-    mood: "cheer",
+    mood: "proud",
     to: "/painel",
   },
 ];
