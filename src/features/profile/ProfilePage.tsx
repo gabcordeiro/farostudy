@@ -117,7 +117,7 @@ export default function ProfilePage() {
           <div className="flex flex-wrap items-center gap-5">
             <Avatar size="lg" url={avatarUrl} name={displayName || user?.email} />
             <div className="flex flex-col gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper hover:border-slate-muted">
+              <label className="press inline-flex cursor-pointer items-center gap-2 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper hover:border-slate-muted">
                 <IconUpload className="h-4 w-4" />
                 {uploading ? "Enviando..." : "Trocar foto"}
                 <input
@@ -175,7 +175,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+            className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
           >
             {saving ? "Salvando..." : "Salvar"}
           </button>

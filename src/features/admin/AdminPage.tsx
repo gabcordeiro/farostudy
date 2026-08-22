@@ -114,7 +114,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="mb-5 inline-flex overflow-hidden rounded-sm border border-hairline">
+      <div className="mb-5 flex overflow-x-auto rounded-sm border border-hairline">
         {(
           [
             { key: "users", label: "Usuários" },
@@ -127,7 +127,7 @@ export default function AdminPage() {
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm ${tab === key ? "bg-focus text-paper" : "bg-surface text-slate-soft"}`}
+            className={`press shrink-0 whitespace-nowrap px-4 py-2 text-sm ${tab === key ? "bg-focus text-paper" : "bg-surface text-slate-soft"}`}
           >
             {label}
           </button>

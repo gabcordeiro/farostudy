@@ -75,7 +75,7 @@ export default function DecksPage() {
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="inline-flex items-center gap-1.5 rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 transition-colors duration-150 hover:bg-action-deep"
+            className="inline-flex items-center gap-1.5 rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 press hover:bg-action-deep"
           >
             <IconPlus className="h-4 w-4" />
             Nova trilha
@@ -102,7 +102,7 @@ export default function DecksPage() {
           <button
             type="submit"
             disabled={busyCreate}
-            className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 transition-colors duration-150 hover:bg-action-deep disabled:opacity-60"
+            className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 press hover:bg-action-deep disabled:opacity-60"
           >
             {busyCreate ? "Criando..." : "Criar"}
           </button>
@@ -137,7 +137,7 @@ export default function DecksPage() {
           action={
             <Link
               to="/importar"
-              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
             >
               Gerar cards
             </Link>

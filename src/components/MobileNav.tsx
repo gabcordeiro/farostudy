@@ -48,7 +48,7 @@ export function MobileNav() {
 
   const displayName = profile?.display_name ?? user?.email ?? "";
   const tabClass = (isActive: boolean) =>
-    `flex flex-1 flex-col items-center gap-1 py-2 text-2xs transition-colors ${
+    `press relative flex flex-1 flex-col items-center gap-1 py-2.5 text-2xs ${
       isActive ? "text-action" : "text-slate-muted"
     }`;
 
@@ -63,10 +63,10 @@ export function MobileNav() {
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 bg-page/80"
           />
-          <div className="absolute inset-x-0 bottom-0 animate-rise-in space-y-2 border-t border-hairline bg-surface p-4 pb-6">
+          <div className="absolute inset-x-0 bottom-0 animate-rise-in space-y-2 border-t border-hairline bg-surface p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
             <Link
               to="/perfil"
-              className="flex items-center gap-3 rounded-sm px-2 py-2 hover:bg-elevated"
+              className="press flex items-center gap-3 rounded-sm px-2 py-2.5 hover:bg-elevated"
             >
               <Avatar url={profile?.avatar_url} name={displayName} size="sm" />
               <span className="min-w-0 flex-1 truncate text-sm text-paper">{displayName}</span>
@@ -77,7 +77,7 @@ export function MobileNav() {
               <Link
                 key={to}
                 to={to}
-                className="flex items-center gap-3 rounded-sm px-2 py-2 text-sm text-slate-soft hover:bg-elevated hover:text-paper"
+                className="press flex items-center gap-3 rounded-sm px-2 py-2.5 text-sm text-slate-soft hover:bg-elevated hover:text-paper"
               >
                 <Icon className="h-[18px] w-[18px]" />
                 {label}
@@ -87,7 +87,7 @@ export function MobileNav() {
             {profile?.role === "admin" ? (
               <Link
                 to="/admin"
-                className="flex items-center gap-3 rounded-sm px-2 py-2 text-sm text-slate-soft hover:bg-elevated hover:text-paper"
+                className="press flex items-center gap-3 rounded-sm px-2 py-2.5 text-sm text-slate-soft hover:bg-elevated hover:text-paper"
               >
                 <IconShield className="h-[18px] w-[18px]" />
                 Admin
@@ -96,7 +96,7 @@ export function MobileNav() {
 
             <Link
               to="/planos"
-              className="flex items-center justify-between rounded-sm border border-hairline px-3 py-2 text-sm text-slate-soft"
+              className="press flex items-center justify-between rounded-sm border border-hairline px-3 py-2.5 text-sm text-slate-soft"
             >
               <span className="flex items-center gap-2">
                 <IconCoin className="h-4 w-4 text-action" />
@@ -120,15 +120,31 @@ export function MobileNav() {
         </div>
       ) : null}
 
-      {/* Barra de abas fixa */}
+      {/* Barra de abas fixa. pb-safe estende o fundo ate a borda da tela
+          (faixa do home indicator no iPhone), com as abas acima dela. */}
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-hairline bg-surface md:hidden"
+        className="pb-safe fixed inset-x-0 bottom-0 z-40 flex border-t border-hairline bg-surface md:hidden"
       >
         {PRIMARY.map(({ to, label, Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => tabClass(isActive)}>
-            <Icon className="h-5 w-5" />
-            {label}
+            {({ isActive }) => (
+              <>
+                {/* Indicador da aba ativa: uma barrinha que "cresce" no topo. */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute inset-x-4 top-0 h-0.5 origin-center rounded-b-sm bg-action transition-transform duration-200 ease-fluid ${
+                    isActive ? "scale-x-100" : "scale-x-0"
+                  }`}
+                />
+                <Icon
+                  className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
+                    isActive ? "-translate-y-0.5 scale-110" : ""
+                  }`}
+                />
+                {label}
+              </>
+            )}
           </NavLink>
         ))}
         <button
@@ -137,7 +153,11 @@ export function MobileNav() {
           aria-expanded={menuOpen}
           className={tabClass(menuOpen)}
         >
-          <IconMore className="h-5 w-5" />
+          <IconMore
+            className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
+              menuOpen ? "scale-110" : ""
+            }`}
+          />
           Mais
         </button>
       </nav>

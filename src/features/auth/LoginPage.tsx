@@ -313,7 +313,7 @@ export function LoginPage() {
             type="button"
             onClick={handleGoogle}
             disabled={busy}
-            className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-sm border border-slate-border bg-ink-700 py-2.5 text-sm font-medium text-paper hover:border-slate-muted disabled:opacity-60"
+            className="press mt-6 flex w-full items-center justify-center gap-2.5 rounded-sm border border-slate-border bg-ink-700 py-2.5 text-sm font-medium text-paper hover:border-slate-muted disabled:opacity-60"
           >
             <GoogleMark />
             Continuar com o Google
@@ -356,7 +356,7 @@ export function LoginPage() {
                 </label>
                 <div className="flex items-center gap-3">
                   <Avatar size="md" url={avatarPreviewUrl} name={fullName} />
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper hover:border-slate-muted">
+                  <label className="press inline-flex cursor-pointer items-center gap-2 rounded-sm border border-slate-border bg-ink-800 px-3 py-2 text-sm text-paper hover:border-slate-muted">
                     <IconUpload className="h-4 w-4" />
                     {avatarFile ? "Trocar" : "Escolher"}
                     <input
@@ -472,7 +472,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
             >
               {busy ? "Aguarde..." : mode === "signin" ? "Entrar" : "Criar conta"}
             </button>

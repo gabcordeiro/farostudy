@@ -288,7 +288,7 @@ export default function QuizPage() {
                 type="button"
                 onClick={handleStart}
                 disabled={!deckId}
-                className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
               >
                 Gerar novo quiz
               </button>
@@ -318,7 +318,7 @@ export default function QuizPage() {
                       <button
                         type="button"
                         onClick={() => handleRedoSaved(s.items, s.deckId)}
-                        className="rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
+                        className="press rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
                       >
                         Refazer
                       </button>
@@ -394,7 +394,7 @@ export default function QuizPage() {
                     type="button"
                     disabled={revealed}
                     onClick={() => void handleAnswer(i)}
-                    className={`flex w-full items-center gap-3 rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper transition-colors duration-150 ${tone}`}
+                    className={`press flex w-full items-center gap-3 rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper ${tone}`}
                   >
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border font-mono text-2xs ${badgeTone}`}
@@ -418,7 +418,7 @@ export default function QuizPage() {
               <button
                 type="button"
                 onClick={next}
-                className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
+                className="press rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
               >
                 {isLast ? "Ver resultado" : "Próxima"}
               </button>
@@ -436,14 +436,14 @@ export default function QuizPage() {
             <div className="flex flex-wrap justify-center gap-2">
               <Link
                 to="/painel"
-                className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
               >
                 Ver painel
               </Link>
               <button
                 type="button"
                 onClick={handleRedoCurrent}
-                className="inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
+                className="press inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
               >
                 Refazer essa bateria
               </button>

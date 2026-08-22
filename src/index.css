@@ -40,12 +40,20 @@
     height: 100%;
   }
 
+  /* Rolagem suave em navegacao por ancora (respeitando quem pede menos
+   * movimento -- ver o bloco prefers-reduced-motion abaixo). */
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: hsl(var(--bg-page));
     color: hsl(var(--text-primary));
     font-family: theme("fontFamily.sans");
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Sem o flash cinza ao tocar em links/botoes no mobile. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   :focus-visible {
@@ -69,9 +77,56 @@
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  /* Toque instantaneo no mobile: remove o atraso de ~300ms que o navegador
+   * aplica esperando um possivel double-tap-zoom em elementos interativos. */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
+  }
 }
 
 @layer utilities {
+  /* Feedback tatil de "apertar": o elemento afunda de leve enquanto o dedo/
+   * mouse esta pressionado. Curva e duracao curtas para parecer resposta,
+   * nao animacao. Aplicar em botoes/CTAs que a pessoa toca -- e o que da a
+   * sensacao de app fluido no celular. */
+  .press {
+    transition:
+      transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+  /* Botao desabilitado nao "afunda" -- nao ha acao pra dar retorno. */
+  .press:disabled:active {
+    transform: none;
+  }
+
+  /* Respiro para a barra inferior do iPhone (home indicator) e afins. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .h-safe-nav {
+    /* Altura da barra de abas do mobile (h-16) + a faixa segura. */
+    height: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  /* Rolagem com inercia no iOS dentro de qualquer container que role. */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
   /* Onda do skeleton: faixa clara estreita atravessando um bloco de opacidade
    * constante. background-size 200% da folga para a faixa entrar e sair da
    * caixa, e o keyframe `shimmer` (tailwind.config.ts) desloca a posicao de
@@ -89,6 +144,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {

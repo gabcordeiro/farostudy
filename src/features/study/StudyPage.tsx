@@ -223,7 +223,7 @@ export default function StudyPage() {
               <button
                 type="button"
                 onClick={() => setShowBack(true)}
-                className="w-full rounded-sm bg-focus py-3 text-sm font-medium text-paper hover:bg-focus-deep"
+                className="press w-full rounded-sm bg-focus py-3 text-sm font-medium text-paper hover:bg-focus-deep"
               >
                 Mostrar resposta
               </button>
@@ -249,7 +249,7 @@ export default function StudyPage() {
                     type="button"
                     disabled={saving}
                     onClick={() => void grade(rating)}
-                    className={`rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
+                    className={`press rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
                   >
                     <span className="block">{label}</span>
                     <span className="mt-0.5 block text-2xs opacity-80">{hint}</span>
@@ -282,7 +282,7 @@ export default function StudyPage() {
           action={
             <Link
               to="/painel"
-              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
             >
               Ver painel
             </Link>
@@ -296,7 +296,7 @@ export default function StudyPage() {
           action={
             <Link
               to="/importar"
-              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
             >
               Gerar cards
             </Link>

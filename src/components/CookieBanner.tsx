@@ -28,7 +28,7 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-border bg-ink-800/95 px-4 py-4 sm:px-6"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-border bg-ink-800/95 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-soft">
@@ -42,13 +42,13 @@ export function CookieBanner() {
         <div className="flex shrink-0 gap-2">
           <button
             onClick={() => decide("rejected")}
-            className="rounded-sm border border-slate-border px-3 py-1.5 text-sm text-slate-soft hover:border-slate-muted"
+            className="press flex-1 rounded-sm border border-slate-border px-3 py-2 text-sm text-slate-soft hover:border-slate-muted sm:flex-none"
           >
             Somente essenciais
           </button>
           <button
             onClick={() => decide("accepted")}
-            className="rounded-sm bg-action px-3 py-1.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            className="press flex-1 rounded-sm bg-action px-3 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep sm:flex-none"
           >
             Aceitar todos
           </button>

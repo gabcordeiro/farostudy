@@ -75,7 +75,7 @@ function CardEditor({
           type="button"
           onClick={() => void handleSave()}
           disabled={saving}
-          className="rounded-sm bg-focus px-4 py-1.5 text-sm font-medium text-paper transition-colors duration-150 hover:bg-focus-deep disabled:opacity-60"
+          className="press rounded-sm bg-focus px-4 py-1.5 text-sm font-medium text-paper hover:bg-focus-deep disabled:opacity-60"
         >
           {saving ? "Salvando..." : "Salvar"}
         </button>
@@ -211,7 +211,7 @@ export default function DeckDetailPage() {
           action={
             <Link
               to="/importar"
-              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
             >
               Gerar cards
             </Link>
