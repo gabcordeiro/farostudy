@@ -13,6 +13,7 @@ import { Mascot } from "@/components/Mascot";
 import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
+import { celebrate } from "@/lib/confetti";
 import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
@@ -63,6 +64,13 @@ export default function QuizPage() {
 
   const current = items[index];
   const isLast = current && index === items.length - 1;
+  const quizFinished = !current && items.length > 0 && !busy;
+
+  // Confete só na transição pra "concluido" -- o boolean como dependencia
+  // garante que dispara uma vez por bateria terminada, não a cada render.
+  useEffect(() => {
+    if (quizFinished) celebrate();
+  }, [quizFinished]);
 
   // Fechar a aba durante a geracao nao cancela a chamada no servidor -- o
   // credito ja foi debitado -- mas o quiz gerado nunca chega a ser salvo
@@ -419,7 +427,7 @@ export default function QuizPage() {
         </div>
       ) : null}
 
-      {!current && items.length > 0 && !busy ? (
+      {quizFinished ? (
         <EmptyState
           mood="winking"
           title="Quiz concluido"

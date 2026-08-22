@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Mascot } from "@/components/Mascot";
+import { celebrate } from "@/lib/confetti";
 import { TOUR_STEPS } from "./content";
 
 interface Props {
@@ -145,6 +146,9 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
               <button
                 type="button"
                 onClick={() => {
+                  // Confete só aqui -- terminar de verdade, não pular
+                  // (finish() também é chamado por "Pular tour" e Esc).
+                  celebrate();
                   finish();
                   navigate("/importar");
                 }}

@@ -11,6 +11,7 @@ import { IconDeck } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { schedule, type Rating } from "@/lib/srs";
+import { celebrate } from "@/lib/confetti";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useDecks } from "@/features/ai/useDecks";
 import { StudyCard } from "./StudyCard";
@@ -39,6 +40,13 @@ export default function StudyPage() {
   const [showHints, setShowHints] = useState(false);
 
   const current: StudyCardRow | undefined = queue[index];
+  const sessionFinished = !current && done.reviewed > 0;
+
+  // Confete só na transição pra "concluida" -- useEffect com esse boolean
+  // como dependencia dispara uma vez por sessão terminada, não a cada render.
+  useEffect(() => {
+    if (sessionFinished) celebrate();
+  }, [sessionFinished]);
 
   // Trocar de trilha reinicia a sessão -- os cards da fila mudam por baixo,
   // entao o indice e o placar antigos nao fazem mais sentido.
