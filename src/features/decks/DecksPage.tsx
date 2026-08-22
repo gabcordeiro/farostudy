@@ -86,7 +86,7 @@ export default function DecksPage() {
       {creating ? (
         <form
           onSubmit={handleCreate}
-          className="mb-6 flex flex-wrap items-start gap-2 rounded-md border border-hairline bg-elevated p-4"
+          className="mb-6 flex animate-fade-in flex-wrap items-start gap-2 rounded-md border border-hairline bg-elevated p-4"
         >
           <div className="min-w-0 flex-1">
             <input

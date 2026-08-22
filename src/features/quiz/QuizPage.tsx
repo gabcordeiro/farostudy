@@ -344,7 +344,7 @@ export default function QuizPage() {
       ) : null}
 
       {current ? (
-        <div className="space-y-4">
+        <div key={current.cardId} className="animate-rise-in space-y-4">
           {/* Progresso + placar corrente */}
           <div>
             <div className="mb-1.5 flex items-baseline justify-between gap-3">

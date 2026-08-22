@@ -146,7 +146,9 @@ export default function AdminPage() {
             <Skeleton key={i} className="h-16 w-full" />
           ))}
         </div>
-      ) : tab === "users" ? (
+      ) : (
+      <div key={tab} className="animate-fade-in">
+      {tab === "users" ? (
         <ul className="space-y-2">
           {users.map((u) => (
             <li
@@ -354,6 +356,8 @@ export default function AdminPage() {
             ))}
           </ul>
         </div>
+      )}
+      </div>
       )}
     </div>
   );

@@ -30,7 +30,7 @@ export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
   const [showHint, setShowHint] = useState(false);
 
   return (
-    <article className="rounded-md border border-hairline bg-elevated">
+    <article className="animate-rise-in rounded-md border border-hairline bg-elevated">
       <header className="flex items-center justify-between border-b border-hairline px-4 py-2">
         <span className="text-2xs uppercase tracking-wider text-slate-muted">
           {card.deck_title || "Sem trilha"}
@@ -58,7 +58,7 @@ export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
 
         {card.hint && !showBack ? (
           showHint ? (
-            <p className="mt-4 text-sm italic text-slate-muted">Dica: {card.hint}</p>
+            <p className="mt-4 animate-fade-in text-sm italic text-slate-muted">Dica: {card.hint}</p>
           ) : (
             <button
               type="button"
@@ -71,7 +71,7 @@ export function StudyCard({ card, showBack, lang = "pt-BR" }: Props) {
         ) : null}
 
         {showBack ? (
-          <div className="mt-6 border-t border-hairline pt-6">
+          <div className="mt-6 animate-rise-in border-t border-hairline pt-6">
             <div className="flex items-start justify-between gap-3">
               <div
                 className="text-base leading-relaxed text-slate-soft"
