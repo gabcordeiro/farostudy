@@ -11,7 +11,16 @@ import { IconCoin, IconShield } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { useAdminData } from "./useAdminData";
 
-type Tab = "users" | "requests" | "plans";
+type Tab = "users" | "requests" | "plans" | "errors";
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -26,6 +35,7 @@ export default function AdminPage() {
     users,
     requests,
     plans,
+    errorLogs,
     loading,
     error,
     setRole,
@@ -110,6 +120,7 @@ export default function AdminPage() {
             { key: "users", label: "Usuários" },
             { key: "requests", label: `Solicitações${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
             { key: "plans", label: "Planos" },
+            { key: "errors", label: `Erros${errorLogs.length > 0 ? ` (${errorLogs.length})` : ""}` },
           ] as { key: Tab; label: string }[]
         ).map(({ key, label }) => (
           <button
@@ -234,6 +245,40 @@ export default function AdminPage() {
                       {r.status === "approved" ? "Aprovado" : "Rejeitado"}
                     </span>
                   )}
+                </li>
+              );
+            })}
+          </ul>
+        )
+      ) : tab === "errors" ? (
+        errorLogs.length === 0 ? (
+          <EmptyState
+            mood="sleepy"
+            title="Nenhum erro registrado"
+            description="Falhas técnicas de geração por IA (Gemini fora do ar, etc.) aparecem aqui, com o detalhe que o cliente não vê."
+          />
+        ) : (
+          <ul className="space-y-2">
+            {errorLogs.map((e) => {
+              const user = users.find((u) => u.id === e.userId);
+              return (
+                <li key={e.id} className="rounded-md border border-hairline bg-elevated px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-sm border border-bad/40 bg-bad/10 px-2 py-0.5 font-mono text-2xs text-bad">
+                        {e.statusCode}
+                      </span>
+                      <span className="text-sm text-paper">{e.source}</span>
+                      <span className="font-mono text-2xs text-slate-muted">
+                        {e.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-2xs text-slate-muted">{formatDateTime(e.createdAt)}</span>
+                  </div>
+                  <p className="mt-1 text-2xs text-slate-muted">
+                    {user?.displayName || user?.email || e.userId}
+                  </p>
+                  <p className="mt-2 break-words font-mono text-2xs text-slate-soft">{e.message}</p>
                 </li>
               );
             })}

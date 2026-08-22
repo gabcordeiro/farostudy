@@ -14,6 +14,7 @@
 // =============================================================================
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders, json } from "../_shared/cors.ts";
+import { logError } from "../_shared/errorLog.ts";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -148,7 +149,15 @@ Deno.serve(async (req) => {
   } catch (err) {
     // Falha no Gemini apos ja ter cobrado -> devolve o credito.
     await supabase.rpc("refund_credits", { amount: GENERATION_COST, reason: "estorno: falha no Gemini" });
-    return json({ error: "Falha ao gerar cards", detail: (err as Error).message }, 502);
+    // O erro cru (ex.: "Gemini respondeu 503: {...}") nao vai pro cliente --
+    // fica em error_logs, so o admin ve. O cliente recebe uma mensagem
+    // generica + o codigo, para poder relatar o problema sem expor detalhe
+    // tecnico nenhum.
+    const code = await logError(supabase, userId, "generate-cards", 502, (err as Error).message);
+    return json(
+      { error: "O Faro não conseguiu gerar os cards agora. Tente novamente em instantes.", code },
+      502,
+    );
   }
 
   const rows = raw
@@ -171,7 +180,10 @@ Deno.serve(async (req) => {
     .from("cards")
     .insert(rows)
     .select("id, front, back");
-  if (insErr) return json({ error: "Falha ao salvar os cards", detail: insErr.message }, 400);
+  if (insErr) {
+    const code = await logError(supabase, userId, "generate-cards", 400, insErr.message);
+    return json({ error: "Não foi possível salvar os cards.", code }, 400);
+  }
 
   // Trim da resposta: devolve so o essencial. (#17)
   return json({ created: inserted?.length ?? 0, cards: inserted ?? [] });

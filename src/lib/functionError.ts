@@ -8,6 +8,8 @@ export interface FunctionErrorInfo {
   message: string;
   status?: number;
   insufficientCredits: boolean;
+  /** Codigo curto gravado em error_logs (quando a função loga um erro tecnico). */
+  code?: string;
 }
 
 interface FunctionsErrorLike {
@@ -19,12 +21,14 @@ interface FunctionsErrorLike {
 export class AppFunctionError extends Error {
   insufficientCredits: boolean;
   status?: number;
+  code?: string;
 
   constructor(info: FunctionErrorInfo) {
     super(info.message);
     this.name = "AppFunctionError";
     this.insufficientCredits = info.insufficientCredits;
     this.status = info.status;
+    this.code = info.code;
   }
 }
 
@@ -32,15 +36,17 @@ export async function describeFunctionError(error: unknown): Promise<FunctionErr
   const err = error as FunctionsErrorLike;
   const status = err?.context?.status;
   let message = err?.message ?? "Falha na requisicao.";
+  let code: string | undefined;
 
   if (err?.context && typeof err.context.json === "function") {
     try {
-      const body = (await err.context.json()) as { error?: string; detail?: string };
+      const body = (await err.context.json()) as { error?: string; detail?: string; code?: string };
       message = body.detail || body.error || message;
+      code = body.code;
     } catch {
       // corpo não era JSON válido; mantém a mensagem generica
     }
   }
 
-  return { message, status, insufficientCredits: status === 402 };
+  return { message, status, insufficientCredits: status === 402, code };
 }

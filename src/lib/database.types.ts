@@ -177,6 +177,19 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      error_logs: {
+        Row: {
+          id: string;
+          user_id: string;
+          source: string;
+          status_code: number;
+          message: string;
+          created_at: string;
+        };
+        Insert: { user_id: string; source: string; status_code: number; message: string };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {

@@ -5,6 +5,7 @@
 // =============================================================================
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders, json } from "../_shared/cors.ts";
+import { logError } from "../_shared/errorLog.ts";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -128,6 +129,7 @@ Deno.serve(async (req) => {
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData.user) return json({ error: "Sessao invalida" }, 401);
+  const userId = userData.user.id;
 
   let body: { deckId?: string; count?: number };
   try {
@@ -160,7 +162,11 @@ Deno.serve(async (req) => {
     choicesById = await callGemini(apiKey, cards as CardRow[]);
   } catch (err) {
     await supabase.rpc("refund_credits", { amount: GENERATION_COST, reason: "estorno: falha no Gemini" });
-    return json({ error: "Falha ao gerar o quiz", detail: (err as Error).message }, 502);
+    const code = await logError(supabase, userId, "generate-quiz", 502, (err as Error).message);
+    return json(
+      { error: "O Faro não conseguiu montar o quiz agora. Tente novamente em instantes.", code },
+      502,
+    );
   }
 
   const items: QuizItem[] = (cards as CardRow[])

@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { Mascot } from "@/components/Mascot";
+import { ErrorModal } from "@/components/ErrorModal";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconPlus, IconRoute, IconWand } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -34,6 +35,7 @@ export default function GeneratePage() {
   const [needsCredits, setNeedsCredits] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
+  const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
 
   // Fechar a aba nao cancela a geracao no servidor (o credito ja foi
   // debitado e os cards sao inseridos direto pela edge function), mas o
@@ -89,11 +91,20 @@ export default function GeneratePage() {
         res.created > 0 ? "success" : "error",
       );
     } catch (err) {
-      const message = (err as Error).message ?? "Falha ao gerar os cards.";
-      setError(message);
-      if (err instanceof AppFunctionError && err.insufficientCredits) setNeedsCredits(true);
       dismiss(progressId);
-      notify(message, "error");
+      // Créditos insuficientes é um caso acionável (link "Ver planos"), fica
+      // como aviso inline. Qualquer outra falha (Gemini fora do ar, erro ao
+      // salvar) é técnica e imprevisível -- vira o modal genérico, sem expor
+      // o detalhe cru ao cliente (esse detalhe já foi gravado em
+      // error_logs pela edge function, visível só para o admin).
+      if (err instanceof AppFunctionError && err.insufficientCredits) {
+        setError(err.message);
+        setNeedsCredits(true);
+        notify(err.message, "error");
+      } else {
+        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
+        notify("Não foi possível gerar os cards agora.", "error");
+      }
     } finally {
       setBusy(false);
     }
@@ -321,6 +332,8 @@ export default function GeneratePage() {
           </ul>
         </section>
       ) : null}
+
+      <ErrorModal open={errorModal !== null} code={errorModal?.code} onClose={() => setErrorModal(null)} />
     </div>
   );
 }

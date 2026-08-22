@@ -36,6 +36,15 @@ export interface AdminRequestRow {
   createdAt: string;
 }
 
+export interface AdminErrorLogRow {
+  id: string;
+  userId: string;
+  source: string;
+  statusCode: number;
+  message: string;
+  createdAt: string;
+}
+
 interface RequestJoined {
   id: string;
   user_id: string;
@@ -49,6 +58,7 @@ export function useAdminData() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [requests, setRequests] = useState<AdminRequestRow[]>([]);
   const [plans, setPlans] = useState<AdminPlanRow[]>([]);
+  const [errorLogs, setErrorLogs] = useState<AdminErrorLogRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +66,7 @@ export function useAdminData() {
     setLoading(true);
     setError(null);
 
-    const [usersRes, requestsRes, plansRes] = await Promise.all([
+    const [usersRes, requestsRes, plansRes, errorLogsRes] = await Promise.all([
       withJwtRetry(() => supabase.rpc("admin_list_users")),
       withJwtRetry(() =>
         supabase
@@ -72,7 +82,27 @@ export function useAdminData() {
           .select("id, name, credits, price_cents, is_active")
           .order("position", { ascending: true }),
       ),
+      withJwtRetry(() =>
+        supabase
+          .from("error_logs")
+          .select("id, user_id, source, status_code, message, created_at")
+          .order("created_at", { ascending: false })
+          .limit(50),
+      ),
     ]);
+
+    if (!errorLogsRes.error) {
+      setErrorLogs(
+        (errorLogsRes.data ?? []).map((e) => ({
+          id: e.id,
+          userId: e.user_id,
+          source: e.source,
+          statusCode: e.status_code,
+          message: e.message,
+          createdAt: e.created_at,
+        })),
+      );
+    }
 
     if (!plansRes.error) {
       setPlans(
@@ -213,6 +243,7 @@ export function useAdminData() {
     users,
     requests,
     plans,
+    errorLogs,
     loading,
     error,
     reload: load,

@@ -10,6 +10,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { Mascot } from "@/components/Mascot";
+import { ErrorModal } from "@/components/ErrorModal";
 import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
@@ -56,6 +57,7 @@ export default function QuizPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsCredits, setNeedsCredits] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
   const [rawItems, setRawItems] = useState<(QuizItem & { deckId: string })[]>([]);
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -127,10 +129,17 @@ export default function QuizPage() {
       }
     } catch (err) {
       dismiss(progressId);
-      const message = (err as Error).message ?? "Falha ao gerar o quiz.";
-      setError(message);
-      if (err instanceof AppFunctionError && err.insufficientCredits) setNeedsCredits(true);
-      notify(message, "error");
+      // Mesmo critério de GeneratePage.tsx: créditos insuficientes é
+      // acionável e fica inline; qualquer outra falha vira o modal
+      // genérico, sem expor o erro técnico ao cliente.
+      if (err instanceof AppFunctionError && err.insufficientCredits) {
+        setError(err.message);
+        setNeedsCredits(true);
+        notify(err.message, "error");
+      } else {
+        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
+        notify("Não foi possível gerar o quiz agora.", "error");
+      }
     } finally {
       setBusy(false);
     }
@@ -443,6 +452,8 @@ export default function QuizPage() {
           }
         />
       ) : null}
+
+      <ErrorModal open={errorModal !== null} code={errorModal?.code} onClose={() => setErrorModal(null)} />
     </div>
   );
 }
