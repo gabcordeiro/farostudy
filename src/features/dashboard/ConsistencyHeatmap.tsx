@@ -6,6 +6,7 @@
 import { useMemo } from "react";
 import type { DayActivity } from "./dashboard.types";
 import { IconFlame } from "@/components/icons";
+import { MascotStreakBubble } from "./MascotStreakBubble";
 
 interface Props {
   activity: DayActivity[];
@@ -83,7 +84,8 @@ export function ConsistencyHeatmap({ activity, currentStreak, longestStreak }: P
             {total} revisões nas últimas 53 semanas
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <MascotStreakBubble streak={currentStreak} />
           <div className="flex items-center gap-2">
             <IconFlame className="text-action" title="Ofensiva atual" />
             <span className="text-2xl font-semibold tabular-nums text-paper">{currentStreak}</span>

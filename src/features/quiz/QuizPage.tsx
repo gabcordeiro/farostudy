@@ -415,22 +415,13 @@ export default function QuizPage() {
 
           {answer !== null ? (
             <div className="flex items-center justify-end gap-3">
-              {isLast ? (
-                <Link
-                  to="/painel"
-                  className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-                >
-                  Ver painel
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
-                >
-                  Próxima
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={next}
+                className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
+              >
+                {isLast ? "Ver resultado" : "Próxima"}
+              </button>
             </div>
           ) : null}
         </div>
@@ -442,13 +433,21 @@ export default function QuizPage() {
           title="Quiz concluido"
           description={`Você acertou ${score.correct} de ${score.total}. Os resultados já foram para o seu painel.`}
           action={
-            <button
-              type="button"
-              onClick={handleRedoCurrent}
-              className="inline-block rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
-            >
-              Refazer essa bateria
-            </button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link
+                to="/painel"
+                className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Ver painel
+              </Link>
+              <button
+                type="button"
+                onClick={handleRedoCurrent}
+                className="inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
+              >
+                Refazer essa bateria
+              </button>
+            </div>
           }
         />
       ) : null}
