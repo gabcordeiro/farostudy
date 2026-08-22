@@ -10,6 +10,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { authEmailSchema, authSignupSchema, validateAvatarFile } from "@/lib/validation";
+import { trackEvent } from "@/lib/analytics";
 import { useAuth } from "./AuthProvider";
 import { Mascot } from "@/components/Mascot";
 import { Avatar } from "@/components/Avatar";
@@ -177,6 +178,15 @@ export function LoginPage() {
         },
       });
       if (error) throw error;
+
+      // `identities` vem vazio quando o e-mail já pertencia a uma conta
+      // existente (o mesmo caso ambíguo do comentário abaixo) -- só reporta
+      // como cadastro novo quando o Supabase confirma que uma identidade
+      // nova foi criada de verdade, senão o pixel conta reentrada como
+      // registro.
+      if ((data.user?.identities?.length ?? 0) > 0) {
+        trackEvent("CompleteRegistration");
+      }
 
       // Só dá pra subir a foto agora se já existe sessão (confirmação de
       // e-mail desligada no projeto) -- sem isso não há auth.uid() pra

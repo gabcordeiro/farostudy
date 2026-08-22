@@ -37,7 +37,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Como a IA gera os cards?",
-    a: "Você cola um texto, um JSON estruturado ou o conteúdo de um edital em Importar. O Faro processa esse material e devolve flashcards com pergunta e resposta prontos para a sua trilha.",
+    a: "Você cola um texto, um JSON estruturado ou o conteúdo de um edital em Gerar. O Faro processa esse material e devolve flashcards com pergunta e resposta prontos para a sua trilha.",
   },
   {
     q: "Preciso pagar para usar?",
@@ -45,7 +45,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Da para importar minhas coleções do Anki?",
-    a: "Sim, o suporte a arquivos .apkg esta no roadmap do Importar, permitindo trazer suas coleções existentes e deixar a IA sugerir novas perguntas a partir delas.",
+    a: "Sim, o suporte a arquivos .apkg esta no roadmap do Gerar, permitindo trazer suas coleções existentes e deixar a IA sugerir novas perguntas a partir delas.",
   },
   {
     q: "Meus dados ficam seguros?",

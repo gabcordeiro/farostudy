@@ -28,7 +28,7 @@ const PRIMARY = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
   { to: "/quiz", label: "Quiz", Icon: IconQuiz },
-  { to: "/importar", label: "Importar", Icon: IconUpload },
+  { to: "/importar", label: "Gerar", Icon: IconUpload },
 ];
 
 const SECONDARY = [

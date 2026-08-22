@@ -27,7 +27,7 @@ export interface SectionInfo {
 export const SECTIONS: SectionInfo[] = [
   {
     to: "/importar",
-    label: "Importar",
+    label: "Gerar",
     Icon: IconUpload,
     summary: "Onde tudo começa: cole um texto e a IA vira flashcards.",
     detail:
@@ -100,7 +100,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     title: "1. Traga sua matéria",
-    body: "Em Importar, você cola um texto, um resumo ou parte do edital. A IA lê esse conteúdo e monta os flashcards prontos, dentro da trilha que você escolher.",
+    body: "Em Gerar, você cola um texto, um resumo ou parte do edital. A IA lê esse conteúdo e monta os flashcards prontos, dentro da trilha que você escolher.",
     mood: "search",
     to: "/importar",
   },

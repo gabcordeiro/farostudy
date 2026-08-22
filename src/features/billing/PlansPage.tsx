@@ -11,9 +11,15 @@ import { Skeleton } from "@/components/Skeleton";
 import { IconCoin } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { trackEvent } from "@/lib/analytics";
 import { usePlans } from "./usePlans";
 import { useCredits } from "./useCredits";
 import { startCheckout } from "./startCheckout";
+
+// Guarda o valor da compra em andamento pra reportar o evento de Purchase
+// quando o Mercado Pago volta pra essa tela -- o retorno so traz
+// ?pagamento=approved, sem o preco, entao precisa vir de algum lugar.
+const PENDING_PURCHASE_KEY = "faro.pending-purchase.v1";
 
 function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -34,10 +40,23 @@ export default function PlansPage() {
     if (!paymentStatus) return;
     if (paymentStatus === "approved") {
       notify("Pagamento recebido. Assim que o Mercado Pago confirmar, seus créditos entram.", "success");
+      // O retorno do checkout só traz o status na URL, sem valor -- o preço
+      // fica guardado desde o clique em "Comprar" (ver handleBuy).
+      const pendingRaw = localStorage.getItem(PENDING_PURCHASE_KEY);
+      if (pendingRaw) {
+        try {
+          const pending = JSON.parse(pendingRaw) as { priceCents: number; credits: number };
+          trackEvent("Purchase", { value: pending.priceCents / 100, currency: "BRL", contents: pending.credits });
+        } catch {
+          // valor guardado corrompido -- so nao reporta o evento, sem quebrar a tela.
+        }
+        localStorage.removeItem(PENDING_PURCHASE_KEY);
+      }
     } else if (paymentStatus === "pending") {
       notify("Pagamento pendente. Os créditos entram quando for confirmado.", "info");
     } else if (paymentStatus === "failure") {
       notify("O pagamento não foi concluído. Nada foi cobrado.", "error");
+      localStorage.removeItem(PENDING_PURCHASE_KEY);
     }
   }, [paymentStatus, notify]);
 
@@ -45,6 +64,14 @@ export default function PlansPage() {
     setBuyingId(planId);
     try {
       const { checkoutUrl } = await startCheckout(planId);
+      const plan = plans.find((p) => p.id === planId);
+      if (plan) {
+        trackEvent("InitiateCheckout", { value: plan.priceCents / 100, currency: "BRL", contents: plan.credits });
+        localStorage.setItem(
+          PENDING_PURCHASE_KEY,
+          JSON.stringify({ priceCents: plan.priceCents, credits: plan.credits }),
+        );
+      }
       window.location.href = checkoutUrl;
     } catch (err) {
       setBuyingId(null);

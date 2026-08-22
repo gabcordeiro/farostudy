@@ -27,7 +27,7 @@ const NAV = [
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
   { to: "/quiz", label: "Quiz", Icon: IconQuiz },
   { to: "/trilhas", label: "Trilhas", Icon: IconRoute },
-  { to: "/importar", label: "Importar", Icon: IconUpload },
+  { to: "/importar", label: "Gerar", Icon: IconUpload },
   { to: "/ajuda", label: "Ajuda", Icon: IconHelp },
 ];
 

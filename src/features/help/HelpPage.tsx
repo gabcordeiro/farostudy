@@ -12,13 +12,13 @@ import { SECTIONS } from "./content";
 const FIRST_STEPS = [
   {
     title: "Crie sua primeira trilha",
-    body: "Uma trilha e uma matéria ou tópico do edital. Você pode criar direto na tela de Importar, no seletor de trilha.",
+    body: "Uma trilha e uma matéria ou tópico do edital. Você pode criar direto na tela de Gerar, no seletor de trilha.",
     to: "/trilhas",
     cta: "Ver trilhas",
   },
   {
     title: "Gere cards com IA",
-    body: "Cole um texto ou resumo em Importar. Comece com um trecho pequeno, de um assunto só: os cards saem mais precisos assim.",
+    body: "Cole um texto ou resumo em Gerar. Comece com um trecho pequeno, de um assunto só: os cards saem mais precisos assim.",
     to: "/importar",
     cta: "Gerar cards",
   },
@@ -51,7 +51,7 @@ const FAQ = [
   },
   {
     q: "O que consome crédito?",
-    a: "Apenas as gerações por IA: criar cards em Importar e montar um quiz novo. Estudar, editar cards e refazer um quiz já salvo não custam nada. Se a geração falhar, o crédito e devolvido automaticamente.",
+    a: "Apenas as gerações por IA: criar cards em Gerar e montar um quiz novo. Estudar, editar cards e refazer um quiz já salvo não custam nada. Se a geração falhar, o crédito e devolvido automaticamente.",
   },
   {
     q: "Posso editar um card que a IA gerou errado?",

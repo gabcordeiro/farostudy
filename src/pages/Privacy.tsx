@@ -11,7 +11,7 @@ export default function Privacy() {
       />
       <h1 className="font-display text-3xl text-paper">Política de Privacidade</h1>
       <p className="mt-2 text-2xs uppercase tracking-wider text-slate-muted">
-        Última atualização: 19 de agosto de 2026
+        Última atualização: 22 de agosto de 2026
       </p>
 
       <div className="prose-faro mt-8 space-y-6 text-sm leading-relaxed text-slate-soft">
@@ -36,6 +36,12 @@ export default function Privacy() {
             Usamos Supabase (autenticação e banco) e a API do Google Gemini para gerar cards a
             partir dos textos que você envia. O texto enviado para geração e transmitido a esses
             provedores apenas para processar o seu pedido.
+          </p>
+          <p className="mt-3">
+            Com o seu consentimento (banner de cookies), usamos o Meta Pixel para entender quais
+            páginas e campanhas trazem visitantes e medir a eficácia dos nossos anúncios. Ele só
+            carrega se você aceitar cookies de análise, e você pode recusar a qualquer momento
+            limpando os dados do site no seu navegador.
           </p>
         </section>
         <section>

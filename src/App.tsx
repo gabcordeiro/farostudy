@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { Mascot } from "@/components/Mascot";
 import { CookieBanner } from "@/components/CookieBanner";
+import { Analytics } from "@/components/Analytics";
 import { Skeleton } from "@/components/Skeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
@@ -141,6 +142,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <CookieBanner />
+      <Analytics />
     </>
   );
 }

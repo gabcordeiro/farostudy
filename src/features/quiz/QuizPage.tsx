@@ -10,7 +10,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { Mascot } from "@/components/Mascot";
-import { IconCheck, IconClose, IconQuiz } from "@/components/icons";
+import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { AppFunctionError } from "@/lib/functionError";
 import { renderCardHtml } from "@/lib/sanitize";
@@ -186,44 +186,58 @@ export default function QuizPage() {
       {items.length === 0 && !busy ? (
         <div className="space-y-5">
           <div className="space-y-4 rounded-md border border-hairline bg-elevated p-5">
-            <div>
-              <label className="mb-1 block text-sm text-slate-soft">Trilha</label>
-              {decksLoading ? (
-                <Skeleton className="h-10 w-full" />
-              ) : decks.length > 0 ? (
-                <select
-                  value={deckId}
-                  onChange={(e) => setDeckId(e.target.value)}
-                  className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-                >
-                  <option value="">Selecione uma trilha...</option>
-                  {decks.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.title}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="text-sm text-slate-muted">
-                  Você ainda não tem trilhas.{" "}
-                  <Link to="/importar" className="text-action underline underline-offset-2">
-                    Crie uma
-                  </Link>{" "}
-                  para começar.
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-soft">Número de perguntas</label>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={count}
-                onChange={(e) => setCount(Number(e.target.value))}
-                className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-              />
-              <p className="mt-1 text-2xs text-slate-muted">Entre 1 e 20 perguntas.</p>
+            {/* Trilha + Número de perguntas: mesma linha, mesmo padrão do
+                cabeçalho de campo usado em Gerar (label + link de gestão). */}
+            <div className="flex flex-wrap items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="text-sm text-slate-soft">Trilha</label>
+                  <Link
+                    to="/trilhas"
+                    className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+                  >
+                    <IconRoute className="h-3.5 w-3.5" />
+                    Gerenciar trilhas
+                  </Link>
+                </div>
+                {decksLoading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : decks.length > 0 ? (
+                  <select
+                    value={deckId}
+                    onChange={(e) => setDeckId(e.target.value)}
+                    className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                  >
+                    <option value="">Selecione uma trilha...</option>
+                    {decks.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.title}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-sm text-slate-muted">
+                    Você ainda não tem trilhas.{" "}
+                    <Link to="/importar" className="text-action underline underline-offset-2">
+                      Crie uma
+                    </Link>{" "}
+                    para começar.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm text-slate-soft">Número de perguntas</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={count}
+                  onChange={(e) => setCount(Number(e.target.value))}
+                  className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                />
+                <p className="mt-1 text-2xs text-slate-muted">Entre 1 e 20.</p>
+              </div>
             </div>
 
             {error ? (
