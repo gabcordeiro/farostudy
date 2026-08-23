@@ -12,6 +12,8 @@ import { PageTransition } from "@/components/PageTransition";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { WelcomeTour } from "@/features/help/WelcomeTour";
+import { GenerationProvider } from "@/features/generation/GenerationProvider";
+import { GenerationTray } from "@/features/generation/GenerationTray";
 import type { AppOutletContext } from "@/lib/appOutletContext";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
@@ -75,25 +77,31 @@ function AppLayout() {
   }, [profileLoading, profile]);
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      {/* Sidebar so no desktop; no mobile a navegação vira barra de abas. */}
-      <div className="hidden md:sticky md:top-0 md:block md:h-screen">
-        <Sidebar />
-      </div>
-      <MobileHeader />
-      <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
-        <PageTransition>
-          <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
-        </PageTransition>
-      </main>
-      <MobileNav />
+    // GenerationProvider vive no layout persistente: uma geração iniciada em
+    // qualquer aba sobrevive à troca de menu, e a bandeja/badges (dentro do
+    // provider) refletem o status em toda a área logada.
+    <GenerationProvider>
+      <div className="flex min-h-screen flex-col md:flex-row">
+        {/* Sidebar so no desktop; no mobile a navegação vira barra de abas. */}
+        <div className="hidden md:sticky md:top-0 md:block md:h-screen">
+          <Sidebar />
+        </div>
+        <MobileHeader />
+        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+          <PageTransition>
+            <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
+          </PageTransition>
+        </main>
+        <MobileNav />
+        <GenerationTray />
 
-      <WelcomeTour
-        open={tourOpen}
-        onClose={() => setTourOpen(false)}
-        onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
-      />
-    </div>
+        <WelcomeTour
+          open={tourOpen}
+          onClose={() => setTourOpen(false)}
+          onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
+        />
+      </div>
+    </GenerationProvider>
   );
 }
 

@@ -4,8 +4,8 @@
  * o painel de retenção. Toda bateria gerada e salva (quiz_sets) para poder
  * ser refeita sem gastar uma nova chamada de IA.
  */
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
@@ -13,15 +13,15 @@ import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
 import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
 import { useToast } from "@/components/Toast";
-import { AppFunctionError } from "@/lib/functionError";
 import { celebrate } from "@/lib/confetti";
 import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useCredits } from "@/features/billing/useCredits";
+import { useGeneration } from "@/features/generation/GenerationProvider";
 import { useDecks } from "@/features/ai/useDecks";
-import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
+import { type QuizChoice, type QuizItem } from "./generateQuiz";
 import { useQuizSets } from "./useQuizSets";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -47,14 +47,20 @@ function formatDate(iso: string): string {
 
 export default function QuizPage() {
   const { user } = useAuth();
-  const { notify, dismiss } = useToast();
+  const { notify } = useToast();
   const { decks, loading: decksLoading } = useDecks();
   const { balance } = useCredits();
+  // A geração roda no provider global: sobrevive à troca de menu e mantém o
+  // status na bandeja/badges. A página dispara, observa o job e, quando fica
+  // pronto, monta a bateria a partir dele (mesmo se o usuário saiu e voltou).
+  const { startQuiz, jobs } = useGeneration();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [deckId, setDeckId] = useState("");
   const [count, setCount] = useState(10);
-  const { sets: savedSets, loading: setsLoading, save: saveSet } = useQuizSets(deckId || undefined);
+  const { sets: savedSets, loading: setsLoading, reload: reloadSets } = useQuizSets(deckId || undefined);
 
-  const [busy, setBusy] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsCredits, setNeedsCredits] = useState(false);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
@@ -63,6 +69,11 @@ export default function QuizPage() {
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  // Garante que um job pronto só vira bateria uma vez (evita reinício a cada render).
+  const consumedJobRef = useRef<string | null>(null);
+
+  const job = useMemo(() => jobs.find((j) => j.id === jobId) ?? null, [jobs, jobId]);
+  const busy = job?.status === "running";
 
   const current = items[index];
   const isLast = current && index === items.length - 1;
@@ -73,24 +84,6 @@ export default function QuizPage() {
   useEffect(() => {
     if (quizFinished) celebrate();
   }, [quizFinished]);
-
-  // Fechar a aba durante a geracao nao cancela a chamada no servidor -- o
-  // credito ja foi debitado -- mas o quiz gerado nunca chega a ser salvo
-  // (isso so acontece no retorno da funcao, aqui no cliente). Avisa antes.
-  useEffect(() => {
-    if (!busy) return;
-    function onBeforeUnload(e: BeforeUnloadEvent) {
-      e.preventDefault();
-    }
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [busy]);
-
-  // Se o usuário trocar de trilha, esconde a fila de perguntas em andamento.
-  useEffect(() => {
-    setItems([]);
-    setRawItems([]);
-  }, [deckId]);
 
   function startFrom(source: QuizItem[], targetDeckId: string) {
     const built: DisplayItem[] = source.map((it) => ({
@@ -106,43 +99,55 @@ export default function QuizPage() {
     setScore({ correct: 0, total: 0 });
   }
 
-  async function handleStart() {
+  // Reage ao desfecho do job iniciado nesta página. Pronto -> monta a bateria
+  // e recarrega a lista de salvas (o provider já gravou em quiz_sets). Erro ->
+  // aviso inline (créditos) ou modal genérico, igual ao fluxo antigo.
+  useEffect(() => {
+    if (!job) return;
+    if (job.status === "done" && job.quiz && consumedJobRef.current !== job.id) {
+      consumedJobRef.current = job.id;
+      startFrom(job.quiz.items, job.deckId);
+      void reloadSets();
+    } else if (job.status === "error") {
+      if (job.insufficientCredits) {
+        setError(job.errorMessage ?? "Créditos insuficientes.");
+        setNeedsCredits(true);
+      } else {
+        setErrorModal({ code: job.errorCode ?? null });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job?.status, job?.id]);
+
+  // Ação "Abrir quiz" da bandeja: chega via state da navegação. Seleciona a
+  // trilha do job e começa a bateria já gerada, sem custar outra chamada de IA.
+  useEffect(() => {
+    const playId = (location.state as { playQuizJobId?: string } | null)?.playQuizJobId;
+    if (!playId) return;
+    const j = jobs.find((x) => x.id === playId);
+    if (j?.quiz && consumedJobRef.current !== j.id) {
+      consumedJobRef.current = j.id;
+      setJobId(j.id);
+      setDeckId(j.deckId);
+      startFrom(j.quiz.items, j.deckId);
+    }
+    // Limpa o state para um refresh não reabrir a mesma bateria.
+    navigate(location.pathname, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
+  function handleStart() {
     setError(null);
     setNeedsCredits(false);
     if (!deckId) {
       setError("Selecione uma trilha.");
       return;
     }
-    setBusy(true);
     setItems([]);
-    const progressId = notify("O Faro esta preparando as perguntas do quiz...", "info", 0);
-    try {
-      const res = await generateQuiz({ deckId, count });
-      dismiss(progressId);
-      if (res.items.length === 0) {
-        setError("O Faro não conseguiu montar o quiz agora. Tente outra trilha.");
-        notify("Não foi possível montar o quiz.", "error");
-      } else {
-        startFrom(res.items, deckId);
-        void saveSet(deckId, res.items);
-        notify(`Quiz com ${res.items.length} perguntas pronto e salvo.`, "success");
-      }
-    } catch (err) {
-      dismiss(progressId);
-      // Mesmo critério de GeneratePage.tsx: créditos insuficientes é
-      // acionável e fica inline; qualquer outra falha vira o modal
-      // genérico, sem expor o erro técnico ao cliente.
-      if (err instanceof AppFunctionError && err.insufficientCredits) {
-        setError(err.message);
-        setNeedsCredits(true);
-        notify(err.message, "error");
-      } else {
-        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
-        notify("Não foi possível gerar o quiz agora.", "error");
-      }
-    } finally {
-      setBusy(false);
-    }
+    setRawItems([]);
+    const title = decks.find((d) => d.id === deckId)?.title ?? "sua trilha";
+    const id = startQuiz({ deckId, count }, title);
+    setJobId(id);
   }
 
   function handleRedoSaved(setItemsSrc: QuizItem[], targetDeckId: string) {
@@ -222,7 +227,12 @@ export default function QuizPage() {
                 ) : decks.length > 0 ? (
                   <select
                     value={deckId}
-                    onChange={(e) => setDeckId(e.target.value)}
+                    onChange={(e) => {
+                      // Trocar de trilha manualmente descarta a fila em andamento.
+                      setDeckId(e.target.value);
+                      setItems([]);
+                      setRawItems([]);
+                    }}
                     className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
                   >
                     <option value="">Selecione uma trilha...</option>

@@ -21,13 +21,15 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
+import { GenBadge } from "@/features/generation/GenBadge";
+import type { GenKind } from "@/features/generation/types";
 
-const NAV = [
+const NAV: { to: string; label: string; Icon: typeof IconChart; badgeKind?: GenKind }[] = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
-  { to: "/quiz", label: "Quiz", Icon: IconQuiz },
+  { to: "/quiz", label: "Quiz", Icon: IconQuiz, badgeKind: "quiz" },
   { to: "/trilhas", label: "Trilhas", Icon: IconRoute },
-  { to: "/importar", label: "Gerar", Icon: IconUpload },
+  { to: "/importar", label: "Gerar", Icon: IconUpload, badgeKind: "cards" },
   { to: "/ajuda", label: "Ajuda", Icon: IconHelp },
 ];
 
@@ -47,7 +49,7 @@ export function Sidebar() {
       </Link>
       <nav className="flex-1 p-2" aria-label="Navegação principal">
         <ul className="space-y-1">
-          {NAV.map(({ to, label, Icon }) => (
+          {NAV.map(({ to, label, Icon, badgeKind }) => (
             <li key={to}>
               <NavLink
                 to={to}
@@ -61,6 +63,7 @@ export function Sidebar() {
               >
                 <Icon className="h-[18px] w-[18px]" />
                 {label}
+                {badgeKind ? <GenBadge kind={badgeKind} className="ml-auto" /> : null}
               </NavLink>
             </li>
           ))}

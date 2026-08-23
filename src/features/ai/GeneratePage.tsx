@@ -3,7 +3,7 @@
  * Cola texto ou JSON, escolhe (ou cria) a trilha e o Faro devolve os flashcards.
  * Upload de .apkg fica como próximo passo (parsing do pacote Anki no backend).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
@@ -11,18 +11,18 @@ import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconPlus, IconRoute, IconWand } from "@/components/icons";
-import { useToast } from "@/components/Toast";
-import { AppFunctionError } from "@/lib/functionError";
 import { useCredits } from "@/features/billing/useCredits";
+import { useGeneration } from "@/features/generation/GenerationProvider";
 import { useDecks } from "./useDecks";
-import { generateCards, type GenerateResult } from "./generateCards";
 
 type Mode = "text" | "json";
 
 export default function GeneratePage() {
   const { decks, loading: decksLoading, createDeck } = useDecks();
   const { balance } = useCredits();
-  const { notify, dismiss } = useToast();
+  // A geração roda no provider global: sobrevive à troca de menu e mantém o
+  // status na bandeja/badges. A página só dispara e observa o job.
+  const { startCards, jobs } = useGeneration();
   const [deckId, setDeckId] = useState("");
   const [creatingDeck, setCreatingDeck] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
@@ -30,24 +30,28 @@ export default function GeneratePage() {
   const [content, setContent] = useState("");
   const [maxCards, setMaxCards] = useState(20);
 
-  const [busy, setBusy] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsCredits, setNeedsCredits] = useState(false);
-  const [result, setResult] = useState<GenerateResult | null>(null);
-  const [resultDeckId, setResultDeckId] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
 
-  // Fechar a aba nao cancela a geracao no servidor (o credito ja foi
-  // debitado e os cards sao inseridos direto pela edge function), mas o
-  // usuario perde a confirmacao na tela. Avisa antes de sair sem querer.
+  const job = useMemo(() => jobs.find((j) => j.id === jobId) ?? null, [jobs, jobId]);
+  const busy = job?.status === "running";
+  const result = job?.status === "done" ? (job.cards ?? null) : null;
+  const resultDeckId = job?.deckId ?? null;
+
+  // Reage ao desfecho do job iniciado aqui, reproduzindo o tratamento antigo:
+  // créditos insuficientes vira aviso inline (acionável); qualquer outra falha
+  // vira o modal genérico -- o detalhe técnico já foi para error_logs.
   useEffect(() => {
-    if (!busy) return;
-    function onBeforeUnload(e: BeforeUnloadEvent) {
-      e.preventDefault();
+    if (job?.status !== "error") return;
+    if (job.insufficientCredits) {
+      setError(job.errorMessage ?? "Créditos insuficientes.");
+      setNeedsCredits(true);
+    } else {
+      setErrorModal({ code: job.errorCode ?? null });
     }
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [busy]);
+  }, [job?.status, job?.insufficientCredits, job?.errorMessage, job?.errorCode]);
 
   function handleDeckSelect(value: string) {
     setDeckId(value);
@@ -69,7 +73,7 @@ export default function GeneratePage() {
   async function handleGenerate() {
     setError(null);
     setNeedsCredits(false);
-    setResult(null);
+    setJobId(null);
     if (content.trim().length < 1) {
       setError("Cole um texto ou JSON para gerar os cards.");
       return;
@@ -79,35 +83,10 @@ export default function GeneratePage() {
       setError("Escolha uma trilha existente ou crie uma nova.");
       return;
     }
-    setBusy(true);
-    const progressId = notify("O Faro esta lendo seu conteúdo e montando os cards...", "info", 0);
-    try {
-      const res = await generateCards({ deckId: targetDeck, mode, content, maxCards });
-      setResult(res);
-      setResultDeckId(targetDeck);
-      dismiss(progressId);
-      notify(
-        res.created > 0 ? `${res.created} cards criados com sucesso.` : "Nenhum card foi gerado desta vez.",
-        res.created > 0 ? "success" : "error",
-      );
-    } catch (err) {
-      dismiss(progressId);
-      // Créditos insuficientes é um caso acionável (link "Ver planos"), fica
-      // como aviso inline. Qualquer outra falha (Gemini fora do ar, erro ao
-      // salvar) é técnica e imprevisível -- vira o modal genérico, sem expor
-      // o detalhe cru ao cliente (esse detalhe já foi gravado em
-      // error_logs pela edge function, visível só para o admin).
-      if (err instanceof AppFunctionError && err.insufficientCredits) {
-        setError(err.message);
-        setNeedsCredits(true);
-        notify(err.message, "error");
-      } else {
-        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
-        notify("Não foi possível gerar os cards agora.", "error");
-      }
-    } finally {
-      setBusy(false);
-    }
+    const title =
+      decks.find((d) => d.id === targetDeck)?.title ?? (newDeckTitle.trim() || "sua trilha");
+    const id = startCards({ deckId: targetDeck, mode, content, maxCards }, title);
+    setJobId(id);
   }
 
   return (

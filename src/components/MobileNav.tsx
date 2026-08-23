@@ -23,12 +23,14 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
+import { GenBadge } from "@/features/generation/GenBadge";
+import type { GenKind } from "@/features/generation/types";
 
-const PRIMARY = [
+const PRIMARY: { to: string; label: string; Icon: typeof IconChart; badgeKind?: GenKind }[] = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
   { to: "/estudar", label: "Estudar", Icon: IconDeck },
-  { to: "/quiz", label: "Quiz", Icon: IconQuiz },
-  { to: "/importar", label: "Gerar", Icon: IconUpload },
+  { to: "/quiz", label: "Quiz", Icon: IconQuiz, badgeKind: "quiz" },
+  { to: "/importar", label: "Gerar", Icon: IconUpload, badgeKind: "cards" },
 ];
 
 const SECONDARY = [
@@ -126,7 +128,7 @@ export function MobileNav() {
         aria-label="Navegação principal"
         className="pb-safe fixed inset-x-0 bottom-0 z-40 flex border-t border-hairline bg-surface md:hidden"
       >
-        {PRIMARY.map(({ to, label, Icon }) => (
+        {PRIMARY.map(({ to, label, Icon, badgeKind }) => (
           <NavLink key={to} to={to} className={({ isActive }) => tabClass(isActive)}>
             {({ isActive }) => (
               <>
@@ -137,11 +139,16 @@ export function MobileNav() {
                     isActive ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
-                <Icon
-                  className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
-                    isActive ? "-translate-y-0.5 scale-110" : ""
-                  }`}
-                />
+                <span className="relative">
+                  <Icon
+                    className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
+                      isActive ? "-translate-y-0.5 scale-110" : ""
+                    }`}
+                  />
+                  {badgeKind ? (
+                    <GenBadge kind={badgeKind} className="absolute -right-1.5 -top-1" />
+                  ) : null}
+                </span>
                 {label}
               </>
             )}
