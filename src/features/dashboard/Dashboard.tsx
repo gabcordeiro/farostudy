@@ -11,26 +11,38 @@ import { IconChart, IconLayers, IconRoute } from "@/components/icons";
 import { ConsistencyHeatmap } from "./ConsistencyHeatmap";
 import { RetentionBI } from "./RetentionBI";
 import { useDashboardData } from "./useDashboardData";
+import { useCountUp } from "@/lib/useCountUp";
 import type { ReactNode } from "react";
 
 function StatTile({
   icon,
   label,
   value,
+  suffix,
   hint,
+  delayMs = 0,
 }: {
   icon: ReactNode;
   label: string;
-  value: string;
+  value: number;
+  suffix?: string;
   hint?: string;
+  delayMs?: number;
 }) {
+  const count = useCountUp(value);
   return (
-    <div className="rounded-md border border-slate-border bg-ink-700 p-4">
+    <div
+      className="animate-rise-in rounded-md border border-slate-border bg-ink-700 p-4 transition-transform duration-200 ease-fluid hover:-translate-y-0.5"
+      style={{ animationDelay: `${delayMs}ms` }}
+    >
       <div className="mb-2 flex items-center gap-2 text-slate-muted">
         {icon}
         <span className="text-2xs uppercase tracking-wider">{label}</span>
       </div>
-      <p className="font-display text-2xl text-paper tabular-nums">{value}</p>
+      <p className="font-display text-2xl text-paper tabular-nums">
+        {count}
+        {suffix}
+      </p>
       {hint ? <p className="mt-0.5 text-2xs text-slate-muted">{hint}</p> : null}
     </div>
   );
@@ -127,38 +139,48 @@ export default function Dashboard() {
             }
           />
         ) : (
-          <div className="animate-rise-in space-y-6">
+          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <StatTile
                 icon={<IconRoute className="h-4 w-4" />}
                 label="Ofensiva"
-                value={`${data.currentStreak}d`}
+                value={data.currentStreak}
+                suffix="d"
                 hint={`recorde ${data.longestStreak}d`}
+                delayMs={0}
               />
               <StatTile
                 icon={<IconLayers className="h-4 w-4" />}
                 label="Revisões 30d"
-                value={String(data.reviewsLast30)}
+                value={data.reviewsLast30}
+                delayMs={60}
               />
               <StatTile
                 icon={<IconChart className="h-4 w-4" />}
                 label="Acerto geral"
-                value={`${Math.round(data.overallAccuracy * 100)}%`}
+                value={Math.round(data.overallAccuracy * 100)}
+                suffix="%"
+                delayMs={120}
               />
               <StatTile
                 icon={<IconRoute className="h-4 w-4" />}
                 label="Trilhas ativas"
-                value={String(data.retention.length)}
+                value={data.retention.length}
+                delayMs={180}
               />
             </div>
 
-            <ConsistencyHeatmap
-              activity={data.activity}
-              currentStreak={data.currentStreak}
-              longestStreak={data.longestStreak}
-            />
+            <div className="animate-rise-in" style={{ animationDelay: "220ms" }}>
+              <ConsistencyHeatmap
+                activity={data.activity}
+                currentStreak={data.currentStreak}
+                longestStreak={data.longestStreak}
+              />
+            </div>
 
-            <RetentionBI retention={data.retention} overallAccuracy={data.overallAccuracy} />
+            <div className="animate-rise-in" style={{ animationDelay: "300ms" }}>
+              <RetentionBI retention={data.retention} overallAccuracy={data.overallAccuracy} />
+            </div>
           </div>
         )
       ) : null}
