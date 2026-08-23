@@ -11,9 +11,18 @@ import { IconChart, IconFlame, IconLayers, IconRoute, IconTarget } from "@/compo
 import { ConsistencyHeatmap } from "./ConsistencyHeatmap";
 import { RetentionBI } from "./RetentionBI";
 import { WeeklyProgress } from "./WeeklyProgress";
+import { DailyGoalCard } from "./DailyGoalCard";
 import { useDashboardData } from "./useDashboardData";
+import { useProfile } from "@/features/profile/useProfile";
 import { useCountUp } from "@/lib/useCountUp";
 import type { ReactNode } from "react";
+
+/** Chave de dia local (meia-noite local -> data), igual ao heatmap/WeeklyProgress. */
+function localDayKey(d: Date): string {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x.toISOString().slice(0, 10);
+}
 
 type Tone = "focus" | "good" | "action" | "cool";
 
@@ -96,6 +105,7 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const { status, data, error, reload } = useDashboardData();
+  const { profile } = useProfile();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -190,8 +200,18 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="animate-rise-in" style={{ animationDelay: "200ms" }}>
-              <WeeklyProgress activity={data.activity} />
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div className="animate-rise-in lg:col-span-2" style={{ animationDelay: "200ms" }}>
+                <WeeklyProgress activity={data.activity} />
+              </div>
+              <div className="animate-rise-in" style={{ animationDelay: "240ms" }}>
+                <DailyGoalCard
+                  reviewedToday={
+                    data.activity.find((a) => a.day === localDayKey(new Date()))?.reviews ?? 0
+                  }
+                  goal={profile?.daily_goal ?? 20}
+                />
+              </div>
             </div>
 
             <div className="animate-rise-in" style={{ animationDelay: "280ms" }}>

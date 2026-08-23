@@ -21,6 +21,7 @@ export interface Database {
           onboarded_at: string | null;
           accepted_tos_at: string | null;
           accepted_privacy_at: string | null;
+          daily_goal: number;
           created_at: string;
           updated_at: string;
         };

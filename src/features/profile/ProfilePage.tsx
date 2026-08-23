@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const { profile, loading, error, update } = useProfile();
 
   const [displayName, setDisplayName] = useState("");
+  const [dailyGoal, setDailyGoal] = useState(20);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name ?? "");
+      setDailyGoal(profile.daily_goal ?? 20);
       setAvatarUrl(profile.avatar_url ?? null);
     }
   }, [profile]);
@@ -87,7 +89,8 @@ export default function ProfilePage() {
       return;
     }
     setSaving(true);
-    const ok = await update(parsed.data);
+    const goal = Math.min(500, Math.max(1, Math.round(dailyGoal) || 20));
+    const ok = await update({ ...parsed.data, daily_goal: goal });
     setSaving(false);
     if (ok) setNotice("Perfil salvo.");
   }
@@ -144,6 +147,24 @@ export default function ProfilePage() {
               onChange={(ev) => setDisplayName(ev.target.value)}
               className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
             />
+          </div>
+
+          <div>
+            <label htmlFor="daily_goal" className="mb-1 block text-sm text-slate-soft">
+              Meta diária de cards
+            </label>
+            <input
+              id="daily_goal"
+              type="number"
+              min={1}
+              max={500}
+              value={dailyGoal}
+              onChange={(ev) => setDailyGoal(Number(ev.target.value))}
+              className="w-32 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+            />
+            <p className="mt-1 text-2xs text-slate-muted">
+              Quantos cards você quer revisar por dia. Aparece no painel como meta.
+            </p>
           </div>
 
           <div>

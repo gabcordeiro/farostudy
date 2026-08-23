@@ -15,13 +15,17 @@ export interface ProfileRow {
   timezone: string;
   role: UserRole;
   onboarded_at: string | null;
+  daily_goal: number;
 }
 
 interface UpdateInput {
   display_name?: string;
   avatar_url?: string | null;
   onboarded_at?: string | null;
+  daily_goal?: number;
 }
+
+const PROFILE_COLS = "id, display_name, avatar_url, locale, timezone, role, onboarded_at, daily_goal";
 
 export function useProfile() {
   const { user } = useAuth();
@@ -35,7 +39,7 @@ export function useProfile() {
     const res = await withJwtRetry(() =>
       supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, locale, timezone, role, onboarded_at")
+        .select(PROFILE_COLS)
         .eq("id", user.id)
         .maybeSingle(),
     );
@@ -57,7 +61,7 @@ export function useProfile() {
           .from("profiles")
           .update(patch)
           .eq("id", user.id)
-          .select("id, display_name, avatar_url, locale, timezone, role, onboarded_at")
+          .select(PROFILE_COLS)
           .single(),
       );
       if (res.error) {
