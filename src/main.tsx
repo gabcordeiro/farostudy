@@ -7,6 +7,7 @@ import { AuthProvider } from "./features/auth/AuthProvider";
 import { ThemeProvider } from "./features/theme/ThemeProvider";
 import { ToastProvider } from "./components/Toast";
 import { QuizGenerationProvider } from "./features/quiz/QuizGenerationProvider";
+import { AppearanceProvider } from "./features/appearance/AppearanceProvider";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -18,11 +19,13 @@ createRoot(root).render(
       <ThemeProvider>
         <BrowserRouter>
           <AuthProvider>
-            <ToastProvider>
-              <QuizGenerationProvider>
-                <App />
-              </QuizGenerationProvider>
-            </ToastProvider>
+            <AppearanceProvider>
+              <ToastProvider>
+                <QuizGenerationProvider>
+                  <App />
+                </QuizGenerationProvider>
+              </ToastProvider>
+            </AppearanceProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

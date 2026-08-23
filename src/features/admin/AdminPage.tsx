@@ -11,8 +11,9 @@ import { IconCoin, IconShield } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { useAdminData } from "./useAdminData";
 import { AdminVisualLab } from "./AdminVisualLab";
+import { AdminAppearance } from "./AdminAppearance";
 
-type Tab = "users" | "requests" | "plans" | "errors" | "visuals";
+type Tab = "users" | "requests" | "plans" | "errors" | "visuals" | "appearance";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -123,6 +124,7 @@ export default function AdminPage() {
             { key: "plans", label: "Planos" },
             { key: "errors", label: `Erros${errorLogs.length > 0 ? ` (${errorLogs.length})` : ""}` },
             { key: "visuals", label: "Visuais" },
+            { key: "appearance", label: "Aparência" },
           ] as { key: Tab; label: string }[]
         ).map(({ key, label }) => (
           <button
@@ -290,6 +292,8 @@ export default function AdminPage() {
         )
       ) : tab === "visuals" ? (
         <AdminVisualLab />
+      ) : tab === "appearance" ? (
+        <AdminAppearance />
       ) : (
         <div className="space-y-5">
           <form

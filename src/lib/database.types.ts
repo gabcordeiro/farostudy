@@ -190,6 +190,17 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      app_settings: {
+        Row: {
+          id: number;
+          appearance: unknown;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: { id?: number; appearance?: unknown };
+        Update: { appearance?: unknown };
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {
@@ -232,6 +243,10 @@ export interface Database {
       };
       resolve_credit_request: {
         Args: { request_id: string; approve: boolean };
+        Returns: void;
+      };
+      set_app_appearance: {
+        Args: { p_appearance: Record<string, unknown> };
         Returns: void;
       };
       admin_list_users: {
