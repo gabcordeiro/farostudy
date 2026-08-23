@@ -6,6 +6,7 @@ import App from "./App";
 import { AuthProvider } from "./features/auth/AuthProvider";
 import { ThemeProvider } from "./features/theme/ThemeProvider";
 import { ToastProvider } from "./components/Toast";
+import { QuizGenerationProvider } from "./features/quiz/QuizGenerationProvider";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -18,7 +19,9 @@ createRoot(root).render(
         <BrowserRouter>
           <AuthProvider>
             <ToastProvider>
-              <App />
+              <QuizGenerationProvider>
+                <App />
+              </QuizGenerationProvider>
             </ToastProvider>
           </AuthProvider>
         </BrowserRouter>

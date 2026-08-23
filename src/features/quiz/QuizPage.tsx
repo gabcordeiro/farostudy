@@ -4,7 +4,7 @@
  * o painel de retenção. Toda bateria gerada e salva (quiz_sets) para poder
  * ser refeita sem gastar uma nova chamada de IA.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
@@ -13,16 +13,16 @@ import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
 import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
 import { useToast } from "@/components/Toast";
-import { AppFunctionError } from "@/lib/functionError";
-import { celebrate } from "@/lib/confetti";
+import { burst, celebrate } from "@/lib/confetti";
 import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "@/features/ai/useDecks";
-import { generateQuiz, type QuizChoice, type QuizItem } from "./generateQuiz";
+import { type QuizChoice, type QuizItem } from "./generateQuiz";
 import { useQuizSets } from "./useQuizSets";
+import { useQuizGeneration } from "./QuizGenerationProvider";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -45,16 +45,24 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
+/** Trecho da 1a pergunta (sem HTML) para diferenciar baterias na lista. */
+function quizPreview(items: QuizItem[]): string {
+  const front = items[0]?.front ?? "";
+  const text = front.replace(/<[^>]*>/g, "").trim();
+  return text.length > 70 ? `${text.slice(0, 70)}…` : text;
+}
+
 export default function QuizPage() {
   const { user } = useAuth();
-  const { notify, dismiss } = useToast();
+  const { notify } = useToast();
   const { decks, loading: decksLoading } = useDecks();
   const { balance } = useCredits();
   const [deckId, setDeckId] = useState("");
   const [count, setCount] = useState(10);
-  const { sets: savedSets, loading: setsLoading, save: saveSet } = useQuizSets(deckId || undefined);
+  const { sets: savedSets, loading: setsLoading, reload: reloadSets } = useQuizSets(deckId || undefined);
+  const { generating, pendingResult, error: genError, start, consumeResult, clearError } =
+    useQuizGeneration();
 
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsCredits, setNeedsCredits] = useState(false);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
@@ -64,6 +72,9 @@ export default function QuizPage() {
   const [answer, setAnswer] = useState<number | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
+  // "gerando" agora é global (sobrevive à navegação): a barra de progresso e
+  // o esqueleto reaparecem ao voltar para /quiz no meio da geração.
+  const busy = generating !== null;
   const current = items[index];
   const isLast = current && index === items.length - 1;
   const quizFinished = !current && items.length > 0 && !busy;
@@ -92,7 +103,7 @@ export default function QuizPage() {
     setRawItems([]);
   }, [deckId]);
 
-  function startFrom(source: QuizItem[], targetDeckId: string) {
+  const startFrom = useCallback((source: QuizItem[], targetDeckId: string) => {
     const built: DisplayItem[] = source.map((it) => ({
       ...it,
       deckId: targetDeckId,
@@ -104,45 +115,42 @@ export default function QuizPage() {
     setIndex(0);
     setAnswer(null);
     setScore({ correct: 0, total: 0 });
-  }
+  }, []);
 
-  async function handleStart() {
+  // Quando a geração global termina, o resultado chega aqui: monta o quiz e
+  // atualiza a lista de baterias salvas.
+  useEffect(() => {
+    if (!pendingResult) return;
+    const r = consumeResult();
+    if (r) {
+      startFrom(r.items, r.deckId);
+      if (r.deckId === deckId) reloadSets();
+    }
+  }, [pendingResult, consumeResult, startFrom, deckId, reloadSets]);
+
+  // Erro da geração global -> reaproveita o mesmo tratamento de antes
+  // (crédito insuficiente inline; qualquer outra falha vira o modal).
+  useEffect(() => {
+    if (!genError) return;
+    if (genError.insufficientCredits) {
+      setError("Créditos insuficientes para gerar o quiz.");
+      setNeedsCredits(true);
+    } else {
+      setErrorModal({ code: genError.code });
+    }
+    clearError();
+  }, [genError, clearError]);
+
+  function handleStart() {
     setError(null);
     setNeedsCredits(false);
     if (!deckId) {
       setError("Selecione uma trilha.");
       return;
     }
-    setBusy(true);
+    const deckTitle = decks.find((d) => d.id === deckId)?.title ?? "trilha";
     setItems([]);
-    const progressId = notify("O Faro esta preparando as perguntas do quiz...", "info", 0);
-    try {
-      const res = await generateQuiz({ deckId, count });
-      dismiss(progressId);
-      if (res.items.length === 0) {
-        setError("O Faro não conseguiu montar o quiz agora. Tente outra trilha.");
-        notify("Não foi possível montar o quiz.", "error");
-      } else {
-        startFrom(res.items, deckId);
-        void saveSet(deckId, res.items);
-        notify(`Quiz com ${res.items.length} perguntas pronto e salvo.`, "success");
-      }
-    } catch (err) {
-      dismiss(progressId);
-      // Mesmo critério de GeneratePage.tsx: créditos insuficientes é
-      // acionável e fica inline; qualquer outra falha vira o modal
-      // genérico, sem expor o erro técnico ao cliente.
-      if (err instanceof AppFunctionError && err.insufficientCredits) {
-        setError(err.message);
-        setNeedsCredits(true);
-        notify(err.message, "error");
-      } else {
-        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
-        notify("Não foi possível gerar o quiz agora.", "error");
-      }
-    } finally {
-      setBusy(false);
-    }
+    start({ deckId, deckTitle, count });
   }
 
   function handleRedoSaved(setItemsSrc: QuizItem[], targetDeckId: string) {
@@ -162,6 +170,7 @@ export default function QuizPage() {
     const correct = chosen?.isCorrect === true;
     const rating = correct ? 3 : 1;
 
+    if (correct) burst();
     setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
 
     // Grava review sem mexer em cards.due_at (isso é trabalho do /estudar).
@@ -287,10 +296,10 @@ export default function QuizPage() {
               <button
                 type="button"
                 onClick={handleStart}
-                disabled={!deckId}
+                disabled={!deckId || busy}
                 className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
               >
-                Gerar novo quiz
+                {busy ? "Gerando..." : "Gerar novo quiz"}
               </button>
             </div>
           </div>
@@ -306,24 +315,40 @@ export default function QuizPage() {
                 <p className="text-sm text-slate-muted">Nenhuma bateria salva ainda.</p>
               ) : (
                 <ul className="space-y-2">
-                  {savedSets.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center justify-between gap-3 rounded-sm border border-hairline bg-elevated px-4 py-2.5"
-                    >
-                      <span className="text-sm text-paper">
-                        {s.itemCount} perguntas
-                        <span className="ml-2 text-2xs text-slate-muted">{formatDate(s.createdAt)}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRedoSaved(s.items, s.deckId)}
-                        className="press rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
+                  {savedSets.map((s, i) => {
+                    // Numero sequencial (a lista vem da mais nova para a mais
+                    // antiga) + um trecho da 1a pergunta para diferenciar
+                    // baterias que, senao, seriam todas "10 perguntas".
+                    const num = savedSets.length - i;
+                    const preview = quizPreview(s.items);
+                    return (
+                      <li
+                        key={s.id}
+                        className="flex items-center justify-between gap-3 rounded-sm border border-hairline bg-elevated px-4 py-2.5"
                       >
-                        Refazer
-                      </button>
-                    </li>
-                  ))}
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-baseline gap-2">
+                            <span className="text-sm font-medium text-paper">Bateria {num}</span>
+                            <span className="text-2xs text-slate-muted">
+                              {s.itemCount} perguntas · {formatDate(s.createdAt)}
+                            </span>
+                          </span>
+                          {preview ? (
+                            <span className="mt-0.5 block truncate text-2xs text-slate-muted">
+                              {preview}
+                            </span>
+                          ) : null}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRedoSaved(s.items, s.deckId)}
+                          className="press shrink-0 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
+                        >
+                          Refazer
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
@@ -332,10 +357,18 @@ export default function QuizPage() {
       ) : null}
 
       {busy ? (
-        <div className="space-y-3">
+        <div className="animate-fade-in space-y-3">
           <div className="flex items-center gap-3">
             <Mascot mood="searching" size="sm" alt="Faro farejando, preparando o quiz" />
-            <p className="text-sm text-slate-muted">O Faro está preparando as perguntas...</p>
+            <p className="text-sm text-slate-muted">
+              O Faro está preparando as perguntas
+              {generating?.deckTitle ? (
+                <>
+                  {" "}de <span className="text-paper">"{generating.deckTitle}"</span>
+                </>
+              ) : null}
+              ...
+            </p>
           </div>
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-10 w-full" />

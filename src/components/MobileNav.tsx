@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
+import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
 
 const PRIMARY = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
@@ -40,6 +41,7 @@ export function MobileNav() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { balance } = useCredits();
+  const { generating } = useQuizGeneration();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -137,11 +139,19 @@ export function MobileNav() {
                     isActive ? "scale-x-100" : "scale-x-0"
                   }`}
                 />
-                <Icon
-                  className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
-                    isActive ? "-translate-y-0.5 scale-110" : ""
-                  }`}
-                />
+                <span className="relative">
+                  <Icon
+                    className={`h-5 w-5 transition-transform duration-200 ease-fluid ${
+                      isActive ? "-translate-y-0.5 scale-110" : ""
+                    }`}
+                  />
+                  {to === "/quiz" && generating ? (
+                    <span
+                      className="absolute -right-1.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-action"
+                      aria-label="Gerando um quiz"
+                    />
+                  ) : null}
+                </span>
                 {label}
               </>
             )}

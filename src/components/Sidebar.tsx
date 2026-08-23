@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
+import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
 
 const NAV = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
@@ -35,6 +36,7 @@ export function Sidebar() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { balance } = useCredits();
+  const { generating } = useQuizGeneration();
 
   const displayName = profile?.display_name ?? user?.email ?? "";
   const emailLabel = user?.email ?? "";
@@ -61,6 +63,13 @@ export function Sidebar() {
               >
                 <Icon className="h-[18px] w-[18px]" />
                 {label}
+                {to === "/quiz" && generating ? (
+                  <span
+                    className="ml-auto h-2 w-2 animate-pulse rounded-full bg-action"
+                    title="Gerando um quiz..."
+                    aria-label="Gerando um quiz"
+                  />
+                ) : null}
               </NavLink>
             </li>
           ))}

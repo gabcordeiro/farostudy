@@ -15,14 +15,21 @@ import {
 
 type ToastType = "info" | "success" | "error";
 
+/** Ação opcional -- vira um botão no aviso (ex.: "Ver quiz"). */
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ToastItem {
   id: number;
   type: ToastType;
   message: string;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  notify: (message: string, type?: ToastType, durationMs?: number) => number;
+  notify: (message: string, type?: ToastType, durationMs?: number, action?: ToastAction) => number;
   dismiss: (id: number) => void;
 }
 
@@ -43,9 +50,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const notify = useCallback(
-    (message: string, type: ToastType = "info", durationMs = 4000) => {
+    (message: string, type: ToastType = "info", durationMs = 4000, action?: ToastAction) => {
       const id = nextId.current++;
-      setToasts((prev) => [...prev, { id, type, message }]);
+      setToasts((prev) => [...prev, { id, type, message, action }]);
       if (durationMs > 0) {
         window.setTimeout(() => dismiss(id), durationMs);
       }
@@ -71,7 +78,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className="pointer-events-auto flex w-full max-w-sm items-start gap-2.5 rounded-sm border border-hairline bg-elevated px-4 py-3 shadow-pop animate-toast-in"
           >
             <span className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${DOT_COLOR[t.type]}`} aria-hidden="true" />
-            <p className="min-w-0 flex-1 text-sm text-paper">{t.message}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-paper">{t.message}</p>
+              {t.action ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    t.action?.onClick();
+                    dismiss(t.id);
+                  }}
+                  className="press mt-1.5 rounded-sm bg-focus px-2.5 py-1 text-2xs font-medium text-paper hover:bg-focus-deep"
+                >
+                  {t.action.label}
+                </button>
+              ) : null}
+            </div>
             <button
               type="button"
               onClick={() => dismiss(t.id)}
