@@ -7,15 +7,26 @@ import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { IconChart, IconLayers, IconRoute } from "@/components/icons";
+import { IconChart, IconFlame, IconLayers, IconRoute, IconTarget } from "@/components/icons";
 import { ConsistencyHeatmap } from "./ConsistencyHeatmap";
 import { RetentionBI } from "./RetentionBI";
+import { WeeklyProgress } from "./WeeklyProgress";
 import { useDashboardData } from "./useDashboardData";
 import { useCountUp } from "@/lib/useCountUp";
 import type { ReactNode } from "react";
 
+type Tone = "focus" | "good" | "action" | "cool";
+
+const TONE_CHIP: Record<Tone, string> = {
+  focus: "bg-focus/15 text-focus-soft",
+  good: "bg-good/15 text-good",
+  action: "bg-action/15 text-action",
+  cool: "bg-focus-soft/15 text-focus-soft",
+};
+
 function StatTile({
   icon,
+  tone = "focus",
   label,
   value,
   suffix,
@@ -23,6 +34,7 @@ function StatTile({
   delayMs = 0,
 }: {
   icon: ReactNode;
+  tone?: Tone;
   label: string;
   value: number;
   suffix?: string;
@@ -35,15 +47,19 @@ function StatTile({
       className="animate-rise-in rounded-md border border-slate-border bg-ink-700 p-4 transition-transform duration-200 ease-fluid hover:-translate-y-0.5"
       style={{ animationDelay: `${delayMs}ms` }}
     >
-      <div className="mb-2 flex items-center gap-2 text-slate-muted">
-        {icon}
-        <span className="text-2xs uppercase tracking-wider">{label}</span>
+      <div className="flex items-start gap-3">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${TONE_CHIP[tone]}`}>
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-2xl text-paper tabular-nums">
+            {count}
+            {suffix}
+          </p>
+          <p className="text-2xs uppercase tracking-wider text-slate-muted">{label}</p>
+          {hint ? <p className="text-2xs text-slate-muted">{hint}</p> : null}
+        </div>
       </div>
-      <p className="font-display text-2xl text-paper tabular-nums">
-        {count}
-        {suffix}
-      </p>
-      {hint ? <p className="mt-0.5 text-2xs text-slate-muted">{hint}</p> : null}
     </div>
   );
 }
@@ -142,35 +158,43 @@ export default function Dashboard() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <StatTile
-                icon={<IconRoute className="h-4 w-4" />}
-                label="Ofensiva"
+                icon={<IconFlame className="h-5 w-5" />}
+                tone="action"
+                label="Sequência atual"
                 value={data.currentStreak}
-                suffix="d"
-                hint={`recorde ${data.longestStreak}d`}
+                suffix=" dias"
+                hint={`melhor: ${data.longestStreak} dias`}
                 delayMs={0}
               />
               <StatTile
-                icon={<IconLayers className="h-4 w-4" />}
+                icon={<IconLayers className="h-5 w-5" />}
+                tone="focus"
                 label="Revisões 30d"
                 value={data.reviewsLast30}
                 delayMs={60}
               />
               <StatTile
-                icon={<IconChart className="h-4 w-4" />}
+                icon={<IconTarget className="h-5 w-5" />}
+                tone="good"
                 label="Acerto geral"
                 value={Math.round(data.overallAccuracy * 100)}
                 suffix="%"
                 delayMs={120}
               />
               <StatTile
-                icon={<IconRoute className="h-4 w-4" />}
+                icon={<IconRoute className="h-5 w-5" />}
+                tone="cool"
                 label="Trilhas ativas"
                 value={data.retention.length}
                 delayMs={180}
               />
             </div>
 
-            <div className="animate-rise-in" style={{ animationDelay: "220ms" }}>
+            <div className="animate-rise-in" style={{ animationDelay: "200ms" }}>
+              <WeeklyProgress activity={data.activity} />
+            </div>
+
+            <div className="animate-rise-in" style={{ animationDelay: "280ms" }}>
               <ConsistencyHeatmap
                 activity={data.activity}
                 currentStreak={data.currentStreak}
@@ -178,7 +202,7 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="animate-rise-in" style={{ animationDelay: "300ms" }}>
+            <div className="animate-rise-in" style={{ animationDelay: "360ms" }}>
               <RetentionBI retention={data.retention} overallAccuracy={data.overallAccuracy} />
             </div>
           </div>
