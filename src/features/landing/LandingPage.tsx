@@ -91,7 +91,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Mascot size="sm" alt="Faro Study" />
-            <span className="font-display text-lg text-paper">Faro Study</span>
+            <span className="font-brand text-lg font-semibold text-paper">Faro Study</span>
           </div>
           <nav className="flex items-center gap-4 text-sm">
             <Link to="/planos" className="text-slate-soft hover:text-paper">

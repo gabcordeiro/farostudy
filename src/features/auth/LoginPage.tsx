@@ -233,7 +233,7 @@ export function LoginPage() {
       <section className="hidden flex-col justify-between border-r border-slate-border bg-ink-800 p-10 lg:flex">
         <div className="flex items-center gap-2.5">
           <Mascot size="sm" alt="Faro Study" />
-          <span className="font-display text-lg text-paper">Faro Study</span>
+          <span className="font-brand text-lg font-semibold text-paper">Faro Study</span>
         </div>
         <div className="flex flex-col items-start gap-6">
           <Mascot size="xl" mood="search" alt="Faro, o mascote, dando boas-vindas" />
@@ -290,7 +290,7 @@ export function LoginPage() {
             <>
               <div className="mb-8 flex items-center gap-2.5 lg:hidden">
                 <Mascot size="sm" alt="Faro Study" />
-                <span className="font-display text-lg text-paper">Faro Study</span>
+                <span className="font-brand text-lg font-semibold text-paper">Faro Study</span>
               </div>
 
               <Link

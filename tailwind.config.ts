@@ -64,6 +64,8 @@ const config: Config = {
       fontFamily: {
         sans: ["Roboto", "system-ui", "sans-serif"],
         display: ["Roboto", "system-ui", "sans-serif"],
+        // Só o logotipo "Faro Study" -- personalidade sem mexer no corpo do app.
+        brand: ["Fredoka", "Roboto", "system-ui", "sans-serif"],
         mono: ['"IBM Plex Mono"', "ui-monospace", "monospace"],
       },
       borderRadius: {

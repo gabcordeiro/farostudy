@@ -86,7 +86,7 @@ export function Sidebar() {
         <Link to="/painel" className="flex min-w-0 items-center gap-2.5" title="Ir para o painel">
           <Mascot size="sm" alt="Faro Study" />
           {!collapsed ? (
-            <span className="truncate font-display text-lg tracking-tight text-paper">
+            <span className="truncate font-brand text-lg font-semibold text-paper">
               Faro Study
             </span>
           ) : null}

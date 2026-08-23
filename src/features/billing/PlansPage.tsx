@@ -105,7 +105,7 @@ export default function PlansPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <Mascot size="sm" alt="Faro Study" />
-            <span className="font-display text-lg text-paper">Faro Study</span>
+            <span className="font-brand text-lg font-semibold text-paper">Faro Study</span>
           </Link>
           {user ? (
             <Link to="/painel" className="text-sm text-slate-soft hover:text-paper">

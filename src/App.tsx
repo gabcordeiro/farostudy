@@ -54,7 +54,7 @@ function MobileHeader() {
       className="flex items-center gap-2.5 border-b border-hairline bg-surface px-4 py-3 md:hidden"
     >
       <Mascot size="sm" alt="Faro Study" />
-      <span className="font-display text-base tracking-tight text-paper">Faro Study</span>
+      <span className="font-brand text-base font-semibold text-paper">Faro Study</span>
     </Link>
   );
 }
