@@ -202,6 +202,26 @@ export interface Database {
         Update: { appearance?: unknown };
         Relationships: [];
       };
+      calendar_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          event_date: string;
+          kind: "exam" | "custom";
+          deck_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          title: string;
+          event_date: string;
+          kind?: "exam" | "custom";
+          deck_id?: string | null;
+        };
+        Update: { title?: string; event_date?: string; kind?: "exam" | "custom"; deck_id?: string | null };
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {

@@ -8,7 +8,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { IconChart, IconFlame, IconLayers, IconRoute, IconTarget } from "@/components/icons";
-import { ConsistencyHeatmap } from "./ConsistencyHeatmap";
+import { StudyCalendar } from "./StudyCalendar";
 import { RetentionBI } from "./RetentionBI";
 import { WeeklyProgress } from "./WeeklyProgress";
 import { DailyGoalCard } from "./DailyGoalCard";
@@ -220,7 +220,7 @@ export default function Dashboard() {
             </div>
 
             <div className="animate-rise-in" style={{ animationDelay: "280ms" }}>
-              <ConsistencyHeatmap
+              <StudyCalendar
                 activity={data.activity}
                 currentStreak={data.currentStreak}
                 longestStreak={data.longestStreak}
