@@ -12,6 +12,7 @@ import { ConsistencyHeatmap } from "./ConsistencyHeatmap";
 import { RetentionBI } from "./RetentionBI";
 import { WeeklyProgress } from "./WeeklyProgress";
 import { DailyGoalCard } from "./DailyGoalCard";
+import { ResumeSection } from "./ResumeSection";
 import { useDashboardData } from "./useDashboardData";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCountUp } from "@/lib/useCountUp";
@@ -212,6 +213,10 @@ export default function Dashboard() {
                   goal={profile?.daily_goal ?? 20}
                 />
               </div>
+            </div>
+
+            <div className="animate-rise-in" style={{ animationDelay: "260ms" }}>
+              <ResumeSection />
             </div>
 
             <div className="animate-rise-in" style={{ animationDelay: "280ms" }}>
