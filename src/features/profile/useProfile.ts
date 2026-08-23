@@ -16,6 +16,8 @@ export interface ProfileRow {
   role: UserRole;
   onboarded_at: string | null;
   daily_goal: number;
+  reminder_enabled: boolean;
+  reminder_hour: number;
 }
 
 interface UpdateInput {
@@ -23,9 +25,13 @@ interface UpdateInput {
   avatar_url?: string | null;
   onboarded_at?: string | null;
   daily_goal?: number;
+  reminder_enabled?: boolean;
+  reminder_hour?: number;
+  timezone?: string;
 }
 
-const PROFILE_COLS = "id, display_name, avatar_url, locale, timezone, role, onboarded_at, daily_goal";
+const PROFILE_COLS =
+  "id, display_name, avatar_url, locale, timezone, role, onboarded_at, daily_goal, reminder_enabled, reminder_hour";
 
 export function useProfile() {
   const { user } = useAuth();

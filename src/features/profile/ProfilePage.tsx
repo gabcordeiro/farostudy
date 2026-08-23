@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { profileUpdateSchema, validateAvatarFile } from "@/lib/validation";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useUiStyle } from "@/features/theme/UiStyleProvider";
+import { disablePush, enablePush, pushSupported, sendTestNotification } from "@/features/reminders/push";
 import { useProfile } from "./useProfile";
 
 export default function ProfilePage() {
@@ -25,6 +26,36 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [reminderBusy, setReminderBusy] = useState(false);
+
+  const reminderEnabled = profile?.reminder_enabled ?? false;
+  const reminderHour = profile?.reminder_hour ?? 19;
+  const canPush = pushSupported();
+
+  async function toggleReminder() {
+    if (!user) return;
+    setFormError(null);
+    setNotice(null);
+    setReminderBusy(true);
+    if (!reminderEnabled) {
+      const ok = await enablePush(user.id);
+      if (ok) {
+        await update({
+          reminder_enabled: true,
+          reminder_hour: reminderHour,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+        setNotice("Lembretes ativados. Você será avisado quando tiver cards para revisar.");
+      } else {
+        setFormError("Não foi possível ativar os lembretes. Verifique a permissão de notificações do navegador.");
+      }
+    } else {
+      await disablePush();
+      await update({ reminder_enabled: false });
+      setNotice("Lembretes desativados.");
+    }
+    setReminderBusy(false);
+  }
 
   useEffect(() => {
     if (profile) {
@@ -192,6 +223,63 @@ export default function ProfilePage() {
             <p className="mt-1 text-2xs text-slate-muted">
               "Minimalista" esconde os enfeites (chips de ícone, mascote nos cantos) para uma tela mais limpa.
             </p>
+          </div>
+
+          <div className="rounded-md border border-hairline bg-surface p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-slate-soft">Lembretes de estudo (push)</span>
+              <button
+                type="button"
+                onClick={() => void toggleReminder()}
+                disabled={!canPush || reminderBusy}
+                aria-pressed={reminderEnabled}
+                className={`press relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                  reminderEnabled ? "bg-action" : "bg-hairline"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-paper transition-transform ${
+                    reminderEnabled ? "left-0.5 translate-x-5" : "left-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+            {!canPush ? (
+              <p className="mt-1 text-2xs text-slate-muted">
+                Seu navegador não suporta notificações push. Tente pelo Chrome/Edge no computador ou
+                instalando o app no celular.
+              </p>
+            ) : (
+              <p className="mt-1 text-2xs text-slate-muted">
+                O Faro te avisa uma vez por dia, no horário escolhido, quando houver cards para revisar.
+              </p>
+            )}
+
+            {reminderEnabled ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <label className="text-2xs text-slate-muted">
+                  Horário
+                  <select
+                    value={reminderHour}
+                    onChange={(e) => void update({ reminder_hour: Number(e.target.value) })}
+                    className="ml-2 rounded-sm border border-hairline bg-surface px-2 py-1 text-sm text-paper outline-none focus:border-focus"
+                  >
+                    {Array.from({ length: 24 }).map((_, h) => (
+                      <option key={h} value={h}>
+                        {String(h).padStart(2, "0")}:00
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void sendTestNotification()}
+                  className="press rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:text-paper"
+                >
+                  Enviar teste
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div>

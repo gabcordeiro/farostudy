@@ -191,3 +191,26 @@ para cortesia, correcao de erro ou se o gateway estiver fora do ar.
 **Pendencia que nao e de codigo**: para cobrar de forma regular no Brasil e
 emitir nota fiscal de servico, e preciso CNPJ (um MEI ja resolve). Sem isso,
 mesmo com o gateway funcionando, a receita fica sem nota.
+
+## Lembretes de estudo (push do navegador)
+
+O usuário ativa no Perfil > "Lembretes de estudo (push)". O service worker
+(`public/sw.js`) recebe o push; a assinatura fica em `push_subscriptions`
+(RLS por dono). Uma vez por hora, o `pg_cron` chama a edge function
+`send-push`, que para cada usuário com lembrete ativo — se for a hora
+escolhida no fuso dele, ainda não tiver avisado hoje e houver cards vencidos
+— envia o push (via `npm:web-push`, VAPID).
+
+**Configuração (uma vez, no painel do Supabase > Edge Functions > Secrets):**
+
+- `VAPID_PUBLIC_KEY` — a mesma chave pública embutida no front
+  (`src/features/reminders/push.ts`). Se trocar o par, atualize os dois lados.
+- `VAPID_PRIVATE_KEY` — a chave privada do par (guarde só aqui).
+- `VAPID_SUBJECT` — `mailto:` com um e-mail de contato.
+- `CRON_SECRET` — o mesmo valor guardado no Vault (`faro_cron_secret`), que o
+  cron manda no header `x-cron-secret`. Enquanto os segredos VAPID não
+  estiverem setados, a função responde "VAPID nao configurado" e não envia
+  nada (seguro).
+
+O agendamento (`cron.job` "faro-study-reminders", de hora em hora) e o
+segredo no Vault já ficam criados pelas migrações/setup do projeto.

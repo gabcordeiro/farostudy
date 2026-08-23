@@ -22,6 +22,9 @@ export interface Database {
           accepted_tos_at: string | null;
           accepted_privacy_at: string | null;
           daily_goal: number;
+          reminder_enabled: boolean;
+          reminder_hour: number;
+          last_reminder_on: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -200,6 +203,19 @@ export interface Database {
         };
         Insert: { id?: number; appearance?: unknown };
         Update: { appearance?: unknown };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+        };
+        Insert: { user_id: string; endpoint: string; p256dh: string; auth: string };
+        Update: { endpoint?: string; p256dh?: string; auth?: string };
         Relationships: [];
       };
       calendar_events: {
