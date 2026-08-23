@@ -15,11 +15,14 @@ import {
   IconDeck,
   IconHelp,
   IconLogout,
+  IconMoon,
   IconQuiz,
   IconRoute,
   IconSearch,
   IconShield,
   IconSidebar,
+  IconSun,
+  IconSystem,
   IconUpload,
 } from "./icons";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -27,6 +30,10 @@ import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
 import { useSearch } from "@/features/search/SearchProvider";
+import { useTheme, type ThemePreference } from "@/features/theme/ThemeProvider";
+
+const THEME_CYCLE: ThemePreference[] = ["light", "system", "dark"];
+const THEME_ICON = { light: IconSun, system: IconSystem, dark: IconMoon } as const;
 
 const NAV = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
@@ -45,6 +52,7 @@ export function Sidebar() {
   const { balance } = useCredits();
   const { generating } = useQuizGeneration();
   const { open: openSearch } = useSearch();
+  const { preference, setPreference } = useTheme();
 
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -55,17 +63,22 @@ export function Sidebar() {
     }
   }, []);
 
-  function toggle() {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+  function persistCollapsed(next: boolean) {
+    setCollapsed(next);
+    try {
+      localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
   }
+  function toggle() {
+    persistCollapsed(!collapsed);
+  }
+  function cycleTheme() {
+    const i = THEME_CYCLE.indexOf(preference);
+    setPreference(THEME_CYCLE[(i + 1) % THEME_CYCLE.length]);
+  }
+  const ThemeIcon = THEME_ICON[preference];
 
   const displayName = profile?.display_name ?? user?.email ?? "";
   const emailLabel = user?.email ?? "";
@@ -86,7 +99,14 @@ export function Sidebar() {
           collapsed ? "justify-center px-2" : "justify-between px-4"
         }`}
       >
-        <Link to="/painel" className="flex min-w-0 items-center gap-2.5" title="Ir para o painel">
+        <Link
+          to="/painel"
+          onClick={() => {
+            if (collapsed) persistCollapsed(false);
+          }}
+          className="flex min-w-0 items-center gap-2.5"
+          title="Ir para o painel"
+        >
           <Mascot size="sm" alt="Faro Study" />
           {!collapsed ? (
             <span className="truncate font-brand text-lg font-semibold text-paper">
@@ -189,7 +209,17 @@ export function Sidebar() {
               <Link to="/perfil" title={emailLabel} className="press rounded-sm">
                 <Avatar url={profile?.avatar_url} name={displayName} size="sm" />
               </Link>
-              <ThemeToggle />
+              {/* Régua estreita: um único botão que cicla o tema, em vez do
+                  grupo de 3 (que estourava a largura). */}
+              <button
+                type="button"
+                onClick={cycleTheme}
+                aria-label={`Tema: ${preference}`}
+                title={`Tema: ${preference}`}
+                className="press rounded-sm p-1.5 text-slate-muted hover:bg-elevated hover:text-paper"
+              >
+                <ThemeIcon className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 onClick={() => void signOut()}

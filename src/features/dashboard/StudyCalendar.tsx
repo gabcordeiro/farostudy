@@ -153,7 +153,7 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
               key={key}
               type="button"
               onClick={() => setSelected(key)}
-              className={`press relative flex aspect-square flex-col items-center justify-center rounded-sm border text-sm transition-colors ${
+              className={`press relative flex h-11 flex-col items-center justify-center rounded-sm border text-sm transition-colors sm:h-14 ${
                 isSelected
                   ? "border-focus text-paper"
                   : studied
