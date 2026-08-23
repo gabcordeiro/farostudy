@@ -92,6 +92,12 @@
 }
 
 @layer utilities {
+  /* Estilo minimalista (preferencia do usuario): esconde os enfeites
+   * marcados com .ui-decorative -- chips de icone, mascote nos cantos etc. */
+  [data-ui-style="minimal"] .ui-decorative {
+    display: none !important;
+  }
+
   /* Feedback tatil de "apertar": o elemento afunda de leve enquanto o dedo/
    * mouse esta pressionado. Curva e duracao curtas para parecer resposta,
    * nao animacao. Aplicar em botoes/CTAs que a pessoa toca -- e o que da a

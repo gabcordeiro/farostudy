@@ -17,7 +17,7 @@ export function DailyGoalCard({ reviewedToday, goal }: { reviewedToday: number; 
   return (
     <div className="flex h-full flex-col rounded-md border border-slate-border bg-ink-700 p-5">
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-action/15 text-action">
+        <span className="ui-decorative flex h-9 w-9 items-center justify-center rounded-md bg-action/15 text-action">
           <IconTarget className="h-5 w-5" />
         </span>
         <span className="text-2xs uppercase tracking-wider text-slate-muted">Meta diária</span>

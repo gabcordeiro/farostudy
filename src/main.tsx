@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { AuthProvider } from "./features/auth/AuthProvider";
 import { ThemeProvider } from "./features/theme/ThemeProvider";
+import { UiStyleProvider } from "./features/theme/UiStyleProvider";
 import { ToastProvider } from "./components/Toast";
 import { QuizGenerationProvider } from "./features/quiz/QuizGenerationProvider";
 import { AppearanceProvider } from "./features/appearance/AppearanceProvider";
@@ -17,6 +18,7 @@ createRoot(root).render(
   <StrictMode>
     <HelmetProvider>
       <ThemeProvider>
+        <UiStyleProvider>
         <BrowserRouter>
           <AuthProvider>
             <AppearanceProvider>
@@ -28,6 +30,7 @@ createRoot(root).render(
             </AppearanceProvider>
           </AuthProvider>
         </BrowserRouter>
+        </UiStyleProvider>
       </ThemeProvider>
     </HelmetProvider>
   </StrictMode>,

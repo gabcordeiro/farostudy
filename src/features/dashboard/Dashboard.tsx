@@ -58,7 +58,7 @@ function StatTile({
       style={{ animationDelay: `${delayMs}ms` }}
     >
       <div className="flex items-start gap-3">
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${TONE_CHIP[tone]}`}>
+        <span className={`ui-decorative flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${TONE_CHIP[tone]}`}>
           {icon}
         </span>
         <div className="min-w-0">

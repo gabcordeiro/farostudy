@@ -10,11 +10,13 @@ import { IconUpload, IconUser } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { profileUpdateSchema, validateAvatarFile } from "@/lib/validation";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useUiStyle } from "@/features/theme/UiStyleProvider";
 import { useProfile } from "./useProfile";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { profile, loading, error, update } = useProfile();
+  const { style, setStyle } = useUiStyle();
 
   const [displayName, setDisplayName] = useState("");
   const [dailyGoal, setDailyGoal] = useState(20);
@@ -164,6 +166,31 @@ export default function ProfilePage() {
             />
             <p className="mt-1 text-2xs text-slate-muted">
               Quantos cards você quer revisar por dia. Aparece no painel como meta.
+            </p>
+          </div>
+
+          <div>
+            <span className="mb-1 block text-sm text-slate-soft">Estilo da interface</span>
+            <div className="inline-flex overflow-hidden rounded-sm border border-hairline">
+              <button
+                type="button"
+                onClick={() => setStyle("icons")}
+                aria-pressed={style === "icons"}
+                className={`press px-4 py-2 text-sm ${style === "icons" ? "bg-focus text-paper" : "bg-surface text-slate-soft hover:text-paper"}`}
+              >
+                Com ícones
+              </button>
+              <button
+                type="button"
+                onClick={() => setStyle("minimal")}
+                aria-pressed={style === "minimal"}
+                className={`press px-4 py-2 text-sm ${style === "minimal" ? "bg-focus text-paper" : "bg-surface text-slate-soft hover:text-paper"}`}
+              >
+                Minimalista
+              </button>
+            </div>
+            <p className="mt-1 text-2xs text-slate-muted">
+              "Minimalista" esconde os enfeites (chips de ícone, mascote nos cantos) para uma tela mais limpa.
             </p>
           </div>
 
