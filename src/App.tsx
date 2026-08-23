@@ -9,9 +9,11 @@ import { Skeleton } from "@/components/Skeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { PageTransition } from "@/components/PageTransition";
+import { IconSearch } from "@/components/icons";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { WelcomeTour } from "@/features/help/WelcomeTour";
+import { SearchProvider, useSearch } from "@/features/search/SearchProvider";
 import type { AppOutletContext } from "@/lib/appOutletContext";
 
 // Code-splitting das rotas (loading states definidos -> checklist #12).
@@ -46,16 +48,24 @@ function RouteFallback() {
   );
 }
 
-/** Cabeçalho enxuto do mobile: so a marca, ja que a navegação foi para o rodapé. */
+/** Cabeçalho enxuto do mobile: a marca + busca, já que a navegação foi para o rodapé. */
 function MobileHeader() {
+  const { open } = useSearch();
   return (
-    <Link
-      to="/painel"
-      className="flex items-center gap-2.5 border-b border-hairline bg-surface px-4 py-3 md:hidden"
-    >
-      <Mascot size="sm" alt="Faro Study" />
-      <span className="font-brand text-base font-semibold text-paper">Faro Study</span>
-    </Link>
+    <div className="flex items-center justify-between border-b border-hairline bg-surface px-4 py-3 md:hidden">
+      <Link to="/painel" className="flex items-center gap-2.5">
+        <Mascot size="sm" alt="Faro Study" />
+        <span className="font-brand text-base font-semibold text-paper">Faro Study</span>
+      </Link>
+      <button
+        type="button"
+        onClick={open}
+        aria-label="Buscar"
+        className="press rounded-sm p-2 text-slate-muted hover:text-paper"
+      >
+        <IconSearch className="h-5 w-5" />
+      </button>
+    </div>
   );
 }
 
@@ -75,25 +85,27 @@ function AppLayout() {
   }, [profileLoading, profile]);
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      {/* Sidebar so no desktop; no mobile a navegação vira barra de abas. */}
-      <div className="hidden md:sticky md:top-0 md:block md:h-screen">
-        <Sidebar />
-      </div>
-      <MobileHeader />
-      <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
-        <PageTransition>
-          <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
-        </PageTransition>
-      </main>
-      <MobileNav />
+    <SearchProvider>
+      <div className="flex min-h-screen flex-col md:flex-row">
+        {/* Sidebar so no desktop; no mobile a navegação vira barra de abas. */}
+        <div className="hidden md:sticky md:top-0 md:block md:h-screen">
+          <Sidebar />
+        </div>
+        <MobileHeader />
+        <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+          <PageTransition>
+            <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
+          </PageTransition>
+        </main>
+        <MobileNav />
 
-      <WelcomeTour
-        open={tourOpen}
-        onClose={() => setTourOpen(false)}
-        onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
-      />
-    </div>
+        <WelcomeTour
+          open={tourOpen}
+          onClose={() => setTourOpen(false)}
+          onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
+        />
+      </div>
+    </SearchProvider>
   );
 }
 

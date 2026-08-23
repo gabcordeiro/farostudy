@@ -17,6 +17,7 @@ import {
   IconLogout,
   IconQuiz,
   IconRoute,
+  IconSearch,
   IconShield,
   IconSidebar,
   IconUpload,
@@ -25,6 +26,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
+import { useSearch } from "@/features/search/SearchProvider";
 
 const NAV = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
@@ -42,6 +44,7 @@ export function Sidebar() {
   const { profile } = useProfile();
   const { balance } = useCredits();
   const { generating } = useQuizGeneration();
+  const { open: openSearch } = useSearch();
 
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -117,6 +120,24 @@ export function Sidebar() {
       ) : null}
 
       <nav className="flex-1 p-2" aria-label="Navegação principal">
+        <button
+          type="button"
+          onClick={openSearch}
+          title={collapsed ? "Buscar" : undefined}
+          className={`press mb-1 flex w-full items-center rounded-sm text-sm text-slate-soft transition-colors hover:bg-elevated hover:text-paper ${
+            collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2"
+          }`}
+        >
+          <IconSearch className="h-[18px] w-[18px] shrink-0" />
+          {!collapsed ? (
+            <>
+              <span>Buscar</span>
+              <span className="ml-auto rounded-sm border border-hairline px-1.5 py-0.5 font-mono text-[10px] text-slate-muted">
+                ⌘K
+              </span>
+            </>
+          ) : null}
+        </button>
         <ul className="space-y-1">
           {NAV.map(({ to, label, Icon }) => (
             <li key={to}>

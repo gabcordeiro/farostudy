@@ -183,6 +183,13 @@ export const IconMore = (p: IconProps) => (
   </Base>
 );
 
+export const IconSearch = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
+  </Base>
+);
+
 export const IconSidebar = (p: IconProps) => (
   <Base {...p}>
     <rect x="3" y="4" width="18" height="16" />
