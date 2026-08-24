@@ -74,6 +74,40 @@ export function useCalendarEvents() {
     [user],
   );
 
+  /** Insere várias de uma vez (ex.: cronograma gerado por IA) numa única ida ao banco. */
+  const addMany = useCallback(
+    async (
+      inputs: { title: string; date: string; kind: "exam" | "custom"; deckId?: string | null }[],
+    ): Promise<boolean> => {
+      if (!user || inputs.length === 0) return false;
+      const res = await withJwtRetry(() =>
+        supabase
+          .from("calendar_events")
+          .insert(
+            inputs.map((input) => ({
+              user_id: user.id,
+              title: input.title.trim(),
+              event_date: input.date,
+              kind: input.kind,
+              deck_id: input.deckId ?? null,
+            })),
+          )
+          .select("id, title, event_date, kind, deck_id"),
+      );
+      if (res.error || !res.data) return false;
+      const inserted = res.data.map((e) => ({
+        id: e.id,
+        title: e.title,
+        date: e.event_date,
+        kind: e.kind,
+        deckId: e.deck_id,
+      }));
+      setEvents((prev) => [...prev, ...inserted].sort((a, b) => a.date.localeCompare(b.date)));
+      return true;
+    },
+    [user],
+  );
+
   const remove = useCallback(async (id: string): Promise<boolean> => {
     const res = await withJwtRetry(() => supabase.from("calendar_events").delete().eq("id", id));
     if (res.error) return false;
@@ -81,5 +115,5 @@ export function useCalendarEvents() {
     return true;
   }, []);
 
-  return { events, loading, add, remove };
+  return { events, loading, add, addMany, remove };
 }

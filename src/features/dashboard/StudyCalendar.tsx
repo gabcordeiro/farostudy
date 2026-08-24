@@ -4,11 +4,18 @@
  * num dia. Mantém a ofensiva e o balão do Faro no cabeçalho.
  */
 import { useMemo, useState } from "react";
-import { IconFlame, IconPlus, IconTrash } from "@/components/icons";
+import { Link } from "react-router-dom";
+import { IconFlame, IconPlus, IconTrash, IconWand } from "@/components/icons";
+import { Mascot } from "@/components/Mascot";
+import { ErrorModal } from "@/components/ErrorModal";
+import { useToast } from "@/components/Toast";
+import { AppFunctionError } from "@/lib/functionError";
 import { useDecks } from "@/features/ai/useDecks";
+import { useCredits } from "@/features/billing/useCredits";
 import type { DayActivity } from "./dashboard.types";
 import { MascotStreakBubble } from "./MascotStreakBubble";
 import { useCalendarEvents, type CalendarEvent } from "./useCalendarEvents";
+import { generateSchedule } from "./generateSchedule";
 
 const MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -30,8 +37,10 @@ interface Props {
 }
 
 export function StudyCalendar({ activity, currentStreak, longestStreak }: Props) {
-  const { events, add, remove } = useCalendarEvents();
+  const { events, add, addMany, remove } = useCalendarEvents();
   const { decks } = useDecks();
+  const { balance } = useCredits();
+  const { notify } = useToast();
 
   const today = useMemo(() => new Date(), []);
   const [view, setView] = useState(() => ({ year: today.getFullYear(), month: today.getMonth() }));
@@ -42,6 +51,15 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
   const [kind, setKind] = useState<"exam" | "custom">("exam");
   const [deckId, setDeckId] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Cronograma gerado por IA.
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleDeckId, setScheduleDeckId] = useState("");
+  const [scheduleExamDate, setScheduleExamDate] = useState("");
+  const [scheduleBusy, setScheduleBusy] = useState(false);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [scheduleNeedsCredits, setScheduleNeedsCredits] = useState(false);
+  const [scheduleErrorModal, setScheduleErrorModal] = useState<{ code: string | null } | null>(null);
 
   const activityMap = useMemo(() => new Map(activity.map((a) => [a.day, a.reviews])), [activity]);
   const eventsByDay = useMemo(() => {
@@ -91,6 +109,57 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
     }
   }
 
+  async function handleGenerateSchedule() {
+    setScheduleError(null);
+    setScheduleNeedsCredits(false);
+    if (!scheduleDeckId) {
+      setScheduleError("Escolha uma trilha.");
+      return;
+    }
+    if (!scheduleExamDate) {
+      setScheduleError("Escolha a data da prova.");
+      return;
+    }
+    setScheduleBusy(true);
+    try {
+      const res = await generateSchedule({ deckId: scheduleDeckId, examDate: scheduleExamDate });
+      const examEvent = { title: `Prova de ${res.deckTitle}`, date: res.examDate, kind: "exam" as const, deckId: scheduleDeckId };
+      const sessionEvents = res.sessions.map((s) => ({
+        title: s.title,
+        date: s.date,
+        kind: "custom" as const,
+        deckId: scheduleDeckId,
+      }));
+      const ok = await addMany([examEvent, ...sessionEvents]);
+      if (ok) {
+        notify(`Cronograma de "${res.deckTitle}" adicionado: ${res.sessions.length} sessões + a prova.`, "success");
+        setScheduleOpen(false);
+        setScheduleExamDate("");
+        setSelected(res.examDate);
+        setView({ year: Number(res.examDate.slice(0, 4)), month: Number(res.examDate.slice(5, 7)) - 1 });
+      } else {
+        setScheduleError("O cronograma foi gerado, mas falhou ao salvar no calendário.");
+      }
+    } catch (err) {
+      // code só vem preenchido quando o servidor logou um erro técnico
+      // (ex.: falha do Gemini) -- aí sim vira o modal genérico. Erros de
+      // validação (400) e crédito insuficiente (402) já trazem uma
+      // mensagem segura e específica, então ficam inline.
+      if (err instanceof AppFunctionError && err.insufficientCredits) {
+        setScheduleError(err.message);
+        setScheduleNeedsCredits(true);
+      } else if (err instanceof AppFunctionError && err.code) {
+        setScheduleErrorModal({ code: err.code });
+      } else if (err instanceof AppFunctionError) {
+        setScheduleError(err.message);
+      } else {
+        setScheduleError((err as Error).message ?? "Falha ao gerar o cronograma.");
+      }
+    } finally {
+      setScheduleBusy(false);
+    }
+  }
+
   return (
     <section className="rounded-md border border-slate-border bg-ink-700 p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -109,6 +178,96 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
           </div>
         </div>
       </header>
+
+      {/* Cronograma gerado por IA */}
+      <div className="mb-4 rounded-md border border-hairline bg-elevated p-3">
+        <button
+          type="button"
+          onClick={() => setScheduleOpen((v) => !v)}
+          className="press flex w-full items-center justify-between gap-2 text-left"
+        >
+          <span className="flex items-center gap-2 text-sm text-paper">
+            <IconWand className="h-4 w-4 text-focus-soft" />
+            Gerar cronograma de estudo com IA
+          </span>
+          <span className="text-slate-muted">{scheduleOpen ? "▴" : "▾"}</span>
+        </button>
+
+        {scheduleOpen ? (
+          <div className="mt-3 animate-fade-in space-y-3">
+            <p className="text-2xs text-slate-muted">
+              Escolha a trilha e a data da prova: o Faro espalha sessões de revisão até lá e já
+              marca a prova no calendário.
+            </p>
+
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="min-w-0 flex-1 text-2xs text-slate-muted">
+                Trilha
+                <select
+                  value={scheduleDeckId}
+                  onChange={(e) => setScheduleDeckId(e.target.value)}
+                  className="mt-1 w-full rounded-sm border border-hairline bg-surface px-2 py-2 text-sm text-paper outline-none focus:border-focus"
+                >
+                  <option value="">Selecione...</option>
+                  {decks.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-2xs text-slate-muted">
+                Data da prova
+                <input
+                  type="date"
+                  value={scheduleExamDate}
+                  min={dayKey(new Date(today.getTime() + 2 * 86_400_000))}
+                  onChange={(e) => setScheduleExamDate(e.target.value)}
+                  className="mt-1 rounded-sm border border-hairline bg-surface px-2 py-2 text-sm text-paper outline-none focus:border-focus"
+                />
+              </label>
+            </div>
+
+            {scheduleBusy ? (
+              <div className="flex items-center gap-2">
+                <Mascot mood="searching" size="sm" alt="Faro farejando, montando o cronograma" />
+                <p className="text-sm text-slate-muted">O Faro está montando o cronograma...</p>
+              </div>
+            ) : (
+              <>
+                {scheduleError ? (
+                  <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
+                    {scheduleError}
+                    {scheduleNeedsCredits ? (
+                      <>
+                        {" "}
+                        <Link to="/planos" className="underline underline-offset-2">
+                          Ver planos
+                        </Link>
+                      </>
+                    ) : null}
+                  </p>
+                ) : null}
+
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-2xs ${balance === 0 ? "text-warn" : "text-slate-muted"}`}>
+                    Essa geração usa 1 crédito
+                    {balance !== null ? ` · você tem ${balance}` : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void handleGenerateSchedule()}
+                    className="press inline-flex items-center gap-1 rounded-sm bg-action px-3 py-2 text-2xs font-medium text-ink-900 hover:bg-action-deep"
+                  >
+                    <IconWand className="h-3.5 w-3.5" />
+                    Gerar cronograma
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : null}
+      </div>
 
       {/* Navegação do mês */}
       <div className="mb-2 flex items-center justify-between">
@@ -286,6 +445,12 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
           </ul>
         </div>
       ) : null}
+
+      <ErrorModal
+        open={scheduleErrorModal !== null}
+        code={scheduleErrorModal?.code}
+        onClose={() => setScheduleErrorModal(null)}
+      />
     </section>
   );
 }
