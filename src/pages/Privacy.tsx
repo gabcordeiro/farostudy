@@ -56,7 +56,7 @@ export default function Privacy() {
           <p>
             Faro Study - Rua Exemplo, 123, Sala 4, Belo Horizonte/MG, CEP 30110-000, Brasil.
             <br />
-            privacidade@farostudy.vercel.app
+            farostudy.contato@gmail.com
           </p>
         </section>
       </div>

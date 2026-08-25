@@ -46,7 +46,7 @@ export default function Terms() {
         </section>
         <section>
           <h2 className="font-display text-lg text-paper">Contato</h2>
-          <p>Faro Study - contato@farostudy.vercel.app</p>
+          <p>Faro Study - farostudy.contato@gmail.com</p>
         </section>
       </div>
     </main>

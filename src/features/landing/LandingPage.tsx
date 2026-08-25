@@ -162,8 +162,8 @@ export default function LandingPage() {
           <h2 className="font-display text-2xl text-paper">Perguntas frequentes</h2>
           <p className="mt-2 text-sm text-slate-muted">
             Não achou o que procurava? Escreva para{" "}
-            <a href="mailto:contato@farostudy.vercel.app" className="text-action underline underline-offset-2">
-              contato@farostudy.vercel.app
+            <a href="mailto:farostudy.contato@gmail.com" className="text-action underline underline-offset-2">
+              farostudy.contato@gmail.com
             </a>
             .
           </p>
