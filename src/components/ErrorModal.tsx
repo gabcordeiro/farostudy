@@ -11,9 +11,12 @@ interface ErrorModalProps {
   open: boolean;
   code?: string | null;
   onClose: () => void;
+  /** Quando informado, mostra um botão "Tentar de novo" ao lado de "Entendi" --
+   * ex.: Gemini fora do ar momentaneamente, vale tentar de novo sem reconfigurar tudo. */
+  onRetry?: () => void;
 }
 
-export function ErrorModal({ open, code, onClose }: ErrorModalProps) {
+export function ErrorModal({ open, code, onClose, onRetry }: ErrorModalProps) {
   if (!open) return null;
 
   return createPortal(
@@ -37,13 +40,31 @@ export function ErrorModal({ open, code, onClose }: ErrorModalProps) {
         {code ? (
           <p className="mt-3 font-mono text-2xs text-slate-muted">Código: {code}</p>
         ) : null}
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-5 w-full rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 transition-all duration-150 hover:bg-action-deep active:scale-[0.97]"
-        >
-          Entendi
-        </button>
+        <div className="mt-5 flex gap-2">
+          {onRetry ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onRetry();
+              }}
+              className="press flex-1 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            >
+              Tentar de novo
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onClose}
+            className={`press rounded-sm px-5 py-2.5 text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
+              onRetry
+                ? "border border-hairline text-slate-soft hover:text-paper"
+                : "w-full bg-action text-ink-900 hover:bg-action-deep"
+            }`}
+          >
+            {onRetry ? "Fechar" : "Entendi"}
+          </button>
+        </div>
       </div>
     </>,
     document.body,

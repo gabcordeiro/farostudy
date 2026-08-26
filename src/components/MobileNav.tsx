@@ -24,6 +24,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
+import { useCardGeneration } from "@/features/ai/CardGenerationProvider";
 
 const PRIMARY = [
   { to: "/painel", label: "Evolução", Icon: IconChart },
@@ -42,6 +43,7 @@ export function MobileNav() {
   const { profile } = useProfile();
   const { balance } = useCredits();
   const { generating } = useQuizGeneration();
+  const { generating: generatingCards } = useCardGeneration();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -149,6 +151,12 @@ export function MobileNav() {
                     <span
                       className="absolute -right-1.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-action"
                       aria-label="Gerando um quiz"
+                    />
+                  ) : null}
+                  {to === "/importar" && generatingCards ? (
+                    <span
+                      className="absolute -right-1.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-action"
+                      aria-label="Gerando cards"
                     />
                   ) : null}
                 </span>

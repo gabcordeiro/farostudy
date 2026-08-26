@@ -29,6 +29,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useQuizGeneration } from "@/features/quiz/QuizGenerationProvider";
+import { useCardGeneration } from "@/features/ai/CardGenerationProvider";
 import { useSearch } from "@/features/search/SearchProvider";
 import { useTheme, type ThemePreference } from "@/features/theme/ThemeProvider";
 
@@ -51,6 +52,7 @@ export function Sidebar() {
   const { profile } = useProfile();
   const { balance } = useCredits();
   const { generating } = useQuizGeneration();
+  const { generating: generatingCards } = useCardGeneration();
   const { open: openSearch } = useSearch();
   const { preference, setPreference } = useTheme();
 
@@ -175,6 +177,15 @@ export function Sidebar() {
                     }`}
                     title="Gerando um quiz..."
                     aria-label="Gerando um quiz"
+                  />
+                ) : null}
+                {to === "/importar" && generatingCards ? (
+                  <span
+                    className={`h-2 w-2 animate-pulse rounded-full bg-action ${
+                      collapsed ? "absolute right-1.5 top-1.5" : "ml-auto"
+                    }`}
+                    title="Gerando cards..."
+                    aria-label="Gerando cards"
                   />
                 ) : null}
               </NavLink>

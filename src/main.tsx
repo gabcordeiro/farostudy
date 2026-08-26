@@ -8,6 +8,7 @@ import { ThemeProvider } from "./features/theme/ThemeProvider";
 import { UiStyleProvider } from "./features/theme/UiStyleProvider";
 import { ToastProvider } from "./components/Toast";
 import { QuizGenerationProvider } from "./features/quiz/QuizGenerationProvider";
+import { CardGenerationProvider } from "./features/ai/CardGenerationProvider";
 import { AppearanceProvider } from "./features/appearance/AppearanceProvider";
 import "./index.css";
 
@@ -24,7 +25,9 @@ createRoot(root).render(
             <AppearanceProvider>
               <ToastProvider>
                 <QuizGenerationProvider>
-                  <App />
+                  <CardGenerationProvider>
+                    <App />
+                  </CardGenerationProvider>
                 </QuizGenerationProvider>
               </ToastProvider>
             </AppearanceProvider>

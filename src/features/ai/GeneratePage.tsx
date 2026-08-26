@@ -3,7 +3,7 @@
  * Cola texto ou JSON, escolhe (ou cria) a trilha e o Faro devolve os flashcards.
  * Upload de .apkg fica como próximo passo (parsing do pacote Anki no backend).
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
@@ -11,31 +11,33 @@ import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconPlus, IconRoute, IconWand } from "@/components/icons";
-import { useToast } from "@/components/Toast";
-import { AppFunctionError } from "@/lib/functionError";
 import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "./useDecks";
-import { generateCards, type GenerateResult } from "./generateCards";
-
-type Mode = "text" | "json";
+import { type GenerateResult } from "./generateCards";
+import { useCardGeneration, type GenerateMode } from "./CardGenerationProvider";
 
 export default function GeneratePage() {
   const { decks, loading: decksLoading, createDeck } = useDecks();
   const { balance } = useCredits();
-  const { notify, dismiss } = useToast();
   const [deckId, setDeckId] = useState("");
   const [creatingDeck, setCreatingDeck] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
-  const [mode, setMode] = useState<Mode>("text");
+  const [mode, setMode] = useState<GenerateMode>("text");
   const [content, setContent] = useState("");
   const [maxCards, setMaxCards] = useState(20);
 
-  const [busy, setBusy] = useState(false);
+  const { generating, pendingResult, error: genError, start, retry, consumeResult, clearError } =
+    useCardGeneration();
+
   const [error, setError] = useState<string | null>(null);
   const [needsCredits, setNeedsCredits] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
+
+  // "gerando" é global (sobrevive à navegação): a barra de progresso
+  // reaparece ao voltar pra /importar no meio de uma geração.
+  const busy = generating !== null;
 
   // Fechar a aba nao cancela a geracao no servidor (o credito ja foi
   // debitado e os cards sao inseridos direto pela edge function), mas o
@@ -49,11 +51,35 @@ export default function GeneratePage() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [busy]);
 
+  // Quando a geração global termina, o resultado chega aqui.
+  useEffect(() => {
+    if (!pendingResult) return;
+    const r = consumeResult();
+    if (r) {
+      setResult(r.result);
+      setResultDeckId(r.deckId);
+    }
+  }, [pendingResult, consumeResult]);
+
+  // Erro da geração global -- mesmo critério de antes: crédito insuficiente
+  // fica inline (acionável, link "Ver planos"); qualquer outra falha vira o
+  // modal genérico, com "Tentar de novo" em vez de só um "ok" mudo.
+  useEffect(() => {
+    if (!genError) return;
+    if (genError.insufficientCredits) {
+      setError("Créditos insuficientes para gerar os cards.");
+      setNeedsCredits(true);
+    } else {
+      setErrorModal({ code: genError.code });
+    }
+    clearError();
+  }, [genError, clearError]);
+
   function handleDeckSelect(value: string) {
     setDeckId(value);
   }
 
-  async function ensureDeck(): Promise<string | null> {
+  const ensureDeck = useCallback(async (): Promise<string | null> => {
     if (deckId) return deckId;
     if (creatingDeck && newDeckTitle.trim()) {
       const created = await createDeck(newDeckTitle);
@@ -64,7 +90,7 @@ export default function GeneratePage() {
       }
     }
     return null;
-  }
+  }, [deckId, creatingDeck, newDeckTitle, createDeck]);
 
   async function handleGenerate() {
     setError(null);
@@ -79,35 +105,9 @@ export default function GeneratePage() {
       setError("Escolha uma trilha existente ou crie uma nova.");
       return;
     }
-    setBusy(true);
-    const progressId = notify("O Faro esta lendo seu conteúdo e montando os cards...", "info", 0);
-    try {
-      const res = await generateCards({ deckId: targetDeck, mode, content, maxCards });
-      setResult(res);
-      setResultDeckId(targetDeck);
-      dismiss(progressId);
-      notify(
-        res.created > 0 ? `${res.created} cards criados com sucesso.` : "Nenhum card foi gerado desta vez.",
-        res.created > 0 ? "success" : "error",
-      );
-    } catch (err) {
-      dismiss(progressId);
-      // Créditos insuficientes é um caso acionável (link "Ver planos"), fica
-      // como aviso inline. Qualquer outra falha (Gemini fora do ar, erro ao
-      // salvar) é técnica e imprevisível -- vira o modal genérico, sem expor
-      // o detalhe cru ao cliente (esse detalhe já foi gravado em
-      // error_logs pela edge function, visível só para o admin).
-      if (err instanceof AppFunctionError && err.insufficientCredits) {
-        setError(err.message);
-        setNeedsCredits(true);
-        notify(err.message, "error");
-      } else {
-        setErrorModal({ code: err instanceof AppFunctionError ? (err.code ?? null) : null });
-        notify("Não foi possível gerar os cards agora.", "error");
-      }
-    } finally {
-      setBusy(false);
-    }
+    const deckTitle =
+      decks.find((d) => d.id === targetDeck)?.title ?? (newDeckTitle.trim() || "trilha");
+    start({ deckId: targetDeck, deckTitle, mode, content, maxCards });
   }
 
   return (
@@ -289,7 +289,16 @@ export default function GeneratePage() {
         <div className="mt-6 space-y-3">
           <div className="flex items-center gap-3">
             <Mascot mood="searching" size="sm" alt="Faro farejando, gerando seus cards" />
-            <p className="text-sm text-slate-muted">O Faro está montando seus cards...</p>
+            <p className="text-sm text-slate-muted">
+              O Faro está montando seus cards
+              {generating?.deckTitle ? (
+                <>
+                  {" "}
+                  de <span className="text-paper">"{generating.deckTitle}"</span>
+                </>
+              ) : null}
+              ...
+            </p>
           </div>
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -333,7 +342,12 @@ export default function GeneratePage() {
         </section>
       ) : null}
 
-      <ErrorModal open={errorModal !== null} code={errorModal?.code} onClose={() => setErrorModal(null)} />
+      <ErrorModal
+        open={errorModal !== null}
+        code={errorModal?.code}
+        onClose={() => setErrorModal(null)}
+        onRetry={retry}
+      />
     </div>
   );
 }
