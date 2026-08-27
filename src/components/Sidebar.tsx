@@ -47,6 +47,11 @@ const NAV = [
 
 const COLLAPSE_KEY = "faro.sidebar-collapsed";
 
+// So Mac usa a tecla Command (⌘) para atalhos -- Windows/Linux usam Ctrl.
+const IS_MAC =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+const SHORTCUT_LABEL = IS_MAC ? "⌘K" : "Ctrl K";
+
 export function Sidebar() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
@@ -155,7 +160,7 @@ export function Sidebar() {
             <>
               <span>Buscar</span>
               <span className="ml-auto rounded-sm border border-hairline px-1.5 py-0.5 font-mono text-[10px] text-slate-muted">
-                ⌘K
+                {SHORTCUT_LABEL}
               </span>
             </>
           ) : null}
