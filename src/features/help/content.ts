@@ -56,7 +56,7 @@ export const SECTIONS: SectionInfo[] = [
     Icon: IconQuiz,
     summary: "Múltipla escolha gerada por IA a partir dos seus cards.",
     detail:
-      "Escolha uma trilha e o Faro monta perguntas de múltipla escolha com base nos cards dela. Toda bateria gerada fica salva, então você pode refazer quantas vezes quiser sem gastar crédito de novo. Os acertos e erros também contam para o seu painel.",
+      "Escolha uma trilha e o Faro monta perguntas de múltipla escolha com base nos cards dela. Toda bateria gerada fica salva, então você pode refazer quantas vezes quiser sem gastar crédito de novo. Os acertos e erros também contam para o seu painel. Depois de terminar (ou em qualquer bateria salva), dá pra desafiar amigos: cada um responde no próprio tempo e entra num placar comum.",
   },
   {
     to: "/painel",

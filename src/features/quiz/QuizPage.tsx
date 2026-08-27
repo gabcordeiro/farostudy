@@ -4,27 +4,27 @@
  * o painel de retenção. Toda bateria gerada e salva (quiz_sets) para poder
  * ser refeita sem gastar uma nova chamada de IA.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
-import { IconCheck, IconClose, IconQuiz, IconRoute } from "@/components/icons";
+import { IconQuiz, IconRoute, IconTrophy } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { burst, celebrate } from "@/lib/confetti";
-import { renderCardHtml } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "@/features/ai/useDecks";
 import { type QuizChoice, type QuizItem } from "./generateQuiz";
 import { useQuizSets } from "./useQuizSets";
 import { useQuizGeneration } from "./QuizGenerationProvider";
-
-const LETTERS = ["A", "B", "C", "D"];
+import { QuizRunner } from "./QuizRunner";
+import { createChallenge, submitAttempt } from "./quizChallenges";
 
 interface DisplayItem extends QuizItem {
   deckId: string;
@@ -54,7 +54,9 @@ function quizPreview(items: QuizItem[]): string {
 
 export default function QuizPage() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { notify } = useToast();
+  const navigate = useNavigate();
   const { decks, loading: decksLoading } = useDecks();
   const { balance } = useCredits();
   const [deckId, setDeckId] = useState("");
@@ -71,6 +73,7 @@ export default function QuizPage() {
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [challenging, setChallenging] = useState(false);
 
   // "gerando" agora é global (sobrevive à navegação): a barra de progresso e
   // o esqueleto reaparecem ao voltar para /quiz no meio da geração.
@@ -163,6 +166,42 @@ export default function QuizPage() {
     startFrom(rawItems, rawItems[0]?.deckId ?? deckId);
   }
 
+  /**
+   * Cria um desafio a partir de uma bateria (atual ou salva) e navega pro
+   * placar. `recordOwnScore` grava a nota que o criador acabou de tirar --
+   * só faz sentido vindo da tela de "quiz concluído", não de uma bateria
+   * salva que ele não acabou de responder agora.
+   */
+  async function handleChallenge(sourceItems: QuizItem[], targetDeckId: string, recordOwnScore: boolean) {
+    if (!user || challenging) return;
+    setChallenging(true);
+    const deckTitle = decks.find((d) => d.id === targetDeckId)?.title ?? "trilha";
+    const challengeId = await createChallenge({
+      title: `Quiz de ${deckTitle}`,
+      items: sourceItems,
+      creatorId: user.id,
+      creatorName: profile?.display_name ?? null,
+    });
+    if (!challengeId) {
+      notify("Não foi possível criar o desafio.", "error");
+      setChallenging(false);
+      return;
+    }
+    if (recordOwnScore) {
+      await submitAttempt({
+        challengeId,
+        userId: user.id,
+        displayName: profile?.display_name ?? null,
+        avatarUrl: profile?.avatar_url ?? null,
+        score: score.correct,
+        total: score.total,
+        durationMs: null,
+      });
+    }
+    setChallenging(false);
+    navigate(`/desafio/${challengeId}`);
+  }
+
   async function handleAnswer(choiceIdx: number) {
     if (!current || !user || answer !== null) return;
     setAnswer(choiceIdx);
@@ -189,11 +228,6 @@ export default function QuizPage() {
     setAnswer(null);
     setIndex((i) => i + 1);
   }
-
-  const progress = useMemo(
-    () => (items.length ? `Pergunta ${Math.min(index + 1, items.length)} de ${items.length}` : ""),
-    [index, items.length],
-  );
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
@@ -339,13 +373,25 @@ export default function QuizPage() {
                             </span>
                           ) : null}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRedoSaved(s.items, s.deckId)}
-                          className="press shrink-0 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
-                        >
-                          Refazer
-                        </button>
+                        <span className="flex shrink-0 items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={challenging}
+                            onClick={() => void handleChallenge(s.items, s.deckId, false)}
+                            aria-label="Desafiar amigos com essa bateria"
+                            title="Desafiar amigos"
+                            className="press rounded-sm border border-hairline p-1.5 text-slate-muted hover:border-focus hover:text-paper disabled:opacity-60"
+                          >
+                            <IconTrophy className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRedoSaved(s.items, s.deckId)}
+                            className="press rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
+                          >
+                            Refazer
+                          </button>
+                        </span>
                       </li>
                     );
                   })}
@@ -377,87 +423,16 @@ export default function QuizPage() {
       ) : null}
 
       {current ? (
-        <div key={current.cardId} className="animate-rise-in space-y-4">
-          {/* Progresso + placar corrente */}
-          <div>
-            <div className="mb-1.5 flex items-baseline justify-between gap-3">
-              <p className="text-2xs uppercase tracking-wider text-slate-muted">{progress}</p>
-              <p className="text-2xs text-slate-muted">
-                Placar <span className="font-mono text-paper">{score.correct}/{score.total}</span>
-              </p>
-            </div>
-            <div className="h-1 w-full overflow-hidden rounded-sm bg-surface">
-              <div
-                className="h-full bg-focus transition-all duration-300"
-                style={{ width: `${((index + (answer !== null ? 1 : 0)) / items.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <article className="rounded-md border border-hairline bg-elevated px-5 py-6">
-            <p className="mb-2 text-2xs uppercase tracking-wider text-focus-soft">Pergunta</p>
-            <div
-              className="text-xl leading-relaxed text-paper"
-              dangerouslySetInnerHTML={{ __html: renderCardHtml(current.front) }}
-            />
-          </article>
-
-          <ul className="space-y-2">
-            {current.shuffled.map((ch, i) => {
-              const chosen = answer === i;
-              const revealed = answer !== null;
-              const isRight = ch.isCorrect;
-              const tone = !revealed
-                ? "border-hairline hover:border-focus"
-                : isRight
-                  ? "border-good bg-good/10"
-                  : chosen
-                    ? "border-bad bg-bad/10"
-                    : "border-hairline opacity-60";
-              const badgeTone = !revealed
-                ? "border-hairline text-slate-muted"
-                : isRight
-                  ? "border-good text-good"
-                  : chosen
-                    ? "border-bad text-bad"
-                    : "border-hairline text-slate-muted";
-              return (
-                <li key={i}>
-                  <button
-                    type="button"
-                    disabled={revealed}
-                    onClick={() => void handleAnswer(i)}
-                    className={`press flex w-full items-center gap-3 rounded-sm border bg-elevated px-4 py-3 text-left text-sm text-paper ${tone}`}
-                  >
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border font-mono text-2xs ${badgeTone}`}
-                    >
-                      {LETTERS[i]}
-                    </span>
-                    <span className="flex-1">{ch.text}</span>
-                    {revealed && isRight ? (
-                      <IconCheck className="h-4 w-4 shrink-0 text-good" title="Resposta correta" />
-                    ) : revealed && chosen ? (
-                      <IconClose className="h-4 w-4 shrink-0 text-bad" title="Resposta errada" />
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-
-          {answer !== null ? (
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={next}
-                className="press rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep"
-              >
-                {isLast ? "Ver resultado" : "Próxima"}
-              </button>
-            </div>
-          ) : null}
-        </div>
+        <QuizRunner
+          current={current}
+          index={index}
+          total={items.length}
+          score={score}
+          answer={answer}
+          onAnswer={(i) => void handleAnswer(i)}
+          onNext={next}
+          isLast={isLast}
+        />
       ) : null}
 
       {quizFinished ? (
@@ -479,6 +454,21 @@ export default function QuizPage() {
                 className="press inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
               >
                 Refazer essa bateria
+              </button>
+              <button
+                type="button"
+                disabled={challenging}
+                onClick={() =>
+                  void handleChallenge(
+                    rawItems,
+                    rawItems[0]?.deckId ?? deckId,
+                    true,
+                  )
+                }
+                className="press inline-flex items-center gap-1.5 rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus disabled:opacity-60"
+              >
+                <IconTrophy className="h-4 w-4" />
+                {challenging ? "Criando..." : "Desafiar amigos"}
               </button>
             </div>
           }

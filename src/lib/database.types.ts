@@ -250,6 +250,49 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      quiz_challenges: {
+        Row: {
+          id: string;
+          creator_id: string;
+          creator_name: string | null;
+          title: string;
+          items: unknown;
+          item_count: number;
+          created_at: string;
+        };
+        Insert: {
+          creator_id: string;
+          creator_name?: string | null;
+          title: string;
+          items: unknown;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      quiz_challenge_attempts: {
+        Row: {
+          id: string;
+          challenge_id: string;
+          user_id: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          score: number;
+          total: number;
+          duration_ms: number | null;
+          created_at: string;
+        };
+        Insert: {
+          challenge_id: string;
+          user_id: string;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          score: number;
+          total: number;
+          duration_ms?: number | null;
+        };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {

@@ -216,3 +216,18 @@ export const IconHelp = (p: IconProps) => (
     <path d="M12 17h.01" strokeLinecap="round" />
   </Base>
 );
+
+export const IconTrophy = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+    <path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" />
+    <path d="M12 14v3M9 21h6M9 19h6v2H9v-2Z" />
+  </Base>
+);
+
+export const IconLink = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M9.5 14.5l5-5" />
+    <path d="M11 7l1-1a3.5 3.5 0 0 1 5 5l-1 1M13 17l-1 1a3.5 3.5 0 0 1-5-5l1-1" />
+  </Base>
+);

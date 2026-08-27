@@ -22,6 +22,7 @@ const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
 const GeneratePage = lazy(() => import("@/features/ai/GeneratePage"));
 const StudyPage = lazy(() => import("@/features/study/StudyPage"));
 const QuizPage = lazy(() => import("@/features/quiz/QuizPage"));
+const QuizChallengePage = lazy(() => import("@/features/quiz/QuizChallengePage"));
 const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const DecksPage = lazy(() => import("@/features/decks/DecksPage"));
 const DeckDetailPage = lazy(() => import("@/features/decks/DeckDetailPage"));
@@ -148,6 +149,7 @@ export default function App() {
             <Route path="/importar" element={<GeneratePage />} />
             <Route path="/estudar" element={<StudyPage />} />
             <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/desafio/:challengeId" element={<QuizChallengePage />} />
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/ajuda" element={<HelpPage />} />
             <Route path="/trilhas" element={<DecksPage />} />
