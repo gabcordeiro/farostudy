@@ -27,7 +27,7 @@ export default function GeneratePage() {
   const [content, setContent] = useState("");
   const [maxCards, setMaxCards] = useState(20);
 
-  const { generating, pendingResult, error: genError, start, retry, consumeResult, clearError } =
+  const { generating, pendingResult, error: genError, start, retry, consumeResult, clearError, getLastInput } =
     useCardGeneration();
 
   const [error, setError] = useState<string | null>(null);
@@ -35,10 +35,6 @@ export default function GeneratePage() {
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
-  // Guarda o que foi enviado na última geração pra avisar se o próximo clique
-  // repetir exatamente o mesmo texto na mesma trilha -- sinal forte de clique
-  // duplicado sem querer, que a Amanda (usuária) relatou gerar cards repetidos.
-  const [lastGenerated, setLastGenerated] = useState<{ deckId: string; content: string } | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<{ deckId: string; deckTitle: string } | null>(
     null,
   );
@@ -101,7 +97,6 @@ export default function GeneratePage() {
   }, [deckId, creatingDeck, newDeckTitle, createDeck]);
 
   function runGenerate(targetDeck: string, deckTitle: string) {
-    setLastGenerated({ deckId: targetDeck, content: content.trim() });
     start({ deckId: targetDeck, deckTitle, mode, content, maxCards });
   }
 
@@ -121,7 +116,11 @@ export default function GeneratePage() {
     const deckTitle =
       decks.find((d) => d.id === targetDeck)?.title ?? (newDeckTitle.trim() || "trilha");
 
-    if (lastGenerated?.deckId === targetDeck && lastGenerated.content === content.trim()) {
+    // getLastInput() lê o estado global da última geração (sobrevive à
+    // navegação) -- um estado local aqui zerava se a tela remontasse entre
+    // as duas tentativas, deixando o clique duplicado passar sem aviso.
+    const last = getLastInput();
+    if (last?.deckId === targetDeck && last.content.trim() === content.trim()) {
       setDuplicateWarning({ deckId: targetDeck, deckTitle });
       return;
     }

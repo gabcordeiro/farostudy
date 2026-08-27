@@ -57,6 +57,10 @@ interface CardGenContextValue {
   /** A GeneratePage chama ao exibir o resultado -- limpa o pendente. */
   consumeResult: () => PendingResult | null;
   clearError: () => void;
+  /** Input da última geração iniciada -- sobrevive à navegação (ao contrário
+   * de um estado local da GeneratePage, que zera se a tela remontar).
+   * Usado pra avisar se o próximo "Gerar" repetir texto+trilha idênticos. */
+  getLastInput: () => StartInput | null;
 }
 
 const CardGenContext = createContext<CardGenContextValue | undefined>(undefined);
@@ -148,9 +152,11 @@ export function CardGenerationProvider({ children }: { children: ReactNode }) {
     if (lastInputRef.current) start(lastInputRef.current);
   }, [start]);
 
+  const getLastInput = useCallback(() => lastInputRef.current, []);
+
   const value = useMemo(
-    () => ({ generating, pendingResult, error, start, retry, consumeResult, clearError }),
-    [generating, pendingResult, error, start, retry, consumeResult, clearError],
+    () => ({ generating, pendingResult, error, start, retry, consumeResult, clearError, getLastInput }),
+    [generating, pendingResult, error, start, retry, consumeResult, clearError, getLastInput],
   );
 
   return <CardGenContext.Provider value={value}>{children}</CardGenContext.Provider>;
