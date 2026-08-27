@@ -9,6 +9,7 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { Mascot } from "@/components/Mascot";
 import { ErrorModal } from "@/components/ErrorModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { renderCardHtml } from "@/lib/sanitize";
 import { IconPlus, IconRoute, IconWand } from "@/components/icons";
 import { useCredits } from "@/features/billing/useCredits";
@@ -34,6 +35,13 @@ export default function GeneratePage() {
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [resultDeckId, setResultDeckId] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<{ code: string | null } | null>(null);
+  // Guarda o que foi enviado na última geração pra avisar se o próximo clique
+  // repetir exatamente o mesmo texto na mesma trilha -- sinal forte de clique
+  // duplicado sem querer, que a Amanda (usuária) relatou gerar cards repetidos.
+  const [lastGenerated, setLastGenerated] = useState<{ deckId: string; content: string } | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ deckId: string; deckTitle: string } | null>(
+    null,
+  );
 
   // "gerando" é global (sobrevive à navegação): a barra de progresso
   // reaparece ao voltar pra /importar no meio de uma geração.
@@ -92,6 +100,11 @@ export default function GeneratePage() {
     return null;
   }, [deckId, creatingDeck, newDeckTitle, createDeck]);
 
+  function runGenerate(targetDeck: string, deckTitle: string) {
+    setLastGenerated({ deckId: targetDeck, content: content.trim() });
+    start({ deckId: targetDeck, deckTitle, mode, content, maxCards });
+  }
+
   async function handleGenerate() {
     setError(null);
     setNeedsCredits(false);
@@ -107,7 +120,12 @@ export default function GeneratePage() {
     }
     const deckTitle =
       decks.find((d) => d.id === targetDeck)?.title ?? (newDeckTitle.trim() || "trilha");
-    start({ deckId: targetDeck, deckTitle, mode, content, maxCards });
+
+    if (lastGenerated?.deckId === targetDeck && lastGenerated.content === content.trim()) {
+      setDuplicateWarning({ deckId: targetDeck, deckTitle });
+      return;
+    }
+    runGenerate(targetDeck, deckTitle);
   }
 
   return (
@@ -347,6 +365,18 @@ export default function GeneratePage() {
         code={errorModal?.code}
         onClose={() => setErrorModal(null)}
         onRetry={retry}
+      />
+
+      <ConfirmModal
+        open={duplicateWarning !== null}
+        title="Gerar de novo?"
+        description={`Você já gerou cards com esse mesmo texto para "${duplicateWarning?.deckTitle ?? ""}". Gerar de novo pode criar cards duplicados.`}
+        confirmLabel="Gerar mesmo assim"
+        onCancel={() => setDuplicateWarning(null)}
+        onConfirm={() => {
+          if (duplicateWarning) runGenerate(duplicateWarning.deckId, duplicateWarning.deckTitle);
+          setDuplicateWarning(null);
+        }}
       />
     </div>
   );
