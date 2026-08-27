@@ -16,6 +16,7 @@ function CardEditor({
   initialFront = "",
   initialBack = "",
   initialHint = "",
+  initialTags = [],
   submitLabel = "Salvar",
   onCancel,
   onSave,
@@ -23,18 +24,24 @@ function CardEditor({
   initialFront?: string;
   initialBack?: string;
   initialHint?: string;
+  initialTags?: string[];
   submitLabel?: string;
   onCancel: () => void;
-  onSave: (patch: { front: string; back: string; hint?: string | null }) => Promise<void>;
+  onSave: (patch: { front: string; back: string; hint?: string | null; tags: string[] }) => Promise<void>;
 }) {
   const [front, setFront] = useState(initialFront);
   const [back, setBack] = useState(initialBack);
   const [hint, setHint] = useState(initialHint);
+  const [tagsText, setTagsText] = useState(initialTags.join(", "));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
-    const parsed = cardEditSchema.safeParse({ front, back, hint: hint || undefined });
+    const tags = tagsText
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const parsed = cardEditSchema.safeParse({ front, back, hint: hint || undefined, tags });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
       return;
@@ -72,6 +79,17 @@ function CardEditor({
           value={hint}
           onChange={(e) => setHint(e.target.value)}
           maxLength={2000}
+          className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">
+          Tags (opcional, separadas por vírgula)
+        </label>
+        <input
+          value={tagsText}
+          onChange={(e) => setTagsText(e.target.value)}
+          placeholder="ex: constitucional, direitos-fundamentais"
           className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
         />
       </div>
@@ -202,7 +220,7 @@ export default function DeckDetailPage() {
             <button
               type="button"
               onClick={() => setCreatingCard(true)}
-              className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+              className="press inline-flex items-center gap-1 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper"
             >
               <IconPlus className="h-3.5 w-3.5" />
               Adicionar card
@@ -266,6 +284,7 @@ export default function DeckDetailPage() {
                   initialFront={c.front}
                   initialBack={c.back}
                   initialHint={c.hint ?? ""}
+                  initialTags={c.tags}
                   onCancel={() => setEditingCardId(null)}
                   onSave={async (patch) => {
                     const ok = await updateCard(c.id, patch);
@@ -288,6 +307,18 @@ export default function DeckDetailPage() {
                       className="mt-2 text-sm text-slate-muted"
                       dangerouslySetInnerHTML={{ __html: renderCardHtml(c.back) }}
                     />
+                    {c.tags.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {c.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-sm border border-hairline px-1.5 py-0.5 text-2xs text-slate-muted"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <button

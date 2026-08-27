@@ -23,6 +23,7 @@ export interface CardEdit {
   front: string;
   back: string;
   hint?: string | null;
+  tags?: string[];
 }
 
 export function useDeckDetail(deckId: string | undefined) {
@@ -93,7 +94,7 @@ export function useDeckDetail(deckId: string | undefined) {
     const res = await withJwtRetry(() =>
       supabase
         .from("cards")
-        .update({ front: patch.front, back: patch.back, hint: patch.hint ?? null })
+        .update({ front: patch.front, back: patch.back, hint: patch.hint ?? null, tags: patch.tags ?? [] })
         .eq("id", cardId),
     );
     if (res.error) {
@@ -101,7 +102,11 @@ export function useDeckDetail(deckId: string | undefined) {
       return false;
     }
     setCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, front: patch.front, back: patch.back, hint: patch.hint ?? null } : c)),
+      prev.map((c) =>
+        c.id === cardId
+          ? { ...c, front: patch.front, back: patch.back, hint: patch.hint ?? null, tags: patch.tags ?? [] }
+          : c,
+      ),
     );
     return true;
   }, []);
@@ -115,6 +120,7 @@ export function useDeckDetail(deckId: string | undefined) {
         front: input.front,
         back: input.back,
         hint: input.hint ?? null,
+        tags: input.tags ?? [],
         source: "manual",
       };
       const res = await withJwtRetry(() =>

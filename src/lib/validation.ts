@@ -24,6 +24,7 @@ export const cardEditSchema = z.object({
   front: z.string().trim().min(1, "Frente obrigatória").max(8000),
   back: z.string().trim().min(1, "Verso obrigatório").max(8000),
   hint: z.string().trim().max(2000).optional(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
 });
 export type CardEditInput = z.infer<typeof cardEditSchema>;
 

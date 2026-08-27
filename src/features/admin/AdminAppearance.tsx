@@ -120,6 +120,25 @@ export function AdminAppearance() {
         </p>
       </div>
 
+      {/* Fonte da marca */}
+      <div className="rounded-md border border-hairline bg-elevated p-4">
+        <label className="mb-2 block text-2xs uppercase tracking-wider text-slate-muted">
+          Fonte da marca (Faro Study)
+        </label>
+        <select
+          value={draft.brandFont}
+          onChange={(e) => setDraft((d) => ({ ...d, brandFont: e.target.value as FontKey }))}
+          className="w-full max-w-xs rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+        >
+          {(Object.keys(FONTS) as FontKey[]).map((k) => (
+            <option key={k} value={k}>
+              {FONTS[k].label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 font-brand text-lg font-semibold text-paper">Faro Study — prévia da fonte</p>
+      </div>
+
       {/* Fundo */}
       <div className="rounded-md border border-hairline bg-elevated p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

@@ -66,12 +66,15 @@ export interface Appearance {
   font: FontKey;
   /** Fonte dos títulos (h1/h2 etc., classe .font-display). */
   titleFont: FontKey;
+  /** Fonte da marca "Faro Study" (sidebar/cabeçalho, classe .font-brand). */
+  brandFont: FontKey;
   background: { light: BgConfig; dark: BgConfig };
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
   font: "roboto",
   titleFont: "roboto",
+  brandFont: "fredoka",
   background: { light: { kind: "solid" }, dark: { kind: "solid" } },
 };
 
@@ -102,10 +105,12 @@ export function parseAppearance(raw: unknown): Appearance {
   const obj = (raw ?? {}) as Record<string, unknown>;
   const font = (obj.font as FontKey) in FONTS ? (obj.font as FontKey) : "roboto";
   const titleFont = (obj.titleFont as FontKey) in FONTS ? (obj.titleFont as FontKey) : "roboto";
+  const brandFont = (obj.brandFont as FontKey) in FONTS ? (obj.brandFont as FontKey) : "fredoka";
   const bg = (obj.background ?? {}) as Record<string, unknown>;
   return {
     font,
     titleFont,
+    brandFont,
     background: {
       light: parseBg(bg.light),
       dark: parseBg(bg.dark),
@@ -165,11 +170,13 @@ function bgCss(bg: BgConfig, line: string): string {
 export function appearanceCss(a: Appearance): string {
   const font = FONTS[a.font]?.stack ?? FONTS.roboto.stack;
   const titleFont = FONTS[a.titleFont]?.stack ?? FONTS.roboto.stack;
+  const brandFont = FONTS[a.brandFont]?.stack ?? FONTS.fredoka.stack;
   const light = bgCss(a.background.light, "rgba(0,0,0,0.05)");
   const dark = bgCss(a.background.dark, "rgba(255,255,255,0.05)");
   return [
     `body { font-family: ${font}; }`,
     `.font-display { font-family: ${titleFont}; }`,
+    `.font-brand { font-family: ${brandFont}; }`,
     light ? `html:not(.dark) body { ${light} }` : "",
     dark ? `html.dark body { ${dark} }` : "",
   ]
