@@ -38,15 +38,20 @@ interface JoinedRow {
 
 const QUEUE_LIMIT = 50;
 
-export function useStudyQueue(deckId?: string) {
+/** Sem trilhas selecionadas = todas misturadas (mesmo comportamento de antes). */
+export function useStudyQueue(deckIds: string[] = []) {
   const [queue, setQueue] = useState<StudyCardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Chave estável pra dependência do useCallback -- um array novo a cada
+  // render quebraria a memoização mesmo com o mesmo conteúdo.
+  const key = deckIds.join(",");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     const nowIso = new Date().toISOString();
+    const ids = key ? key.split(",") : [];
 
     const res = await withJwtRetry(() => {
       const base = supabase
@@ -56,7 +61,7 @@ export function useStudyQueue(deckId?: string) {
         )
         .lte("due_at", nowIso)
         .neq("state", "suspended");
-      const filtered = deckId ? base.eq("deck_id", deckId) : base;
+      const filtered = ids.length > 0 ? base.in("deck_id", ids) : base;
       return filtered
         .order("due_at", { ascending: true })
         .limit(QUEUE_LIMIT)
@@ -84,7 +89,7 @@ export function useStudyQueue(deckId?: string) {
       setQueue(rows);
     }
     setLoading(false);
-  }, [deckId]);
+  }, [key]);
 
   useEffect(() => {
     void load();

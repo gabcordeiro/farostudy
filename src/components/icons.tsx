@@ -231,3 +231,9 @@ export const IconLink = (p: IconProps) => (
     <path d="M11 7l1-1a3.5 3.5 0 0 1 5 5l-1 1M13 17l-1 1a3.5 3.5 0 0 1-5-5l1-1" />
   </Base>
 );
+
+export const IconChevronDown = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M5 8.5 12 15l7-6.5" />
+  </Base>
+);

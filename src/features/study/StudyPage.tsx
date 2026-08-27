@@ -2,12 +2,12 @@
  * Sessão de estudo: percorre cards vencidos, coleta rating (1-4), aplica
  * SM-2 (schedule) e grava log em `reviews` -- alimentando o BI do painel.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { IconDeck } from "@/components/icons";
+import { IconDeck, IconChevronDown, IconCheck } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { schedule, type Rating } from "@/lib/srs";
@@ -29,10 +29,13 @@ const RATINGS: { rating: Rating; label: string; tone: string }[] = [
 
 export default function StudyPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const deckId = searchParams.get("deck") ?? undefined;
+  const deckIds = useMemo(() => searchParams.getAll("deck"), [searchParams]);
+  const deckKey = deckIds.join(",");
   const { user } = useAuth();
   const { decks } = useDecks();
-  const { queue, loading, error, setQueue } = useStudyQueue(deckId);
+  const { queue, loading, error, setQueue } = useStudyQueue(deckIds);
+  const [deckMenuOpen, setDeckMenuOpen] = useState(false);
+  const deckMenuRef = useRef<HTMLDivElement>(null);
 
   const [index, setIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
@@ -57,7 +60,38 @@ export default function StudyPage() {
     setIndex(0);
     setShowBack(false);
     setDone({ reviewed: 0, correct: 0 });
-  }, [deckId]);
+  }, [deckKey]);
+
+  // Fecha o menu de trilhas ao clicar fora dele.
+  useEffect(() => {
+    if (!deckMenuOpen) return;
+    function onClick(e: MouseEvent) {
+      if (deckMenuRef.current && !deckMenuRef.current.contains(e.target as Node)) {
+        setDeckMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [deckMenuOpen]);
+
+  const toggleDeck = useCallback(
+    (id: string) => {
+      const next = deckIds.includes(id) ? deckIds.filter((d) => d !== id) : [...deckIds, id];
+      const params = new URLSearchParams(searchParams);
+      params.delete("deck");
+      next.forEach((d) => params.append("deck", d));
+      setSearchParams(params);
+    },
+    [deckIds, searchParams, setSearchParams],
+  );
+
+  const deckMenuLabel = useMemo(() => {
+    if (deckIds.length === 0) return "Todas as trilhas";
+    if (deckIds.length === 1) {
+      return decks.find((d) => d.id === deckIds[0])?.title ?? "1 trilha selecionada";
+    }
+    return `${deckIds.length} trilhas selecionadas`;
+  }, [deckIds, decks]);
 
   const advance = useCallback(() => {
     setShowBack(false);
@@ -176,25 +210,54 @@ export default function StudyPage() {
         </div>
       </header>
 
-      <div className="mb-6">
+      <div className="mb-6" ref={deckMenuRef}>
         <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">
-          Trilha
+          Trilhas
         </label>
-        <select
-          value={deckId ?? ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setSearchParams(value ? { deck: value } : {});
-          }}
-          className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus sm:w-64"
-        >
-          <option value="">Todas as trilhas</option>
-          {decks.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.title}
-            </option>
-          ))}
-        </select>
+        <div className="relative sm:w-64">
+          <button
+            type="button"
+            onClick={() => setDeckMenuOpen((v) => !v)}
+            aria-expanded={deckMenuOpen}
+            className="flex w-full items-center justify-between rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+          >
+            <span className="truncate">{deckMenuLabel}</span>
+            <IconChevronDown className="h-4 w-4 shrink-0 text-slate-muted" />
+          </button>
+          {deckMenuOpen ? (
+            <div className="absolute z-10 mt-1 w-full rounded-sm border border-hairline bg-elevated py-1 shadow-pop">
+              <button
+                type="button"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams);
+                  params.delete("deck");
+                  setSearchParams(params);
+                }}
+                className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-paper hover:bg-surface"
+              >
+                Todas as trilhas
+                {deckIds.length === 0 ? <IconCheck className="h-4 w-4 text-focus" /> : null}
+              </button>
+              <div className="my-1 border-t border-hairline" />
+              {decks.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => toggleDeck(d.id)}
+                  className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-paper hover:bg-surface"
+                >
+                  <span className="truncate">{d.title}</span>
+                  {deckIds.includes(d.id) ? (
+                    <IconCheck className="h-4 w-4 shrink-0 text-focus" />
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        {deckIds.length > 1 ? (
+          <p className="mt-1 text-2xs text-slate-muted">Misturando cards das trilhas selecionadas.</p>
+        ) : null}
       </div>
 
       {loading ? (
