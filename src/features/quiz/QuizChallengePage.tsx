@@ -175,7 +175,13 @@ export default function QuizChallengePage() {
 
   function handleStart() {
     if (!challenge) return;
-    const built = challenge.items.map((it) => ({ ...it, shuffled: shuffle(it.choices) }));
+    // Certo/Errado (2 alternativas, ex.: Cebraspe) mantém a ordem original --
+    // mesmo critério de QuizPage.tsx: é a convenção real dessas provas, e
+    // embaralhar entre as duas não protege contra "espiar" nada mesmo.
+    const built = challenge.items.map((it) => ({
+      ...it,
+      shuffled: it.choices.length === 2 ? it.choices : shuffle(it.choices),
+    }));
     startedAtRef.current = Date.now();
     setItems(built);
     setIndex(0);
