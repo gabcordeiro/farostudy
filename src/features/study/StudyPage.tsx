@@ -17,12 +17,22 @@ import { useDecks } from "@/features/ai/useDecks";
 import { StudyCard } from "./StudyCard";
 import { useStudyQueue, type StudyCardRow } from "./useStudyQueue";
 
-const RATINGS: { rating: Rating; label: string; hint: string; tone: string }[] = [
-  { rating: 1, label: "Errei", hint: "0d", tone: "bg-bad text-paper hover:bg-bad/80" },
-  { rating: 2, label: "Difícil", hint: "curto", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
-  { rating: 3, label: "Bom", hint: "medio", tone: "bg-good text-paper hover:bg-good/80" },
-  { rating: 4, label: "Fácil", hint: "longo", tone: "bg-action text-ink-900 hover:bg-action-deep" },
+const RATINGS: { rating: Rating; label: string; tone: string }[] = [
+  { rating: 1, label: "Errei", tone: "bg-bad text-paper hover:bg-bad/80" },
+  { rating: 2, label: "Difícil", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
+  { rating: 3, label: "Bom", tone: "bg-good text-paper hover:bg-good/80" },
+  { rating: 4, label: "Fácil", tone: "bg-action text-ink-900 hover:bg-action-deep" },
 ];
+
+/** "0d"/"curto"/"medio"/"longo" eram rótulos fixos que não diziam nada de
+ * concreto (feedback real: "curto e longo? não entendi essa"). Mostra o
+ * intervalo de verdade que cada nota geraria para ESSE card específico,
+ * usando a mesma função que roda de verdade ao clicar. */
+function formatIntervalPreview(days: number): string {
+  if (days <= 0) return "hoje";
+  if (days === 1) return "amanhã";
+  return `${days}d`;
+}
 
 export default function StudyPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -125,6 +135,24 @@ export default function StudyPage() {
   );
 
   const total = useMemo(() => queue.length + done.reviewed, [queue.length, done.reviewed]);
+
+  // Prévia real do intervalo pra cada nota, calculada com a mesma função que
+  // roda ao clicar -- então o número mostrado nunca destoa do que acontece.
+  const ratingPreviews = useMemo(() => {
+    const out = {} as Record<Rating, string>;
+    if (!current) return out;
+    const prev = {
+      intervalDays: current.interval_days,
+      easeFactor: current.ease_factor,
+      reps: current.reps,
+      lapses: current.lapses,
+      state: current.state,
+    };
+    for (const r of [1, 2, 3, 4] as Rating[]) {
+      out[r] = formatIntervalPreview(schedule(prev, r).intervalDays);
+    }
+    return out;
+  }, [current]);
 
   // Atalhos de teclado: Espaco/Enter revela a resposta, 1-4 avalia.
   // Ignorados quando o foco esta num campo de texto.
@@ -242,8 +270,11 @@ export default function StudyPage() {
             </>
           ) : (
             <>
+              <p className="text-center text-2xs text-slate-muted">
+                Difícil, Bom e Fácil contam como acerto -- a diferença é só o quão fácil foi lembrar.
+              </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {RATINGS.map(({ rating, label, hint, tone }) => (
+                {RATINGS.map(({ rating, label, tone }) => (
                   <button
                     key={rating}
                     type="button"
@@ -252,7 +283,7 @@ export default function StudyPage() {
                     className={`press rounded-sm px-3 py-3 text-sm font-medium disabled:opacity-60 ${tone}`}
                   >
                     <span className="block">{label}</span>
-                    <span className="mt-0.5 block text-2xs opacity-80">{hint}</span>
+                    <span className="mt-0.5 block text-2xs opacity-80">{ratingPreviews[rating]}</span>
                   </button>
                 ))}
               </div>
