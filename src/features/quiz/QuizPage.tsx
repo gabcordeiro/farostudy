@@ -21,6 +21,7 @@ import { useProfile } from "@/features/profile/useProfile";
 import { useCredits } from "@/features/billing/useCredits";
 import { useDecks } from "@/features/ai/useDecks";
 import { type QuizChoice, type QuizItem } from "./generateQuiz";
+import { BANCAS, type BancaKey } from "./bancas";
 import { useQuizSets } from "./useQuizSets";
 import { useQuizGeneration } from "./QuizGenerationProvider";
 import { QuizRunner } from "./QuizRunner";
@@ -63,6 +64,8 @@ export default function QuizPage() {
   const { balance } = useCredits();
   const [deckId, setDeckId] = useState("");
   const [count, setCount] = useState(10);
+  const [banca, setBanca] = useState<BancaKey>("generico");
+  const selectedBanca = BANCAS.find((b) => b.key === banca) ?? BANCAS[0];
   const { sets: savedSets, loading: setsLoading, reload: reloadSets } = useQuizSets(deckId || undefined);
   const { generating, pendingResult, error: genError, start, consumeResult, clearError } =
     useQuizGeneration();
@@ -113,7 +116,9 @@ export default function QuizPage() {
       ...it,
       deckId: targetDeckId,
       categoryId: null,
-      shuffled: shuffle(it.choices),
+      // Certo/Errado (2 alternativas, ex.: Cebraspe) mantém a ordem original
+      // -- é a convenção real dessas provas, embaralhar só confundiria.
+      shuffled: it.choices.length === 2 ? it.choices : shuffle(it.choices),
     }));
     setRawItems(source.map((it) => ({ ...it, deckId: targetDeckId })));
     setItems(built);
@@ -155,7 +160,7 @@ export default function QuizPage() {
     }
     const deckTitle = decks.find((d) => d.id === deckId)?.title ?? "trilha";
     setItems([]);
-    start({ deckId, deckTitle, count });
+    start({ deckId, deckTitle, count, banca });
   }
 
   function handleRedoSaved(setItemsSrc: QuizItem[], targetDeckId: string) {
@@ -248,44 +253,66 @@ export default function QuizPage() {
       {items.length === 0 && !busy ? (
         <div className="space-y-5">
           <div className="space-y-4 rounded-md border border-hairline bg-elevated p-5">
-            {/* Trilha + Número de perguntas: mesma linha, mesmo padrão do
-                cabeçalho de campo usado em Gerar (label + link de gestão). */}
+            {/* Trilha sozinha na própria linha -- com Banca/Número de
+                perguntas disputando espaço, o cabeçalho (label + link de
+                gestão) quebrava feio em telas de celular estreitas. */}
+            <div className="min-w-0">
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-sm text-slate-soft">Trilha</label>
+                <Link
+                  to="/trilhas"
+                  className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+                >
+                  <IconRoute className="h-3.5 w-3.5" />
+                  Gerenciar trilhas
+                </Link>
+              </div>
+              {decksLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : decks.length > 0 ? (
+                <select
+                  value={deckId}
+                  onChange={(e) => setDeckId(e.target.value)}
+                  className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                >
+                  <option value="">Selecione uma trilha...</option>
+                  {decks.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.title}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-slate-muted">
+                  Você ainda não tem trilhas.{" "}
+                  <Link to="/importar" className="text-action underline underline-offset-2">
+                    Crie uma
+                  </Link>{" "}
+                  para começar.
+                </p>
+              )}
+            </div>
+
             <div className="flex flex-wrap items-start gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-center justify-between">
-                  <label className="text-sm text-slate-soft">Trilha</label>
-                  <Link
-                    to="/trilhas"
-                    className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
-                  >
-                    <IconRoute className="h-3.5 w-3.5" />
-                    Gerenciar trilhas
-                  </Link>
-                </div>
-                {decksLoading ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : decks.length > 0 ? (
-                  <select
-                    value={deckId}
-                    onChange={(e) => setDeckId(e.target.value)}
-                    className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
-                  >
-                    <option value="">Selecione uma trilha...</option>
-                    {decks.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.title}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <p className="text-sm text-slate-muted">
-                    Você ainda não tem trilhas.{" "}
-                    <Link to="/importar" className="text-action underline underline-offset-2">
-                      Crie uma
-                    </Link>{" "}
-                    para começar.
-                  </p>
-                )}
+              <div>
+                <label className="mb-1 block text-sm text-slate-soft">Banca</label>
+                <select
+                  value={banca}
+                  onChange={(e) => setBanca(e.target.value as BancaKey)}
+                  className="w-44 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                >
+                  {BANCAS.map((b) => (
+                    <option key={b.key} value={b.key}>
+                      {b.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 max-w-44 text-2xs text-slate-muted">
+                  {selectedBanca.description}
+                  {banca !== "generico"
+                    ? " Perguntas geradas por IA nesse estilo -- não são questões reais de provas anteriores."
+                    : ""}
+                </p>
               </div>
 
               <div>
@@ -357,6 +384,10 @@ export default function QuizPage() {
                     // baterias que, senao, seriam todas "10 perguntas".
                     const num = savedSets.length - i;
                     const preview = quizPreview(s.items);
+                    const setBancaLabel =
+                      s.banca && s.banca !== "generico"
+                        ? BANCAS.find((b) => b.key === s.banca)?.label
+                        : null;
                     return (
                       <li
                         key={s.id}
@@ -368,6 +399,11 @@ export default function QuizPage() {
                             <span className="text-2xs text-slate-muted">
                               {s.itemCount} perguntas · {formatDate(s.createdAt)}
                             </span>
+                            {setBancaLabel ? (
+                              <span className="rounded-sm border border-hairline px-1.5 py-0.5 text-2xs text-slate-muted">
+                                {setBancaLabel}
+                              </span>
+                            ) : null}
                           </span>
                           {preview ? (
                             <span className="mt-0.5 block truncate text-2xs text-slate-muted">

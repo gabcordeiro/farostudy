@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { QuizItem } from "./generateQuiz";
+import type { BancaKey } from "./bancas";
 
 export interface QuizSet {
   id: string;
@@ -14,6 +15,7 @@ export interface QuizSet {
   items: QuizItem[];
   itemCount: number;
   createdAt: string;
+  banca: BancaKey | null;
 }
 
 const LIST_LIMIT = 10;
@@ -33,12 +35,19 @@ export function useQuizSets(deckId?: string) {
     const res = await withJwtRetry(() =>
       supabase
         .from("quiz_sets")
-        .select("id, deck_id, items, item_count, created_at")
+        .select("id, deck_id, items, item_count, created_at, banca")
         .eq("deck_id", deckId)
         .order("created_at", { ascending: false })
         .limit(LIST_LIMIT)
         .returns<
-          { id: string; deck_id: string; items: QuizItem[]; item_count: number; created_at: string }[]
+          {
+            id: string;
+            deck_id: string;
+            items: QuizItem[];
+            item_count: number;
+            created_at: string;
+            banca: BancaKey | null;
+          }[]
         >(),
     );
     if (!res.error && res.data) {
@@ -49,6 +58,7 @@ export function useQuizSets(deckId?: string) {
           items: r.items,
           itemCount: r.item_count,
           createdAt: r.created_at,
+          banca: r.banca,
         })),
       );
     }

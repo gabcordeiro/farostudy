@@ -22,6 +22,7 @@ import { AppFunctionError } from "@/lib/functionError";
 import { useToast } from "@/components/Toast";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { generateQuiz, type QuizItem } from "./generateQuiz";
+import type { BancaKey } from "./bancas";
 
 interface Generating {
   deckId: string;
@@ -43,7 +44,7 @@ interface QuizGenContextValue {
   pendingResult: PendingResult | null;
   /** Erro da última geração, para a QuizPage mostrar o modal/aviso. */
   error: GenError | null;
-  start: (args: { deckId: string; deckTitle: string; count: number }) => void;
+  start: (args: { deckId: string; deckTitle: string; count: number; banca: BancaKey }) => void;
   /** A QuizPage chama ao exibir o quiz -- limpa o resultado pendente. */
   consumeResult: () => PendingResult | null;
   clearError: () => void;
@@ -74,7 +75,17 @@ export function QuizGenerationProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   const start = useCallback(
-    ({ deckId, deckTitle, count }: { deckId: string; deckTitle: string; count: number }) => {
+    ({
+      deckId,
+      deckTitle,
+      count,
+      banca,
+    }: {
+      deckId: string;
+      deckTitle: string;
+      count: number;
+      banca: BancaKey;
+    }) => {
       if (runningRef.current) return;
       runningRef.current = true;
       setError(null);
@@ -89,7 +100,7 @@ export function QuizGenerationProvider({ children }: { children: ReactNode }) {
 
       void (async () => {
         try {
-          const res = await generateQuiz({ deckId, count });
+          const res = await generateQuiz({ deckId, count, banca });
           dismiss(toastId);
           if (res.items.length === 0) {
             notify("O Faro não conseguiu montar o quiz. Tente outra trilha.", "error");
@@ -98,7 +109,9 @@ export function QuizGenerationProvider({ children }: { children: ReactNode }) {
           // Salva a bateria (RLS garante que é do próprio usuário).
           if (user) {
             await withJwtRetry(() =>
-              supabase.from("quiz_sets").insert({ user_id: user.id, deck_id: deckId, items: res.items }),
+              supabase
+                .from("quiz_sets")
+                .insert({ user_id: user.id, deck_id: deckId, items: res.items, banca }),
             );
           }
           setPendingResult({ deckId, items: res.items });

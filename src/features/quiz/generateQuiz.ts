@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { AppFunctionError, describeFunctionError } from "@/lib/functionError";
+import type { BancaKey } from "./bancas";
 
 export interface QuizChoice {
   text: string;
@@ -14,7 +15,11 @@ export interface QuizResult {
   items: QuizItem[];
 }
 
-export async function generateQuiz(input: { deckId: string; count?: number }): Promise<QuizResult> {
+export async function generateQuiz(input: {
+  deckId: string;
+  count?: number;
+  banca?: BancaKey;
+}): Promise<QuizResult> {
   const { data, error } = await supabase.functions.invoke<QuizResult>("generate-quiz", {
     body: input,
   });

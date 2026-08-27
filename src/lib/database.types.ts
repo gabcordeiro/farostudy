@@ -128,8 +128,9 @@ export interface Database {
           items: unknown;
           item_count: number;
           created_at: string;
+          banca: string | null;
         };
-        Insert: { user_id: string; deck_id: string; items: unknown };
+        Insert: { user_id: string; deck_id: string; items: unknown; banca?: string | null };
         Update: Partial<Database["public"]["Tables"]["quiz_sets"]["Row"]>;
         Relationships: [];
       };
