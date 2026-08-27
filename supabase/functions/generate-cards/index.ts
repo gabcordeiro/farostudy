@@ -49,6 +49,12 @@ IDIOMA: escreva em português do Brasil com ortografia e acentuação corretas.
 Use acentos e cedilha sempre que a palavra exigir (é, á, ã, ó, ê, ç, ú, í).
 Nunca escreva "e" no lugar de "é", nem omita acentos para simplificar.
 
+DICA (campo "hint", opcional): uma pista PARCIAL que ajuda a lembrar sem entregar a
+resposta -- uma palavra-chave, uma categoria, o começo do raciocínio. NUNCA escreva a
+resposta nem uma reformulação/paráfrase dela como dica -- isso anula o propósito (o
+estudante vê a "dica" e já sabe a resposta sem ter praticado a lembrança). Se não der
+pra pensar numa dica que não entregue a resposta, deixe o campo vazio.
+
 Responda SOMENTE com um array JSON de objetos {front, back, hint, tags}.
 Conteúdo:
 """${content}"""`;
