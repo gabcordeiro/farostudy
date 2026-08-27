@@ -2,11 +2,14 @@
  * Ajuda: o que é o app, como começar, o que faz cada aba e dúvidas comuns.
  * Também permite reabrir o tour de boas-vindas.
  */
+import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
 import { IconHelp } from "@/components/icons";
 import { useAppOutletContext } from "@/lib/appOutletContext";
+import { useToast } from "@/components/Toast";
+import { sendSuggestion } from "./sendSuggestion";
 import { SECTIONS } from "./content";
 
 const FIRST_STEPS = [
@@ -62,6 +65,62 @@ const FAQ = [
     a: "Sim. Além dos flashcards, a tela de Estudar tem um botão de áudio que le a pergunta e a resposta em voz alta, útil para pronuncia e vocabulario.",
   },
 ];
+
+function SuggestionForm() {
+  const { notify } = useToast();
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (message.trim().length < 1) {
+      notify("Escreva sua sugestão antes de enviar.", "error");
+      return;
+    }
+    setBusy(true);
+    try {
+      await sendSuggestion(message.trim());
+      notify("Sugestão enviada, obrigado!", "success");
+      setMessage("");
+    } catch {
+      notify("Não foi possível enviar agora. Tente de novo em instantes.", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mb-10 rounded-md border border-hairline bg-elevated p-6">
+      <div className="flex flex-wrap items-center gap-6">
+        <Mascot size="md" mood="winking" alt="" />
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-lg text-paper">Ajude a melhorar</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-muted">
+            Achou algo confuso, um bug ou tem uma ideia? Manda pra gente -- toda sugestão chega
+            direto no time.
+          </p>
+        </div>
+      </div>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          maxLength={4000}
+          placeholder="Conta pra gente o que você acha que poderia melhorar..."
+          className="w-full resize-y rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+        />
+        <button
+          type="submit"
+          disabled={busy}
+          className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+        >
+          {busy ? "Enviando..." : "Enviar sugestão"}
+        </button>
+      </form>
+    </section>
+  );
+}
 
 export default function HelpPage() {
   const { openTour } = useAppOutletContext();
@@ -159,6 +218,8 @@ export default function HelpPage() {
           ))}
         </div>
       </section>
+
+      <SuggestionForm />
 
       {/* Dúvidas comuns */}
       <section>

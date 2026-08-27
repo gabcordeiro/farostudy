@@ -78,14 +78,35 @@ export function AdminAppearance() {
         aplicar. Enquanto edita, você vê uma prévia só sua.
       </p>
 
-      {/* Fonte */}
+      {/* Fonte do corpo */}
       <div className="rounded-md border border-hairline bg-elevated p-4">
         <label className="mb-2 block text-2xs uppercase tracking-wider text-slate-muted">
-          Fonte do app
+          Fonte do texto
         </label>
         <select
           value={draft.font}
           onChange={(e) => setDraft((d) => ({ ...d, font: e.target.value as FontKey }))}
+          className="w-full max-w-xs rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+        >
+          {(Object.keys(FONTS) as FontKey[]).map((k) => (
+            <option key={k} value={k}>
+              {FONTS[k].label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-lg text-paper">
+          O rápido Faro marrom salta sobre 1.234 cards. — prévia da fonte
+        </p>
+      </div>
+
+      {/* Fonte dos títulos */}
+      <div className="rounded-md border border-hairline bg-elevated p-4">
+        <label className="mb-2 block text-2xs uppercase tracking-wider text-slate-muted">
+          Fonte dos títulos
+        </label>
+        <select
+          value={draft.titleFont}
+          onChange={(e) => setDraft((d) => ({ ...d, titleFont: e.target.value as FontKey }))}
           className="w-full max-w-xs rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
         >
           {(Object.keys(FONTS) as FontKey[]).map((k) => (

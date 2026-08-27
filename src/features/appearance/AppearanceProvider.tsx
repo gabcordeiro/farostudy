@@ -49,6 +49,7 @@ function ensureFontLink(href: string | null) {
 
 function apply(a: Appearance) {
   ensureFontLink(FONTS[a.font]?.href ?? null);
+  ensureFontLink(FONTS[a.titleFont]?.href ?? null);
   let style = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
   if (!style) {
     style = document.createElement("style");

@@ -7,13 +7,13 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { Avatar } from "@/components/Avatar";
-import { IconCoin, IconShield } from "@/components/icons";
+import { IconCoin, IconPencil, IconShield } from "@/components/icons";
 import { useToast } from "@/components/Toast";
-import { useAdminData } from "./useAdminData";
+import { useAdminData, type AdminPlanRow } from "./useAdminData";
 import { AdminVisualLab } from "./AdminVisualLab";
 import { AdminAppearance } from "./AdminAppearance";
 
-type Tab = "users" | "requests" | "plans" | "errors" | "visuals" | "appearance";
+type Tab = "users" | "requests" | "plans" | "suggestions" | "errors" | "visuals" | "appearance";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -38,12 +38,14 @@ export default function AdminPage() {
     requests,
     plans,
     errorLogs,
+    suggestions,
     loading,
     error,
     setRole,
     grantCredits,
     resolveRequest,
     createPlan,
+    updatePlan,
     togglePlanActive,
   } = useAdminData();
   const { notify } = useToast();
@@ -51,6 +53,9 @@ export default function AdminPage() {
   const [grantAmount, setGrantAmount] = useState<Record<string, string>>({});
   const [newPlan, setNewPlan] = useState({ name: "", credits: "", price: "" });
   const [savingPlan, setSavingPlan] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [editPlanDraft, setEditPlanDraft] = useState({ name: "", credits: "", price: "" });
+  const [savingPlanEdit, setSavingPlanEdit] = useState(false);
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
 
@@ -104,6 +109,33 @@ export default function AdminPage() {
     notify(ok ? "Plano atualizado." : "Falha ao atualizar plano.", ok ? "success" : "error");
   }
 
+  function startEditPlan(p: AdminPlanRow) {
+    setEditingPlanId(p.id);
+    setEditPlanDraft({
+      name: p.name,
+      credits: String(p.credits),
+      price: (p.priceCents / 100).toFixed(2).replace(".", ","),
+    });
+  }
+
+  async function handleSavePlanEdit(planId: string) {
+    const credits = Number(editPlanDraft.credits);
+    const priceReais = Number(editPlanDraft.price.replace(",", "."));
+    if (!editPlanDraft.name.trim() || !credits || credits <= 0 || !priceReais || priceReais < 0) {
+      notify("Preencha nome, créditos e preço validos.", "error");
+      return;
+    }
+    setSavingPlanEdit(true);
+    const ok = await updatePlan(planId, {
+      name: editPlanDraft.name.trim(),
+      credits,
+      priceCents: Math.round(priceReais * 100),
+    });
+    setSavingPlanEdit(false);
+    notify(ok ? "Plano atualizado." : "Falha ao atualizar plano.", ok ? "success" : "error");
+    if (ok) setEditingPlanId(null);
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <SEO title="Admin" description="Gerenciamento de usuários, créditos e planos." path="/admin" noindex />
@@ -122,6 +154,7 @@ export default function AdminPage() {
             { key: "users", label: "Usuários" },
             { key: "requests", label: `Solicitações${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
             { key: "plans", label: "Planos" },
+            { key: "suggestions", label: `Sugestões${suggestions.length > 0 ? ` (${suggestions.length})` : ""}` },
             { key: "errors", label: `Erros${errorLogs.length > 0 ? ` (${errorLogs.length})` : ""}` },
             { key: "visuals", label: "Visuais" },
             { key: "appearance", label: "Aparência" },
@@ -256,6 +289,38 @@ export default function AdminPage() {
             })}
           </ul>
         )
+      ) : tab === "suggestions" ? (
+        suggestions.length === 0 ? (
+          <EmptyState
+            mood="sleepy"
+            title="Nenhuma sugestão ainda"
+            description="Sugestões enviadas pelos usuários em Ajuda aparecem aqui."
+          />
+        ) : (
+          <ul className="space-y-2">
+            {suggestions.map((s) => {
+              const user = users.find((u) => u.id === s.userId);
+              return (
+                <li key={s.id} className="rounded-md border border-hairline bg-elevated px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-2xs text-slate-muted">
+                      {user?.displayName || user?.email || s.userId}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {s.emailSent ? (
+                        <span className="rounded-sm bg-good/15 px-2 py-0.5 text-2xs text-good">
+                          E-mail enviado
+                        </span>
+                      ) : null}
+                      <span className="text-2xs text-slate-muted">{formatDateTime(s.createdAt)}</span>
+                    </div>
+                  </div>
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm text-paper">{s.message}</p>
+                </li>
+              );
+            })}
+          </ul>
+        )
       ) : tab === "errors" ? (
         errorLogs.length === 0 ? (
           <EmptyState
@@ -340,28 +405,90 @@ export default function AdminPage() {
           </form>
 
           <ul className="space-y-2">
-            {plans.map((p) => (
-              <li
-                key={p.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-hairline bg-elevated px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm text-paper">{p.name}</p>
-                  <p className="text-2xs text-slate-muted">
-                    {p.credits} créditos - {formatBRL(p.priceCents)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleTogglePlan(p.id, p.isActive)}
-                  className={`rounded-sm px-2.5 py-1 text-2xs font-medium ${
-                    p.isActive ? "bg-good/15 text-good" : "border border-hairline text-slate-soft hover:text-paper"
-                  }`}
+            {plans.map((p) =>
+              editingPlanId === p.id ? (
+                <li
+                  key={p.id}
+                  className="flex flex-wrap items-end gap-3 rounded-md border border-focus bg-elevated p-4 animate-fade-in"
                 >
-                  {p.isActive ? "Ativo" : "Inativo"}
-                </button>
-              </li>
-            ))}
+                  <div>
+                    <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Nome</label>
+                    <input
+                      value={editPlanDraft.name}
+                      onChange={(e) => setEditPlanDraft((d) => ({ ...d, name: e.target.value }))}
+                      maxLength={80}
+                      className="w-40 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Créditos</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={editPlanDraft.credits}
+                      onChange={(e) => setEditPlanDraft((d) => ({ ...d, credits: e.target.value }))}
+                      className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Preço (R$)</label>
+                    <input
+                      inputMode="decimal"
+                      aria-label="Preço do plano em reais"
+                      value={editPlanDraft.price}
+                      onChange={(e) => setEditPlanDraft((d) => ({ ...d, price: e.target.value }))}
+                      className="w-24 rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleSavePlanEdit(p.id)}
+                    disabled={savingPlanEdit}
+                    className="rounded-sm bg-focus px-4 py-2 text-sm font-medium text-paper hover:bg-focus-deep disabled:opacity-60"
+                  >
+                    {savingPlanEdit ? "Salvando..." : "Salvar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlanId(null)}
+                    className="rounded-sm border border-hairline px-4 py-2 text-sm text-slate-soft hover:text-paper"
+                  >
+                    Cancelar
+                  </button>
+                </li>
+              ) : (
+                <li
+                  key={p.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-hairline bg-elevated px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm text-paper">{p.name}</p>
+                    <p className="text-2xs text-slate-muted">
+                      {p.credits} créditos - {formatBRL(p.priceCents)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEditPlan(p)}
+                      aria-label={`Editar plano ${p.name}`}
+                      className="rounded-sm p-1.5 text-slate-muted transition-colors duration-150 hover:bg-surface hover:text-paper"
+                    >
+                      <IconPencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleTogglePlan(p.id, p.isActive)}
+                      className={`rounded-sm px-2.5 py-1 text-2xs font-medium ${
+                        p.isActive ? "bg-good/15 text-good" : "border border-hairline text-slate-soft hover:text-paper"
+                      }`}
+                    >
+                      {p.isActive ? "Ativo" : "Inativo"}
+                    </button>
+                  </div>
+                </li>
+              ),
+            )}
           </ul>
         </div>
       )}

@@ -45,6 +45,14 @@ export interface AdminErrorLogRow {
   createdAt: string;
 }
 
+export interface AdminSuggestionRow {
+  id: string;
+  userId: string;
+  message: string;
+  emailSent: boolean;
+  createdAt: string;
+}
+
 interface RequestJoined {
   id: string;
   user_id: string;
@@ -59,6 +67,7 @@ export function useAdminData() {
   const [requests, setRequests] = useState<AdminRequestRow[]>([]);
   const [plans, setPlans] = useState<AdminPlanRow[]>([]);
   const [errorLogs, setErrorLogs] = useState<AdminErrorLogRow[]>([]);
+  const [suggestions, setSuggestions] = useState<AdminSuggestionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +75,7 @@ export function useAdminData() {
     setLoading(true);
     setError(null);
 
-    const [usersRes, requestsRes, plansRes, errorLogsRes] = await Promise.all([
+    const [usersRes, requestsRes, plansRes, errorLogsRes, suggestionsRes] = await Promise.all([
       withJwtRetry(() => supabase.rpc("admin_list_users")),
       withJwtRetry(() =>
         supabase
@@ -86,6 +95,13 @@ export function useAdminData() {
         supabase
           .from("error_logs")
           .select("id, user_id, source, status_code, message, created_at")
+          .order("created_at", { ascending: false })
+          .limit(50),
+      ),
+      withJwtRetry(() =>
+        supabase
+          .from("suggestions")
+          .select("id, user_id, message, email_sent, created_at")
           .order("created_at", { ascending: false })
           .limit(50),
       ),
@@ -127,6 +143,18 @@ export function useAdminData() {
           role: u.role,
           balance: u.balance,
           createdAt: u.created_at,
+        })),
+      );
+    }
+
+    if (!suggestionsRes.error) {
+      setSuggestions(
+        (suggestionsRes.data ?? []).map((s) => ({
+          id: s.id,
+          userId: s.user_id,
+          message: s.message,
+          emailSent: s.email_sent,
+          createdAt: s.created_at,
         })),
       );
     }
@@ -227,6 +255,33 @@ export function useAdminData() {
     [],
   );
 
+  const updatePlan = useCallback(
+    async (
+      planId: string,
+      input: { name: string; credits: number; priceCents: number },
+    ): Promise<boolean> => {
+      const res = await withJwtRetry(() =>
+        supabase
+          .from("credit_plans")
+          .update({ name: input.name, credits: input.credits, price_cents: input.priceCents })
+          .eq("id", planId),
+      );
+      if (res.error) {
+        setError(res.error.message ?? "Falha ao atualizar plano");
+        return false;
+      }
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === planId
+            ? { ...p, name: input.name, credits: input.credits, priceCents: input.priceCents }
+            : p,
+        ),
+      );
+      return true;
+    },
+    [],
+  );
+
   const togglePlanActive = useCallback(async (planId: string, isActive: boolean): Promise<boolean> => {
     const res = await withJwtRetry(() =>
       supabase.from("credit_plans").update({ is_active: isActive }).eq("id", planId),
@@ -244,6 +299,7 @@ export function useAdminData() {
     requests,
     plans,
     errorLogs,
+    suggestions,
     loading,
     error,
     reload: load,
@@ -251,6 +307,7 @@ export function useAdminData() {
     grantCredits,
     resolveRequest,
     createPlan,
+    updatePlan,
     togglePlanActive,
   };
 }

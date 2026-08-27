@@ -62,12 +62,16 @@ export type BgConfig =
   | { kind: "image"; url: string; size: number };
 
 export interface Appearance {
+  /** Fonte do corpo do texto (aplicada no body). */
   font: FontKey;
+  /** Fonte dos títulos (h1/h2 etc., classe .font-display). */
+  titleFont: FontKey;
   background: { light: BgConfig; dark: BgConfig };
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
   font: "roboto",
+  titleFont: "roboto",
   background: { light: { kind: "solid" }, dark: { kind: "solid" } },
 };
 
@@ -97,9 +101,11 @@ function safeUrl(u: unknown): string | null {
 export function parseAppearance(raw: unknown): Appearance {
   const obj = (raw ?? {}) as Record<string, unknown>;
   const font = (obj.font as FontKey) in FONTS ? (obj.font as FontKey) : "roboto";
+  const titleFont = (obj.titleFont as FontKey) in FONTS ? (obj.titleFont as FontKey) : "roboto";
   const bg = (obj.background ?? {}) as Record<string, unknown>;
   return {
     font,
+    titleFont,
     background: {
       light: parseBg(bg.light),
       dark: parseBg(bg.dark),
@@ -158,10 +164,12 @@ function bgCss(bg: BgConfig, line: string): string {
 /** Monta o conteúdo do <style> global a partir da aparência. */
 export function appearanceCss(a: Appearance): string {
   const font = FONTS[a.font]?.stack ?? FONTS.roboto.stack;
+  const titleFont = FONTS[a.titleFont]?.stack ?? FONTS.roboto.stack;
   const light = bgCss(a.background.light, "rgba(0,0,0,0.05)");
   const dark = bgCss(a.background.dark, "rgba(255,255,255,0.05)");
   return [
     `body { font-family: ${font}; }`,
+    `.font-display { font-family: ${titleFont}; }`,
     light ? `html:not(.dark) body { ${light} }` : "",
     dark ? `html.dark body { ${dark} }` : "",
   ]

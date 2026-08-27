@@ -238,6 +238,18 @@ export interface Database {
         Update: { title?: string; event_date?: string; kind?: "exam" | "custom"; deck_id?: string | null };
         Relationships: [];
       };
+      suggestions: {
+        Row: {
+          id: string;
+          user_id: string;
+          message: string;
+          email_sent: boolean;
+          created_at: string;
+        };
+        Insert: { user_id: string; message: string; email_sent?: boolean };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_activity: {
