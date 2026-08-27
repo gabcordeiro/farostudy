@@ -6,7 +6,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
-import type { CardState } from "@/lib/database.types";
+import { useAuth } from "@/features/auth/AuthProvider";
+import type { CardState, Database } from "@/lib/database.types";
 
 export interface DeckCardRow {
   id: string;
@@ -25,6 +26,7 @@ export interface CardEdit {
 }
 
 export function useDeckDetail(deckId: string | undefined) {
+  const { user } = useAuth();
   const [title, setTitle] = useState<string>("");
   const [cards, setCards] = useState<DeckCardRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,6 +106,34 @@ export function useDeckDetail(deckId: string | undefined) {
     return true;
   }, []);
 
+  const addCard = useCallback(
+    async (input: CardEdit): Promise<boolean> => {
+      if (!deckId || !user) return false;
+      const payload: Database["public"]["Tables"]["cards"]["Insert"] = {
+        deck_id: deckId,
+        user_id: user.id,
+        front: input.front,
+        back: input.back,
+        hint: input.hint ?? null,
+        source: "manual",
+      };
+      const res = await withJwtRetry(() =>
+        supabase
+          .from("cards")
+          .insert(payload)
+          .select("id, front, back, hint, tags, state, due_at")
+          .single<DeckCardRow>(),
+      );
+      if (res.error || !res.data) {
+        setError(res.error?.message ?? "Falha ao criar card");
+        return false;
+      }
+      setCards((prev) => [res.data as DeckCardRow, ...prev]);
+      return true;
+    },
+    [deckId, user],
+  );
+
   const deleteCard = useCallback(async (cardId: string): Promise<boolean> => {
     const res = await withJwtRetry(() => supabase.from("cards").delete().eq("id", cardId));
     if (res.error) {
@@ -114,5 +144,5 @@ export function useDeckDetail(deckId: string | undefined) {
     return true;
   }, []);
 
-  return { title, cards, loading, error, notFound, reload: load, renameDeck, updateCard, deleteCard };
+  return { title, cards, loading, error, notFound, reload: load, renameDeck, addCard, updateCard, deleteCard };
 }

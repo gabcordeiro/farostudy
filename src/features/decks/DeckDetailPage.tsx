@@ -6,24 +6,30 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { IconDeck, IconPencil, IconTrash } from "@/components/icons";
+import { IconDeck, IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { renderCardHtml } from "@/lib/sanitize";
 import { cardEditSchema, deckTitleSchema } from "@/lib/validation";
 import { useArmedAction } from "@/lib/useArmedAction";
-import { useDeckDetail, type DeckCardRow } from "./useDeckDetail";
+import { useDeckDetail } from "./useDeckDetail";
 
 function CardEditor({
-  card,
+  initialFront = "",
+  initialBack = "",
+  initialHint = "",
+  submitLabel = "Salvar",
   onCancel,
   onSave,
 }: {
-  card: DeckCardRow;
+  initialFront?: string;
+  initialBack?: string;
+  initialHint?: string;
+  submitLabel?: string;
   onCancel: () => void;
   onSave: (patch: { front: string; back: string; hint?: string | null }) => Promise<void>;
 }) {
-  const [front, setFront] = useState(card.front);
-  const [back, setBack] = useState(card.back);
-  const [hint, setHint] = useState(card.hint ?? "");
+  const [front, setFront] = useState(initialFront);
+  const [back, setBack] = useState(initialBack);
+  const [hint, setHint] = useState(initialHint);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -77,7 +83,7 @@ function CardEditor({
           disabled={saving}
           className="press rounded-sm bg-focus px-4 py-1.5 text-sm font-medium text-paper hover:bg-focus-deep disabled:opacity-60"
         >
-          {saving ? "Salvando..." : "Salvar"}
+          {saving ? "Salvando..." : submitLabel}
         </button>
         <button
           type="button"
@@ -94,12 +100,14 @@ function CardEditor({
 export default function DeckDetailPage() {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();
-  const { title, cards, loading, error, notFound, renameDeck, updateCard, deleteCard } = useDeckDetail(deckId);
+  const { title, cards, loading, error, notFound, renameDeck, addCard, updateCard, deleteCard } =
+    useDeckDetail(deckId);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
   const [titleError, setTitleError] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [creatingCard, setCreatingCard] = useState(false);
   const { armedId: deletingCardId, confirm: confirmArm } = useArmedAction();
 
   useEffect(() => setTitleValue(title), [title]);
@@ -190,8 +198,31 @@ export default function DeckDetailPage() {
               Estudar esta trilha
             </Link>
           ) : null}
+          {!creatingCard ? (
+            <button
+              type="button"
+              onClick={() => setCreatingCard(true)}
+              className="inline-flex items-center gap-1 text-2xs text-slate-muted transition-colors duration-150 hover:text-paper"
+            >
+              <IconPlus className="h-3.5 w-3.5" />
+              Adicionar card
+            </button>
+          ) : null}
         </div>
       </header>
+
+      {creatingCard ? (
+        <div className="mb-4">
+          <CardEditor
+            submitLabel="Criar card"
+            onCancel={() => setCreatingCard(false)}
+            onSave={async (patch) => {
+              const ok = await addCard(patch);
+              if (ok) setCreatingCard(false);
+            }}
+          />
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="space-y-2">
@@ -203,18 +234,27 @@ export default function DeckDetailPage() {
         <p role="alert" className="text-sm text-bad">
           {error}
         </p>
-      ) : cards.length === 0 ? (
+      ) : cards.length === 0 && !creatingCard ? (
         <EmptyState
           mood="sleepy"
           title="Nenhum card nessa trilha"
           description="Gere cards com IA ou crie manualmente para começar."
           action={
-            <Link
-              to="/importar"
-              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-            >
-              Gerar cards
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/importar"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Gerar cards
+              </Link>
+              <button
+                type="button"
+                onClick={() => setCreatingCard(true)}
+                className="press inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-slate-soft hover:text-paper"
+              >
+                Criar manualmente
+              </button>
+            </div>
           }
         />
       ) : (
@@ -223,7 +263,9 @@ export default function DeckDetailPage() {
             editingCardId === c.id ? (
               <li key={c.id}>
                 <CardEditor
-                  card={c}
+                  initialFront={c.front}
+                  initialBack={c.back}
+                  initialHint={c.hint ?? ""}
                   onCancel={() => setEditingCardId(null)}
                   onSave={async (patch) => {
                     const ok = await updateCard(c.id, patch);
