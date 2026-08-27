@@ -153,7 +153,7 @@ export default function StudyPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <SEO title="Estudar" description="Revise seus flashcards vencidos." path="/estudar" noindex />
+      <SEO title="Estudar" description="Revise os flashcards que chegaram a hora de rever." path="/estudar" noindex />
 
       <header className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -291,8 +291,8 @@ export default function StudyPage() {
       ) : (
         <EmptyState
           mood="yawning"
-          title="Nada vencido por hoje"
-          description="O Faro não encontrou cards vencidos para revisar agora. Gere novos cards ou volte depois."
+          title="Nada pra revisar hoje"
+          description="O Faro não encontrou cards prontos para revisar agora. Gere novos cards ou volte depois."
           action={
             <Link
               to="/importar"

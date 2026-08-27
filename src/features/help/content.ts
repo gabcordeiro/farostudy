@@ -48,7 +48,7 @@ export const SECTIONS: SectionInfo[] = [
     Icon: IconDeck,
     summary: "A revisão do dia, no ritmo que a memória pede.",
     detail:
-      "Mostra só os cards que venceram hoje. Você lê a pergunta, tenta responder de cabeça, revela a resposta e avalia de Errei a Fácil. Essa nota decide quando o card volta: errou, ele reaparece logo; acertou fácil, ele some por mais tempo. Há também um botão de áudio para ouvir o card, útil para idiomas.",
+      "Mostra só os cards que chegaram a hora de revisar hoje (não tem a ver com ter acertado ou errado). Você lê a pergunta, tenta responder de cabeça, revela a resposta e avalia de Errei a Fácil. Essa nota decide quando o card volta: errou, ele reaparece logo; acertou fácil, ele some por mais tempo. Há também um botão de áudio para ouvir o card, útil para idiomas.",
   },
   {
     to: "/quiz",
@@ -113,7 +113,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     title: "3. Estude todo dia",
-    body: "Em Estudar aparecem só os cards que venceram hoje. Responda de cabeça, revele e avalie de Errei a Fácil: o que você erra volta logo, o que acerta demora mais para reaparecer.",
+    body: "Em Estudar aparecem só os cards que chegou a hora de revisar hoje (não é sobre ter acertado ou errado). Responda de cabeça, revele e avalie de Errei a Fácil: o que você erra volta logo, o que acerta demora mais para reaparecer.",
     mood: "winking",
     to: "/estudar",
   },

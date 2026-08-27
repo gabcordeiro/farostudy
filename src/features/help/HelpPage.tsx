@@ -50,7 +50,7 @@ const FAQ = [
   },
   {
     q: "Quantos cards devo estudar por dia?",
-    a: "Não existe número certo. O app já mostra apenas o que venceu no dia, então o ideal e zerar essa fila. Se estiver acumulando muita coisa, gere menos cards novos por semana até estabilizar.",
+    a: "Não existe número certo. O app já mostra apenas o que chegou a hora de revisar no dia (não é sobre ter acertado ou errado), então o ideal e zerar essa fila. Se estiver acumulando muita coisa, gere menos cards novos por semana até estabilizar.",
   },
   {
     q: "O que consome crédito?",
