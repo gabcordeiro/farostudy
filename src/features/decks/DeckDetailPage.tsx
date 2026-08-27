@@ -1,11 +1,12 @@
 /**
  * Detalhe de uma trilha: renomear, ver/editar/excluir cards.
  */
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
+import { TagInput } from "@/components/TagInput";
 import { IconDeck, IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { renderCardHtml } from "@/lib/sanitize";
 import { cardEditSchema, deckTitleSchema } from "@/lib/validation";
@@ -17,6 +18,7 @@ function CardEditor({
   initialBack = "",
   initialHint = "",
   initialTags = [],
+  tagSuggestions = [],
   submitLabel = "Salvar",
   onCancel,
   onSave,
@@ -25,6 +27,7 @@ function CardEditor({
   initialBack?: string;
   initialHint?: string;
   initialTags?: string[];
+  tagSuggestions?: string[];
   submitLabel?: string;
   onCancel: () => void;
   onSave: (patch: { front: string; back: string; hint?: string | null; tags: string[] }) => Promise<void>;
@@ -32,15 +35,11 @@ function CardEditor({
   const [front, setFront] = useState(initialFront);
   const [back, setBack] = useState(initialBack);
   const [hint, setHint] = useState(initialHint);
-  const [tagsText, setTagsText] = useState(initialTags.join(", "));
+  const [tags, setTags] = useState<string[]>(initialTags);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
-    const tags = tagsText
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
     const parsed = cardEditSchema.safeParse({ front, back, hint: hint || undefined, tags });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
@@ -83,14 +82,12 @@ function CardEditor({
         />
       </div>
       <div>
-        <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">
-          Tags (opcional, separadas por vírgula)
-        </label>
-        <input
-          value={tagsText}
-          onChange={(e) => setTagsText(e.target.value)}
-          placeholder="ex: constitucional, direitos-fundamentais"
-          className="w-full rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
+        <label className="mb-1 block text-2xs uppercase tracking-wider text-slate-muted">Tags (opcional)</label>
+        <TagInput
+          value={tags}
+          onChange={setTags}
+          suggestions={tagSuggestions}
+          placeholder="ex: constitucional"
         />
       </div>
       {error ? <p className="text-2xs text-bad">{error}</p> : null}
@@ -127,6 +124,11 @@ export default function DeckDetailPage() {
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [creatingCard, setCreatingCard] = useState(false);
   const { armedId: deletingCardId, confirm: confirmArm } = useArmedAction();
+
+  const tagSuggestions = useMemo(
+    () => Array.from(new Set(cards.flatMap((c) => c.tags))).sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [cards],
+  );
 
   useEffect(() => setTitleValue(title), [title]);
 
@@ -233,6 +235,7 @@ export default function DeckDetailPage() {
         <div className="mb-4">
           <CardEditor
             submitLabel="Criar card"
+            tagSuggestions={tagSuggestions}
             onCancel={() => setCreatingCard(false)}
             onSave={async (patch) => {
               const ok = await addCard(patch);
@@ -285,6 +288,7 @@ export default function DeckDetailPage() {
                   initialBack={c.back}
                   initialHint={c.hint ?? ""}
                   initialTags={c.tags}
+                  tagSuggestions={tagSuggestions}
                   onCancel={() => setEditingCardId(null)}
                   onSave={async (patch) => {
                     const ok = await updateCard(c.id, patch);

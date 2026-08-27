@@ -423,16 +423,39 @@ export default function QuizPage() {
       ) : null}
 
       {current ? (
-        <QuizRunner
-          current={current}
-          index={index}
-          total={items.length}
-          score={score}
-          answer={answer}
-          onAnswer={(i) => void handleAnswer(i)}
-          onNext={next}
-          isLast={isLast}
-        />
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setItems([]);
+                setRawItems([]);
+              }}
+              className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-paper"
+            >
+              &larr; Sair
+            </button>
+            <button
+              type="button"
+              disabled={challenging}
+              onClick={() => void handleChallenge(rawItems, rawItems[0]?.deckId ?? deckId, false)}
+              className="press inline-flex items-center gap-1.5 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper disabled:opacity-60"
+            >
+              <IconTrophy className="h-3.5 w-3.5" />
+              {challenging ? "Criando..." : "Desafiar amigos"}
+            </button>
+          </div>
+          <QuizRunner
+            current={current}
+            index={index}
+            total={items.length}
+            score={score}
+            answer={answer}
+            onAnswer={(i) => void handleAnswer(i)}
+            onNext={next}
+            isLast={isLast}
+          />
+        </div>
       ) : null}
 
       {quizFinished ? (
