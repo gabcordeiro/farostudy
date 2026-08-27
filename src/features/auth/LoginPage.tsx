@@ -394,9 +394,19 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-1 block text-sm text-slate-soft">
-                Senha
-              </label>
+              <div className="mb-1 flex items-center justify-between">
+                <label htmlFor="password" className="text-sm text-slate-soft">
+                  Senha
+                </label>
+                {mode === "signin" ? (
+                  <Link
+                    to="/esqueci-senha"
+                    className="text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-paper"
+                  >
+                    Esqueceu a senha?
+                  </Link>
+                ) : null}
+              </div>
               <input
                 id="password"
                 type="password"

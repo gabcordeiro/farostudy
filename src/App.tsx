@@ -39,6 +39,12 @@ const LoginPage = lazy(() =>
 const AuthCallback = lazy(() =>
   import("@/features/auth/AuthCallback").then((m) => ({ default: m.AuthCallback })),
 );
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage })),
+);
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage })),
+);
 
 function RouteFallback() {
   return (
@@ -128,6 +134,8 @@ export default function App() {
           <Route path="/planos" element={<PlansPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
           <Route path="/privacidade" element={<Privacy />} />
           <Route path="/termos" element={<Terms />} />
           <Route path="/obrigado" element={<ThankYou />} />

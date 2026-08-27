@@ -112,3 +112,20 @@ export const authSignupSchema = z
     path: ["confirmPassword"],
   });
 export type AuthSignupInput = z.infer<typeof authSignupSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("E-mail inválido"),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Mínimo de 8 caracteres")
+      .max(72, "Máximo de 72 caracteres"),
+    confirmPassword: z.string().min(1, "Confirme sua senha"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
