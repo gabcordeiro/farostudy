@@ -8,6 +8,8 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { IconDeck, IconChevronDown, IconCheck } from "@/components/icons";
+import { RatingExplainer } from "@/features/help/RatingExplainer";
+import { RATING_EXPLAINER } from "@/features/help/content";
 import { supabase } from "@/lib/supabase";
 import { withJwtRetry } from "@/lib/supabaseQuery";
 import { schedule, type Rating } from "@/lib/srs";
@@ -20,6 +22,11 @@ import { useStudyQueue, type StudyCardRow } from "./useStudyQueue";
 // Degradê vermelho -> verde (do pior pra melhor), com as 4 cores que já
 // existem no design system -- sem inventar tom novo (feedback real: a
 // ordem antiga colocava Fácil em laranja e Bom em verde, invertido).
+// Mostra a explicação da nota só até o usuário fechar uma vez -- depois
+// disso ela some por padrão e fica só na Ajuda (RATING_EXPLAINER, mesmo
+// conteúdo, para não divergir).
+const RATING_EXPLAINER_SEEN_KEY = "faro.rating-explainer-seen.v1";
+
 const RATINGS: { rating: Rating; label: string; tone: string }[] = [
   { rating: 1, label: "Errei", tone: "bg-bad text-paper hover:bg-bad/80" },
   { rating: 2, label: "Difícil", tone: "bg-action text-ink-900 hover:bg-action-deep" },
@@ -44,6 +51,13 @@ export default function StudyPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [done, setDone] = useState({ reviewed: 0, correct: 0 });
   const [showHints, setShowHints] = useState(false);
+  const [showRatingExplainer, setShowRatingExplainer] = useState(
+    () => !localStorage.getItem(RATING_EXPLAINER_SEEN_KEY),
+  );
+  const dismissRatingExplainer = useCallback(() => {
+    localStorage.setItem(RATING_EXPLAINER_SEEN_KEY, "1");
+    setShowRatingExplainer(false);
+  }, []);
 
   const current: StudyCardRow | undefined = queue[index];
   const sessionFinished = !current && done.reviewed > 0;
@@ -308,9 +322,19 @@ export default function StudyPage() {
             </>
           ) : (
             <>
-              <p className="text-center text-2xs text-slate-muted">
-                Difícil, Bom e Fácil contam como acerto -- a diferença é só o quão fácil foi lembrar.
-              </p>
+              {showRatingExplainer ? (
+                <div className="rounded-md border border-hairline bg-elevated p-4">
+                  <h3 className="text-sm font-medium text-paper">{RATING_EXPLAINER.title}</h3>
+                  <div className="mt-1.5">
+                    <RatingExplainer onDismiss={dismissRatingExplainer} />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-2xs text-slate-muted">
+                  Difícil, Bom e Fácil contam como acerto -- a diferença é só o quão fácil foi
+                  lembrar.
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {RATINGS.map(({ rating, label, tone }) => (
                   <button

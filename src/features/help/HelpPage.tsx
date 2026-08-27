@@ -10,7 +10,8 @@ import { IconHelp } from "@/components/icons";
 import { useAppOutletContext } from "@/lib/appOutletContext";
 import { useToast } from "@/components/Toast";
 import { sendSuggestion } from "./sendSuggestion";
-import { SECTIONS } from "./content";
+import { SECTIONS, RATING_EXPLAINER } from "./content";
+import { RatingExplainer } from "./RatingExplainer";
 
 const FIRST_STEPS = [
   {
@@ -239,6 +240,20 @@ export default function HelpPage() {
               <p className="mt-3 text-sm leading-relaxed text-slate-muted">{item.a}</p>
             </details>
           ))}
+          <details className="group px-5 py-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-paper">
+              {RATING_EXPLAINER.title}
+              <span
+                aria-hidden="true"
+                className="shrink-0 text-lg text-slate-muted transition-transform duration-150 group-open:rotate-45"
+              >
+                +
+              </span>
+            </summary>
+            <div className="mt-3">
+              <RatingExplainer />
+            </div>
+          </details>
         </div>
       </section>
     </div>

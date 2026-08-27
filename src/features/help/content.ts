@@ -84,6 +84,43 @@ export const SECTIONS: SectionInfo[] = [
   },
 ];
 
+export interface RatingLevel {
+  label: string;
+  body: string;
+}
+
+/**
+ * Explica o que cada nota (Errei a Fácil) faz -- compartilhado entre o
+ * primeiro encontro do usuário com os botões (StudyPage, uma vez só) e a
+ * página de Ajuda (sempre disponível para rever), pelo mesmo motivo das
+ * outras constantes deste arquivo: nunca divergir.
+ */
+export const RATING_EXPLAINER = {
+  title: "Como funciona a nota de Errei a Fácil",
+  intro:
+    "Esses botões não avaliam se a pergunta é difícil -- avaliam o quão fácil foi para você lembrar da resposta agora.",
+  levels: [
+    {
+      label: "Errei",
+      body: "você não lembrou. O card volta para o início e aparece de novo em breve.",
+    },
+    {
+      label: "Difícil",
+      body: "você acertou, mas com esforço. O card volta um pouco mais cedo que o normal.",
+    },
+    {
+      label: "Bom",
+      body: "você acertou no ritmo normal, sem dificuldade nem facilidade especial.",
+    },
+    {
+      label: "Fácil",
+      body: "você lembrou na hora, sem esforço. O card demora mais para reaparecer.",
+    },
+  ] as RatingLevel[],
+  outro:
+    "Quanto mais fácil for lembrar, mais espaçadas ficam as próximas revisões -- o mesmo princípio usado no Anki. Seja honesto: marcar Fácil num chute faz o card sumir por muito tempo, e você acaba esquecendo dele.",
+};
+
 export interface TourStep {
   title: string;
   body: string;
