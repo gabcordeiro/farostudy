@@ -56,6 +56,21 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Mesmo default do AppearanceProvider (roboto/roboto/fredoka), só que
+   * estático -- essas duas classes não podem esperar o React montar pra
+   * ganhar a fonte certa, senão ".font-brand" (o "Faro Study" da marca)
+   * nasce em Roboto (herdado do body) e só vira Fredoka depois que o
+   * <style> injetado pelo AppearanceProvider roda, no próximo frame --
+   * um salto visível bem na primeira coisa que a pessoa olha. Como essas
+   * regras ficam numa @layer, o <style> sem layer que o provider injeta
+   * continua vencendo sempre que o admin trocar a aparência padrão. */
+  .font-display {
+    font-family: theme("fontFamily.display");
+  }
+  .font-brand {
+    font-family: theme("fontFamily.brand");
+  }
+
   :focus-visible {
     outline: 2px solid theme("colors.focus.soft");
     outline-offset: 2px;
