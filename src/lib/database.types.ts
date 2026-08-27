@@ -198,11 +198,12 @@ export interface Database {
         Row: {
           id: number;
           appearance: unknown;
+          quiz_challenges_enabled: boolean;
           updated_at: string;
           updated_by: string | null;
         };
-        Insert: { id?: number; appearance?: unknown };
-        Update: { appearance?: unknown };
+        Insert: { id?: number; appearance?: unknown; quiz_challenges_enabled?: boolean };
+        Update: { appearance?: unknown; quiz_challenges_enabled?: boolean };
         Relationships: [];
       };
       push_subscriptions: {
@@ -339,6 +340,10 @@ export interface Database {
       };
       set_app_appearance: {
         Args: { p_appearance: Record<string, unknown> };
+        Returns: void;
+      };
+      set_quiz_challenges_enabled: {
+        Args: { p_enabled: boolean };
         Returns: void;
       };
       admin_list_users: {

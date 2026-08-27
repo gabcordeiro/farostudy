@@ -13,7 +13,7 @@ import { useAdminData, type AdminPlanRow } from "./useAdminData";
 import { AdminVisualLab } from "./AdminVisualLab";
 import { AdminAppearance } from "./AdminAppearance";
 
-type Tab = "users" | "requests" | "plans" | "suggestions" | "errors" | "visuals" | "appearance";
+type Tab = "users" | "requests" | "plans" | "suggestions" | "errors" | "visuals" | "appearance" | "features";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -39,6 +39,7 @@ export default function AdminPage() {
     plans,
     errorLogs,
     suggestions,
+    quizChallengesEnabled,
     loading,
     error,
     setRole,
@@ -47,8 +48,10 @@ export default function AdminPage() {
     createPlan,
     updatePlan,
     togglePlanActive,
+    setQuizChallengesEnabled,
   } = useAdminData();
   const { notify } = useToast();
+  const [savingFeature, setSavingFeature] = useState(false);
   const [tab, setTab] = useState<Tab>("users");
   const [grantAmount, setGrantAmount] = useState<Record<string, string>>({});
   const [newPlan, setNewPlan] = useState({ name: "", credits: "", price: "" });
@@ -109,6 +112,13 @@ export default function AdminPage() {
     notify(ok ? "Plano atualizado." : "Falha ao atualizar plano.", ok ? "success" : "error");
   }
 
+  async function handleToggleQuizChallenges() {
+    setSavingFeature(true);
+    const ok = await setQuizChallengesEnabled(!quizChallengesEnabled);
+    setSavingFeature(false);
+    notify(ok ? "Recurso atualizado." : "Falha ao atualizar o recurso.", ok ? "success" : "error");
+  }
+
   function startEditPlan(p: AdminPlanRow) {
     setEditingPlanId(p.id);
     setEditPlanDraft({
@@ -158,6 +168,7 @@ export default function AdminPage() {
             { key: "errors", label: `Erros${errorLogs.length > 0 ? ` (${errorLogs.length})` : ""}` },
             { key: "visuals", label: "Visuais" },
             { key: "appearance", label: "Aparência" },
+            { key: "features", label: "Recursos" },
           ] as { key: Tab; label: string }[]
         ).map(({ key, label }) => (
           <button
@@ -359,6 +370,30 @@ export default function AdminPage() {
         <AdminVisualLab />
       ) : tab === "appearance" ? (
         <AdminAppearance />
+      ) : tab === "features" ? (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-hairline bg-elevated px-4 py-3">
+            <div>
+              <p className="text-sm text-paper">Quiz competitivo (desafiar amigos)</p>
+              <p className="mt-0.5 text-2xs text-slate-muted">
+                Enquanto desativado, ninguém vê o botão "Desafiar amigos" e links de desafio existentes
+                mostram uma mensagem de pausa.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={savingFeature}
+              onClick={() => void handleToggleQuizChallenges()}
+              className={`rounded-sm px-3 py-1.5 text-2xs font-medium disabled:opacity-60 ${
+                quizChallengesEnabled
+                  ? "bg-good/15 text-good"
+                  : "border border-hairline text-slate-soft hover:text-paper"
+              }`}
+            >
+              {quizChallengesEnabled ? "Ativado" : "Desativado"}
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-5">
           <form

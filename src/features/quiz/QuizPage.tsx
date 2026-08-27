@@ -25,6 +25,7 @@ import { useQuizSets } from "./useQuizSets";
 import { useQuizGeneration } from "./QuizGenerationProvider";
 import { QuizRunner } from "./QuizRunner";
 import { createChallenge, submitAttempt } from "./quizChallenges";
+import { useQuizChallengesEnabled } from "./useQuizChallengesFlag";
 
 interface DisplayItem extends QuizItem {
   deckId: string;
@@ -57,6 +58,7 @@ export default function QuizPage() {
   const { profile } = useProfile();
   const { notify } = useToast();
   const navigate = useNavigate();
+  const challengesEnabled = useQuizChallengesEnabled();
   const { decks, loading: decksLoading } = useDecks();
   const { balance } = useCredits();
   const [deckId, setDeckId] = useState("");
@@ -374,16 +376,18 @@ export default function QuizPage() {
                           ) : null}
                         </span>
                         <span className="flex shrink-0 items-center gap-1.5">
-                          <button
-                            type="button"
-                            disabled={challenging}
-                            onClick={() => void handleChallenge(s.items, s.deckId, false)}
-                            aria-label="Desafiar amigos com essa bateria"
-                            title="Desafiar amigos"
-                            className="press rounded-sm border border-hairline p-1.5 text-slate-muted hover:border-focus hover:text-paper disabled:opacity-60"
-                          >
-                            <IconTrophy className="h-3.5 w-3.5" />
-                          </button>
+                          {challengesEnabled ? (
+                            <button
+                              type="button"
+                              disabled={challenging}
+                              onClick={() => void handleChallenge(s.items, s.deckId, false)}
+                              aria-label="Desafiar amigos com essa bateria"
+                              title="Desafiar amigos"
+                              className="press rounded-sm border border-hairline p-1.5 text-slate-muted hover:border-focus hover:text-paper disabled:opacity-60"
+                            >
+                              <IconTrophy className="h-3.5 w-3.5" />
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => handleRedoSaved(s.items, s.deckId)}
@@ -435,15 +439,17 @@ export default function QuizPage() {
             >
               &larr; Sair
             </button>
-            <button
-              type="button"
-              disabled={challenging}
-              onClick={() => void handleChallenge(rawItems, rawItems[0]?.deckId ?? deckId, false)}
-              className="press inline-flex items-center gap-1.5 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper disabled:opacity-60"
-            >
-              <IconTrophy className="h-3.5 w-3.5" />
-              {challenging ? "Criando..." : "Desafiar amigos"}
-            </button>
+            {challengesEnabled ? (
+              <button
+                type="button"
+                disabled={challenging}
+                onClick={() => void handleChallenge(rawItems, rawItems[0]?.deckId ?? deckId, false)}
+                className="press inline-flex items-center gap-1.5 rounded-sm border border-hairline px-3 py-1.5 text-2xs text-slate-soft hover:border-focus hover:text-paper disabled:opacity-60"
+              >
+                <IconTrophy className="h-3.5 w-3.5" />
+                {challenging ? "Criando..." : "Desafiar amigos"}
+              </button>
+            ) : null}
           </div>
           <QuizRunner
             current={current}

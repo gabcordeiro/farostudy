@@ -68,6 +68,7 @@ export function useAdminData() {
   const [plans, setPlans] = useState<AdminPlanRow[]>([]);
   const [errorLogs, setErrorLogs] = useState<AdminErrorLogRow[]>([]);
   const [suggestions, setSuggestions] = useState<AdminSuggestionRow[]>([]);
+  const [quizChallengesEnabled, setQuizChallengesEnabledState] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,7 +76,7 @@ export function useAdminData() {
     setLoading(true);
     setError(null);
 
-    const [usersRes, requestsRes, plansRes, errorLogsRes, suggestionsRes] = await Promise.all([
+    const [usersRes, requestsRes, plansRes, errorLogsRes, suggestionsRes, settingsRes] = await Promise.all([
       withJwtRetry(() => supabase.rpc("admin_list_users")),
       withJwtRetry(() =>
         supabase
@@ -105,7 +106,14 @@ export function useAdminData() {
           .order("created_at", { ascending: false })
           .limit(50),
       ),
+      withJwtRetry(() =>
+        supabase.from("app_settings").select("quiz_challenges_enabled").eq("id", 1).maybeSingle(),
+      ),
     ]);
+
+    if (!settingsRes.error) {
+      setQuizChallengesEnabledState(settingsRes.data?.quiz_challenges_enabled ?? false);
+    }
 
     if (!errorLogsRes.error) {
       setErrorLogs(
@@ -294,12 +302,25 @@ export function useAdminData() {
     return true;
   }, []);
 
+  const setQuizChallengesEnabled = useCallback(async (enabled: boolean): Promise<boolean> => {
+    const res = await withJwtRetry(() =>
+      supabase.rpc("set_quiz_challenges_enabled", { p_enabled: enabled }),
+    );
+    if (res.error) {
+      setError(res.error.message ?? "Falha ao atualizar o recurso");
+      return false;
+    }
+    setQuizChallengesEnabledState(enabled);
+    return true;
+  }, []);
+
   return {
     users,
     requests,
     plans,
     errorLogs,
     suggestions,
+    quizChallengesEnabled,
     loading,
     error,
     reload: load,
@@ -309,5 +330,6 @@ export function useAdminData() {
     createPlan,
     updatePlan,
     togglePlanActive,
+    setQuizChallengesEnabled,
   };
 }

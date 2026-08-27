@@ -17,6 +17,7 @@ import { useToast } from "@/components/Toast";
 import { burst, celebrate } from "@/lib/confetti";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
+import { useQuizChallengesEnabled } from "./useQuizChallengesFlag";
 import { QuizRunner } from "./QuizRunner";
 import { type QuizChoice, type QuizItem } from "./generateQuiz";
 import {
@@ -110,6 +111,7 @@ export default function QuizChallengePage() {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { notify } = useToast();
+  const challengesEnabled = useQuizChallengesEnabled();
 
   const [challenge, setChallenge] = useState<QuizChallenge | null>(null);
   const [attempts, setAttempts] = useState<QuizChallengeAttempt[]>([]);
@@ -195,7 +197,27 @@ export default function QuizChallengePage() {
     setIndex((i) => i + 1);
   }
 
-  if (loading) {
+  if (challengesEnabled === false) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+        <EmptyState
+          mood="sleepy"
+          title="Desafios pausados"
+          description="Essa função está temporariamente desativada."
+          action={
+            <Link
+              to="/quiz"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            >
+              Ir para o Quiz
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
+  if (challengesEnabled === null || loading) {
     return (
       <div className="mx-auto max-w-2xl space-y-3 px-4 py-8 sm:px-6">
         <Skeleton className="h-8 w-56" />
