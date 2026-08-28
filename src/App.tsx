@@ -14,6 +14,7 @@ import { IconSearch } from "@/components/icons";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { WelcomeTour } from "@/features/help/WelcomeTour";
+import { ReminderNudge } from "@/features/reminders/ReminderNudge";
 import { SearchProvider, useSearch } from "@/features/search/SearchProvider";
 import type { AppOutletContext } from "@/lib/appOutletContext";
 
@@ -112,6 +113,7 @@ function AppLayout() {
           onClose={() => setTourOpen(false)}
           onFinish={() => void update({ onboarded_at: new Date().toISOString() })}
         />
+        <ReminderNudge suppressed={tourOpen} />
       </div>
     </SearchProvider>
   );

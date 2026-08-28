@@ -237,3 +237,10 @@ export const IconChevronDown = (p: IconProps) => (
     <path d="M5 8.5 12 15l7-6.5" />
   </Base>
 );
+
+export const IconBell = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M6 10a6 6 0 1 1 12 0v4.5l1.5 3H4.5L6 14.5V10Z" />
+    <path d="M10 20.5a2 2 0 0 0 4 0" />
+  </Base>
+);
