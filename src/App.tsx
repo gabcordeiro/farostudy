@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { Link, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { Mascot } from "@/components/Mascot";
@@ -15,6 +15,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useProfile } from "@/features/profile/useProfile";
 import { WelcomeTour } from "@/features/help/WelcomeTour";
 import { ReminderNudge } from "@/features/reminders/ReminderNudge";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SearchProvider, useSearch } from "@/features/search/SearchProvider";
 import type { AppOutletContext } from "@/lib/appOutletContext";
 
@@ -87,6 +88,7 @@ function MobileHeader() {
 function AppLayout() {
   const { profile, loading: profileLoading, update } = useProfile();
   const [tourOpen, setTourOpen] = useState(false);
+  const location = useLocation();
 
   // Usuário que nunca concluiu o tour ve ele uma única vez, ao entrar no app.
   useEffect(() => {
@@ -103,7 +105,12 @@ function AppLayout() {
         <MobileHeader />
         <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
           <PageTransition>
-            <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
+            {/* key={pathname}: um crash aqui não derruba a sidebar/nav junto
+                -- trocar de aba já remonta e limpa o boundary sozinho, sem
+                precisar recarregar a página inteira (ver ErrorBoundary.tsx). */}
+            <ErrorBoundary key={location.pathname} variant="route">
+              <Outlet context={{ openTour: () => setTourOpen(true) } satisfies AppOutletContext} />
+            </ErrorBoundary>
           </PageTransition>
         </main>
         <MobileNav />
