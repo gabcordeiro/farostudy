@@ -1,14 +1,15 @@
 /**
  * Página de planos (créditos). Pública: visitantes veem preços, usuários
- * logados compram via Mercado Pago (Checkout Pro). O pedido manual continua
- * disponível como reserva -- um admin aprova em /admin.
+ * logados compram via Mercado Pago (Checkout Pro). Problema no pagamento ou
+ * caso especial: contato direto (e-mail/WhatsApp) -- o admin concede crédito
+ * na mão em /admin > Usuários, sem passar pelo fluxo de credit_requests.
  */
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Mascot } from "@/components/Mascot";
 import { Skeleton } from "@/components/Skeleton";
-import { IconCoin } from "@/components/icons";
+import { IconCoin, IconHelp } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { trackEvent } from "@/lib/analytics";
@@ -28,7 +29,7 @@ function formatBRL(cents: number): string {
 export default function PlansPage() {
   const { user } = useAuth();
   const { balance } = useCredits();
-  const { plans, requests, loading, requestPlan } = usePlans();
+  const { plans, loading } = usePlans();
   const { notify } = useToast();
   const [searchParams] = useSearchParams();
   const [buyingId, setBuyingId] = useState<string | null>(null);
@@ -77,20 +78,6 @@ export default function PlansPage() {
       setBuyingId(null);
       notify((err as Error).message ?? "Não foi possível abrir o checkout.", "error");
     }
-  }
-
-  async function handleRequest(planId: string) {
-    const ok = await requestPlan(planId);
-    notify(
-      ok
-        ? "Pedido enviado. Um admin vai aprovar e os créditos caem na sua conta."
-        : "Não foi possível enviar o pedido agora.",
-      ok ? "success" : "error",
-    );
-  }
-
-  function statusFor(planId: string) {
-    return requests.find((r) => r.planId === planId && r.status === "pending");
   }
 
   return (
@@ -143,7 +130,6 @@ export default function PlansPage() {
         ) : (
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {plans.map((plan) => {
-              const pending = statusFor(plan.id);
               return (
                 <div
                   key={plan.id}
@@ -176,19 +162,6 @@ export default function PlansPage() {
                           {buyingId === plan.id ? "Abrindo checkout..." : "Comprar"}
                         </button>
                         <p className="mt-2 text-center text-2xs text-slate-muted">Pix ou cartão</p>
-                        {pending ? (
-                          <p className="mt-2 text-center text-2xs text-focus-soft">
-                            Você já tem um pedido manual aguardando aprovação.
-                          </p>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => void handleRequest(plan.id)}
-                            className="mt-2 block w-full text-center text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
-                          >
-                            Pedir aprovação manual
-                          </button>
-                        )}
                       </>
                     )}
                   </div>
@@ -200,9 +173,34 @@ export default function PlansPage() {
 
         <p className="mt-6 text-2xs text-slate-muted">
           Pagamento por Pix ou cartão via Mercado Pago. Os créditos entram na sua conta
-          assim que o pagamento é confirmado — em geral na hora. Se preferir, você ainda
-          pode pedir aprovação manual e um administrador libera os créditos.
+          assim que o pagamento é confirmado — em geral na hora.
         </p>
+
+        <div className="mt-6 max-w-xl rounded-md border border-hairline bg-elevated px-5 py-4">
+          <p className="flex items-center gap-2 text-sm font-medium text-paper">
+            <IconHelp className="h-4 w-4 shrink-0 text-focus-soft" aria-hidden="true" />
+            Feito pelo Gabriel, pra quem estuda pra concurso
+          </p>
+          <p className="mt-1.5 text-sm text-slate-muted">
+            Problema com o pagamento ou alguma dúvida antes de comprar? Fala comigo:{" "}
+            <a
+              href="mailto:gcordeirocarvalho97@gmail.com"
+              className="text-focus-soft underline decoration-dotted underline-offset-2 hover:text-focus"
+            >
+              e-mail
+            </a>{" "}
+            ou{" "}
+            <a
+              href="https://wa.me/5527993122222"
+              target="_blank"
+              rel="noreferrer"
+              className="text-focus-soft underline decoration-dotted underline-offset-2 hover:text-focus"
+            >
+              WhatsApp
+            </a>
+            .
+          </p>
+        </div>
       </section>
     </main>
   );
