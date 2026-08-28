@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Roboto e Fredoka hospedadas localmente (public/fonts) -- ver index.html
+ * pro porquê de não vir mais do Google Fonts. Cada arquivo é uma variable
+ * font (um único .woff2 cobre a faixa inteira de peso), por isso um
+ * @font-face por família em vez de um por peso. */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: optional;
+  src: url("/fonts/roboto-var.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: optional;
+  src: url("/fonts/fredoka-var.woff2") format("woff2");
+}
+
 /* =============================================================================
  * Tokens semanticos (light default, .dark sobrescreve).
  * Formato HSL "H S% L%" para permitir "hsl(var(--x) / <alpha>)" no Tailwind.

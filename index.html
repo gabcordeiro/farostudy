@@ -15,16 +15,15 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fonte Roboto (UI, 400/500/700) + Fredoka (só o logotipo Faro Study) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- display=optional (nao "swap"): a fonte so aparece se carregar a
-         tempo do primeiro paint -- sem isso, o texto pinta com a fonte de
-         sistema e "salta" pra Roboto/Fredoka alguns instantes depois. -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Roboto:wght@400;500;700&display=optional"
-      rel="stylesheet"
-    />
+    <!-- Fonte Roboto (UI) + Fredoka (só o logotipo Faro Study), hospedadas
+         localmente -- antes vinham do Google Fonts, mas isso é uma segunda
+         busca de rede (DNS + TLS + CSS + arquivo, num domínio à parte) toda
+         vez que a página carrega do zero (ex.: F5), o que atrasa quando a
+         fonte certa aparece. Preload + display=optional: se o arquivo (que
+         já é local e pequeno) não chegar a tempo do primeiro paint, mostra a
+         fonte de sistema e não troca depois -- sem o "salto" de fonte. -->
+    <link rel="preload" href="/fonts/roboto-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/fredoka-var.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- SEO base (sobrescrito por pagina via <SEO/> / react-helmet) -->
     <title>Faro Study - Repeticao espacada para concursos e idiomas</title>
