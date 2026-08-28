@@ -84,7 +84,7 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
                   className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm text-paper hover:bg-surface"
                 >
                   <IconRoute className="h-4 w-4 shrink-0 text-focus-soft" />
-                  <span className="truncate">{d.title}</span>
+                  <span className="min-w-0 flex-1 truncate">{d.title}</span>
                 </button>
               ))}
             </div>
