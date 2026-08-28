@@ -28,22 +28,22 @@ export const FONTS: Record<FontKey, FontDef> = {
   nunito: {
     label: "Nunito (suave)",
     stack: "'Nunito', 'Roboto', system-ui, sans-serif",
-    href: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&display=optional",
   },
   poppins: {
     label: "Poppins (geométrica)",
     stack: "'Poppins', 'Roboto', system-ui, sans-serif",
-    href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=optional",
   },
   lato: {
     label: "Lato (clássica)",
     stack: "'Lato', 'Roboto', system-ui, sans-serif",
-    href: "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=optional",
   },
   merriweather: {
     label: "Merriweather (serifada)",
     stack: "'Merriweather', Georgia, serif",
-    href: "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=optional",
   },
 };
 
