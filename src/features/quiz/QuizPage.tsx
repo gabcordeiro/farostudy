@@ -297,7 +297,7 @@ export default function QuizPage() {
                 altura (uma linha cada) -- o aviso de IA vira uma linha própria
                 logo abaixo, largura cheia, em vez de espremido só sob a Banca
                 (o que deixava as duas colunas com alturas bem diferentes). */}
-            <div className="flex flex-wrap items-start gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <label className="mb-1 block text-sm text-slate-soft">Banca</label>
                 <select
@@ -314,7 +314,7 @@ export default function QuizPage() {
                 <p className="mt-1 max-w-44 text-2xs text-slate-muted">{selectedBanca.description}</p>
               </div>
 
-              <div>
+              <div className="text-right">
                 <label className="mb-1 block text-sm text-slate-soft">Número de perguntas</label>
                 <input
                   type="number"
