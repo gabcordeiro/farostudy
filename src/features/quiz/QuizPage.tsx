@@ -293,6 +293,10 @@ export default function QuizPage() {
               )}
             </div>
 
+            {/* Banca + Número de perguntas: as duas legendas ficam com a mesma
+                altura (uma linha cada) -- o aviso de IA vira uma linha própria
+                logo abaixo, largura cheia, em vez de espremido só sob a Banca
+                (o que deixava as duas colunas com alturas bem diferentes). */}
             <div className="flex flex-wrap items-start gap-4">
               <div>
                 <label className="mb-1 block text-sm text-slate-soft">Banca</label>
@@ -307,12 +311,7 @@ export default function QuizPage() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 max-w-44 text-2xs text-slate-muted">
-                  {selectedBanca.description}
-                  {banca !== "generico"
-                    ? " Perguntas geradas por IA nesse estilo -- não são questões reais de provas anteriores."
-                    : ""}
-                </p>
+                <p className="mt-1 max-w-44 text-2xs text-slate-muted">{selectedBanca.description}</p>
               </div>
 
               <div>
@@ -329,6 +328,13 @@ export default function QuizPage() {
               </div>
             </div>
 
+            {banca !== "generico" ? (
+              <p className="text-2xs text-slate-muted">
+                Perguntas geradas por IA no estilo {selectedBanca.label} -- não são questões reais de
+                provas anteriores.
+              </p>
+            ) : null}
+
             {error ? (
               <p role="alert" className="rounded-sm border border-bad/40 bg-bad/10 px-3 py-2 text-2xs text-bad">
                 {error}
@@ -343,7 +349,10 @@ export default function QuizPage() {
               </p>
             ) : null}
 
-            <div>
+            {/* Divisória separando "o que configurar" de "o que a ação faz" --
+                fica mais claro que crédito+botão são o resultado das escolhas
+                acima, não mais um campo solto. */}
+            <div className="border-t border-hairline pt-4">
               <p className={`mb-2 text-2xs ${balance === 0 ? "text-warn" : "text-slate-muted"}`}>
                 Essa geração usa 1 crédito
                 {balance !== null ? ` · você tem ${balance} ${balance === 1 ? "crédito" : "créditos"}` : ""}
