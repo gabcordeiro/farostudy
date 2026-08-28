@@ -3,6 +3,7 @@
  * (ex: gerar cards com o mesmo texto de novo, arriscando duplicidade).
  * Mesmo padrão visual do ErrorModal -- mascote + texto + par de botões.
  */
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mascot, type MascotMood } from "./Mascot";
 
@@ -27,6 +28,25 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // Esc fecha (padrão já usado no SearchModal/WelcomeTour) e o botão "seguro"
+  // (cancelar) recebe foco ao abrir -- sem isso, o teclado ficava sem jeito
+  // de fechar sem clicar, e o foco continuava em quem quer que tenha aberto
+  // o modal, escondido atrás do overlay.
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => cancelRef.current?.focus(), 30);
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onCancel();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onCancel]);
+
   if (!open) return null;
 
   return createPortal(
@@ -47,6 +67,7 @@ export function ConfirmModal({
         <p className="mt-2 text-sm text-slate-muted">{description}</p>
         <div className="mt-5 flex gap-2">
           <button
+            ref={cancelRef}
             type="button"
             onClick={onCancel}
             className="press flex-1 rounded-sm border border-hairline px-5 py-2.5 text-sm font-medium text-slate-soft hover:text-paper"
@@ -56,7 +77,7 @@ export function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="press flex-1 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            className="press flex-1 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
           >
             {confirmLabel}
           </button>

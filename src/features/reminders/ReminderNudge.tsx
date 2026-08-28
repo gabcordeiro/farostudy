@@ -95,7 +95,7 @@ export function ReminderNudge({ suppressed }: Props) {
               type="button"
               disabled={busy}
               onClick={() => void activate()}
-              className="press rounded-sm bg-action px-3 py-1.5 text-2xs font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              className="press rounded-sm bg-action px-3 py-1.5 text-2xs font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
             >
               {busy ? "Ativando..." : "Ativar"}
             </button>

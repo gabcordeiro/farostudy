@@ -98,7 +98,7 @@ export function ResetPasswordPage() {
             </div>
             <Link
               to="/esqueci-senha"
-              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Pedir novo link
             </Link>
@@ -115,7 +115,7 @@ export function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => navigate("/painel", { replace: true })}
-              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Ir para o painel
             </button>
@@ -181,7 +181,7 @@ export function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={busy}
-                className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
               >
                 {busy ? "Salvando..." : "Salvar nova senha"}
               </button>

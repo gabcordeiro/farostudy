@@ -369,7 +369,7 @@ export default function QuizPage() {
                 type="button"
                 onClick={handleStart}
                 disabled={!deckId || busy}
-                className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
               >
                 {busy ? "Gerando..." : "Gerar novo quiz"}
               </button>
@@ -518,7 +518,7 @@ export default function QuizPage() {
             <div className="flex flex-wrap justify-center gap-2">
               <Link
                 to="/painel"
-                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Ver painel
               </Link>

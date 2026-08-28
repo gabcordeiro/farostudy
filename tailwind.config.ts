@@ -56,6 +56,13 @@ const config: Config = {
           DEFAULT: "#F2762E",
           soft: "#F79355",
           deep: "#C85A19",
+          // Texto fixo (não liga pra tema) pros botões bg-action -- achado de
+          // auditoria: text-ink-900 parecia certo (ink = "tinta escura"), mas
+          // o alias aponta pro token --bg-page, que é ESCURO no tema dark e
+          // CLARO no tema light -- então "ink-900" virava texto quase branco
+          // sobre laranja no light, 2.57:1 de contraste (WCAG AA pede 4.5:1).
+          // Confirmado visualmente com Playwright antes de trocar.
+          ink: "#0B0F17",
         },
         good: "#3F9C74",
         warn: "#C7973F",

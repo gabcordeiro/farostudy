@@ -68,7 +68,7 @@ export function AdminVisualLab() {
           <button
             type="button"
             onClick={() => celebrate({ force: true })}
-            className="press rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            className="press rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
           >
             Celebração (fim de quiz/sessão)
           </button>

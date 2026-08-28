@@ -264,7 +264,7 @@ export default function DeckDetailPage() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/importar"
-                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Gerar cards
               </Link>

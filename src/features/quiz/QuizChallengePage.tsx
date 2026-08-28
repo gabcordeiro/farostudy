@@ -213,7 +213,7 @@ export default function QuizChallengePage() {
           action={
             <Link
               to="/quiz"
-              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Ir para o Quiz
             </Link>
@@ -242,7 +242,7 @@ export default function QuizChallengePage() {
           action={
             <Link
               to="/quiz"
-              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Ir para o Quiz
             </Link>
@@ -305,7 +305,7 @@ export default function QuizChallengePage() {
           <button
             type="button"
             onClick={handleStart}
-            className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
           >
             Começar
           </button>

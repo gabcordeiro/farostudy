@@ -114,7 +114,7 @@ function SuggestionForm() {
         <button
           type="submit"
           disabled={busy}
-          className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+          className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
         >
           {busy ? "Enviando..." : "Enviar sugestão"}
         </button>

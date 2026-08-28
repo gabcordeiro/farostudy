@@ -135,7 +135,7 @@ export default function Dashboard() {
           <p className="mt-1 text-2xs text-slate-muted">{error}</p>
           <button
             onClick={() => void reload()}
-            className="mt-4 rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+            className="mt-4 rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
           >
             Tentar novamente
           </button>
@@ -152,7 +152,7 @@ export default function Dashboard() {
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
                   to="/importar"
-                  className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                  className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
                 >
                   Gerar meus cards
                 </Link>

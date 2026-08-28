@@ -99,7 +99,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/login"
-              className="press rounded-sm bg-action px-4 py-2 font-medium text-ink-900 hover:bg-action-deep"
+              className="press rounded-sm bg-action px-4 py-2 font-medium text-action-ink hover:bg-action-deep"
             >
               Entrar
             </Link>
@@ -120,7 +120,7 @@ export default function LandingPage() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               to="/login"
-              className="press rounded-sm bg-action px-6 py-3 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press rounded-sm bg-action px-6 py-3 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Criar conta grátis
             </Link>

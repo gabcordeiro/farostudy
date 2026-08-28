@@ -433,7 +433,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={savingPlan}
-              className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              className="rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
             >
               {savingPlan ? "Criando..." : "Criar plano"}
             </button>

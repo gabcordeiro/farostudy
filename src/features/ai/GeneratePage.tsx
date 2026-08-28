@@ -293,7 +293,7 @@ export default function GeneratePage() {
             type="button"
             onClick={handleGenerate}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 transition-all duration-150 hover:bg-action-deep active:scale-[0.97] disabled:opacity-60 disabled:active:scale-100"
+            className="inline-flex items-center gap-2 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink transition-all duration-150 hover:bg-action-deep active:scale-[0.97] disabled:opacity-60 disabled:active:scale-100"
           >
             <IconWand className="h-[18px] w-[18px]" />
             {busy ? "Gerando..." : "Gerar cards"}

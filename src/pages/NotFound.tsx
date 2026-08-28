@@ -22,7 +22,7 @@ export default function NotFound() {
       </div>
       <Link
         to="/painel"
-        className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+        className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
       >
         Voltar ao painel
       </Link>

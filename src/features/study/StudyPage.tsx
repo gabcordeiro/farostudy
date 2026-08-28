@@ -29,8 +29,8 @@ const RATING_EXPLAINER_SEEN_KEY = "faro.rating-explainer-seen.v1";
 
 const RATINGS: { rating: Rating; label: string; tone: string }[] = [
   { rating: 1, label: "Errei", tone: "bg-bad text-paper hover:bg-bad/80" },
-  { rating: 2, label: "Difícil", tone: "bg-action text-ink-900 hover:bg-action-deep" },
-  { rating: 3, label: "Bom", tone: "bg-warn text-ink-900 hover:bg-warn/80" },
+  { rating: 2, label: "Difícil", tone: "bg-action text-action-ink hover:bg-action-deep" },
+  { rating: 3, label: "Bom", tone: "bg-warn text-action-ink hover:bg-warn/80" },
   { rating: 4, label: "Fácil", tone: "bg-good text-paper hover:bg-good/80" },
 ];
 
@@ -78,7 +78,9 @@ export default function StudyPage() {
     setDone({ reviewed: 0, correct: 0 });
   }, [deckKey, cram]);
 
-  // Fecha o menu de trilhas ao clicar fora dele.
+  // Fecha o menu de trilhas ao clicar fora dele ou apertar Esc -- não é um
+  // <select> nativo (precisa de checkbox por opção), então esse teclado
+  // básico não vem de graça como viria num select real.
   useEffect(() => {
     if (!deckMenuOpen) return;
     function onClick(e: MouseEvent) {
@@ -86,8 +88,15 @@ export default function StudyPage() {
         setDeckMenuOpen(false);
       }
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDeckMenuOpen(false);
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      window.removeEventListener("keydown", onKey);
+    };
   }, [deckMenuOpen]);
 
   const toggleDeck = useCallback(
@@ -247,7 +256,7 @@ export default function StudyPage() {
             aria-expanded={deckMenuOpen}
             className="flex w-full items-center justify-between rounded-sm border border-hairline bg-surface px-3 py-2 text-sm text-paper outline-none focus:border-focus"
           >
-            <span className="truncate">{deckMenuLabel}</span>
+            <span className="min-w-0 truncate">{deckMenuLabel}</span>
             <IconChevronDown className="h-4 w-4 shrink-0 text-slate-muted" />
           </button>
           {deckMenuOpen ? (
@@ -272,7 +281,7 @@ export default function StudyPage() {
                   onClick={() => toggleDeck(d.id)}
                   className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-paper hover:bg-surface"
                 >
-                  <span className="truncate">{d.title}</span>
+                  <span className="min-w-0 truncate">{d.title}</span>
                   {deckIds.includes(d.id) ? (
                     <IconCheck className="h-4 w-4 shrink-0 text-focus" />
                   ) : null}
@@ -309,7 +318,7 @@ export default function StudyPage() {
       {loading ? (
         <div className="space-y-3">
           <Skeleton className="h-40 w-full" />
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
             ))}
@@ -414,14 +423,14 @@ export default function StudyPage() {
               <button
                 type="button"
                 onClick={() => setCram(false)}
-                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Voltar ao modo normal
               </button>
             ) : (
               <Link
                 to="/painel"
-                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Ver painel
               </Link>
@@ -441,7 +450,7 @@ export default function StudyPage() {
             cram ? (
               <Link
                 to="/importar"
-                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Gerar cards
               </Link>
@@ -449,7 +458,7 @@ export default function StudyPage() {
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
                   to="/importar"
-                  className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                  className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
                 >
                   Gerar cards
                 </Link>

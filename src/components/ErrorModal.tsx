@@ -4,6 +4,7 @@
  * registrada em error_logs, um código curto para relatar o problema. O
  * admin busca esse código em /admin > Erros para ver o detalhe real.
  */
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Mascot } from "./Mascot";
 
@@ -17,6 +18,23 @@ interface ErrorModalProps {
 }
 
 export function ErrorModal({ open, code, onClose, onRetry }: ErrorModalProps) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Mesmo padrão do SearchModal/ConfirmModal: Esc fecha, foco vai pro botão
+  // de fechar ao abrir (não pro "Tentar de novo", que reexecuta uma ação).
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => closeRef.current?.focus(), 30);
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return createPortal(
@@ -48,18 +66,19 @@ export function ErrorModal({ open, code, onClose, onRetry }: ErrorModalProps) {
                 onClose();
                 onRetry();
               }}
-              className="press flex-1 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="press flex-1 rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Tentar de novo
             </button>
           ) : null}
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             className={`press rounded-sm px-5 py-2.5 text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
               onRetry
                 ? "border border-hairline text-slate-soft hover:text-paper"
-                : "w-full bg-action text-ink-900 hover:bg-action-deep"
+                : "w-full bg-action text-action-ink hover:bg-action-deep"
             }`}
           >
             {onRetry ? "Fechar" : "Entendi"}

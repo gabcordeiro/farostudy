@@ -27,7 +27,7 @@ export function RatingExplainer({ onDismiss }: Props) {
         <button
           type="button"
           onClick={onDismiss}
-          className="press mt-4 rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+          className="press mt-4 rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
         >
           Entendi
         </button>

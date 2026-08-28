@@ -257,7 +257,7 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
                   <button
                     type="button"
                     onClick={() => void handleGenerateSchedule()}
-                    className="press inline-flex items-center gap-1 rounded-sm bg-action px-3 py-2 text-2xs font-medium text-ink-900 hover:bg-action-deep"
+                    className="press inline-flex items-center gap-1 rounded-sm bg-action px-3 py-2 text-2xs font-medium text-action-ink hover:bg-action-deep"
                   >
                     <IconWand className="h-3.5 w-3.5" />
                     Gerar cronograma
@@ -413,7 +413,7 @@ export function StudyCalendar({ activity, currentStreak, longestStreak }: Props)
               type="button"
               onClick={() => void handleAdd()}
               disabled={saving || !title.trim()}
-              className="press inline-flex items-center gap-1 rounded-sm bg-action px-3 py-2 text-2xs font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              className="press inline-flex items-center gap-1 rounded-sm bg-action px-3 py-2 text-2xs font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
             >
               <IconPlus className="h-3.5 w-3.5" />
               Adicionar

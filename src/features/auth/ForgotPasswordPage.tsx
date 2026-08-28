@@ -52,7 +52,7 @@ export function ForgotPasswordPage() {
             </div>
             <Link
               to="/login"
-              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Voltar para o login
             </Link>
@@ -99,7 +99,7 @@ export function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={busy}
-                className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
               >
                 {busy ? "Enviando..." : "Enviar link de recuperação"}
               </button>

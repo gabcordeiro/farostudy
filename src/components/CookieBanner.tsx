@@ -48,7 +48,7 @@ export function CookieBanner() {
           </button>
           <button
             onClick={() => decide("accepted")}
-            className="press flex-1 rounded-sm bg-action px-3 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep sm:flex-none"
+            className="press flex-1 rounded-sm bg-action px-3 py-2 text-sm font-medium text-action-ink hover:bg-action-deep sm:flex-none"
           >
             Aceitar todos
           </button>

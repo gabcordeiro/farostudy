@@ -30,7 +30,7 @@ export function AdminRoute({ children }: { children: ReactNode }) {
           action={
             <Link
               to="/painel"
-              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              className="inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
             >
               Voltar ao painel
             </Link>

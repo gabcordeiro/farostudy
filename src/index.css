@@ -35,7 +35,11 @@
     --border-hairline: 224 14% 82%;
     --text-primary: 223 40% 10%;
     --text-soft: 223 20% 28%;
-    --text-muted: 223 12% 45%;
+    /* 45% -> 38%: em 45% o contraste com bg-elevated ficava em 3.85:1,
+       abaixo do mínimo de 4.5:1 do WCAG AA pra texto normal (medido, não
+       chute -- ver auditoria de contraste). 38% passa com folga nas três
+       superfícies (page/surface/elevated) sem escurecer visivelmente. */
+    --text-muted: 223 12% 38%;
     /* Faixa clara do shimmer: escura no tema claro, senao some no fundo. */
     --skeleton-sheen: 0 0% 0% / 0.06;
     color-scheme: light;

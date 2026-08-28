@@ -50,6 +50,16 @@ export function MobileNav() {
   // Fecha o menu ao trocar de rota.
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
+  // Esc fecha -- mesmo padrão já usado no SearchModal/ConfirmModal/ErrorModal.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
   const displayName = profile?.display_name ?? user?.email ?? "";
   const tabClass = (isActive: boolean) =>
     `press relative flex flex-1 flex-col items-center gap-1 py-2.5 text-2xs ${
@@ -67,7 +77,12 @@ export function MobileNav() {
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 bg-page/80"
           />
-          <div className="absolute inset-x-0 bottom-0 animate-rise-in space-y-2 border-t border-hairline bg-surface p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mais opções"
+            className="absolute inset-x-0 bottom-0 animate-rise-in space-y-2 border-t border-hairline bg-surface p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+          >
             <Link
               to="/perfil"
               className="press flex items-center gap-3 rounded-sm px-2 py-2.5 hover:bg-elevated"

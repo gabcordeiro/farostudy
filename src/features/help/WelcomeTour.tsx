@@ -152,7 +152,7 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
                   finish();
                   navigate("/importar");
                 }}
-                className="press rounded-sm bg-action px-5 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press rounded-sm bg-action px-5 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Criar meus cards
               </button>
@@ -160,7 +160,7 @@ export function WelcomeTour({ open, onClose, onFinish }: Props) {
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
-                className="press rounded-sm bg-action px-5 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="press rounded-sm bg-action px-5 py-2 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Próximo
               </button>

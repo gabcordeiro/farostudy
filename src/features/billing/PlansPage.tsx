@@ -171,7 +171,7 @@ export default function PlansPage() {
                           type="button"
                           disabled={buyingId !== null}
                           onClick={() => void handleBuy(plan.id)}
-                          className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+                          className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
                         >
                           {buyingId === plan.id ? "Abrindo checkout..." : "Comprar"}
                         </button>

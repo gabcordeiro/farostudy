@@ -311,7 +311,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+            className="press rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
           >
             {saving ? "Salvando..." : "Salvar"}
           </button>

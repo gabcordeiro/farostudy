@@ -274,7 +274,7 @@ export function LoginPage() {
               <button
                 type="button"
                 onClick={() => switchMode("signin")}
-                className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                className="rounded-sm bg-action px-5 py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep"
               >
                 Já confirmei, entrar
               </button>
@@ -482,7 +482,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-ink-900 hover:bg-action-deep disabled:opacity-60"
+              className="press w-full rounded-sm bg-action py-2.5 text-sm font-medium text-action-ink hover:bg-action-deep disabled:opacity-60"
             >
               {busy ? "Aguarde..." : mode === "signin" ? "Entrar" : "Criar conta"}
             </button>
