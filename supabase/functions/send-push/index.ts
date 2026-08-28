@@ -22,9 +22,13 @@ Deno.serve(async (req) => {
     return json({ error: "forbidden" }, 403);
   }
 
-  const vapidPublic = Deno.env.get("VAPID_PUBLIC_KEY");
-  const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
-  const subject = Deno.env.get("VAPID_SUBJECT") ?? "mailto:contato@farostudy.vercel.app";
+  // .trim(): a causa mais comum de "Vapid public key must be a URL safe
+  // Base 64" e um espaco/quebra de linha colado junto ao definir a secret
+  // no painel do Supabase -- aconteceu de verdade aqui (toda execucao do
+  // cron desde que foi ligado vinha derrubando a funcao com esse erro).
+  const vapidPublic = Deno.env.get("VAPID_PUBLIC_KEY")?.trim();
+  const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY")?.trim();
+  const subject = Deno.env.get("VAPID_SUBJECT")?.trim() || "mailto:contato@farostudy.vercel.app";
   if (!vapidPublic || !vapidPrivate) {
     return json({ ok: false, reason: "VAPID nao configurado" }, 200);
   }
