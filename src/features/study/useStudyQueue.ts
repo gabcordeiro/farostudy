@@ -38,8 +38,12 @@ interface JoinedRow {
 
 const QUEUE_LIMIT = 50;
 
-/** Sem trilhas selecionadas = todas misturadas (mesmo comportamento de antes). */
-export function useStudyQueue(deckIds: string[] = []) {
+/**
+ * Sem trilhas selecionadas = todas misturadas (mesmo comportamento de antes).
+ * `cram` = "estudar adiantado": ignora o `due_at`, mostra os cards da trilha
+ * mesmo sem estar na hora -- usado só pra praticar, não muda agendamento.
+ */
+export function useStudyQueue(deckIds: string[] = [], cram = false) {
   const [queue, setQueue] = useState<StudyCardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +63,9 @@ export function useStudyQueue(deckIds: string[] = []) {
         .select(
           "id, deck_id, front, back, hint, state, interval_days, ease_factor, reps, lapses, decks:deck_id ( title, category_id )",
         )
-        .lte("due_at", nowIso)
         .neq("state", "suspended");
-      const filtered = ids.length > 0 ? base.in("deck_id", ids) : base;
+      const dued = cram ? base : base.lte("due_at", nowIso);
+      const filtered = ids.length > 0 ? dued.in("deck_id", ids) : dued;
       return filtered
         .order("due_at", { ascending: true })
         .limit(QUEUE_LIMIT)
@@ -89,7 +93,7 @@ export function useStudyQueue(deckIds: string[] = []) {
       setQueue(rows);
     }
     setLoading(false);
-  }, [key]);
+  }, [key, cram]);
 
   useEffect(() => {
     void load();

@@ -40,7 +40,8 @@ export default function StudyPage() {
   const deckKey = deckIds.join(",");
   const { user } = useAuth();
   const { decks } = useDecks();
-  const { queue, loading, error, setQueue } = useStudyQueue(deckIds);
+  const [cram, setCram] = useState(false);
+  const { queue, loading, error, setQueue } = useStudyQueue(deckIds, cram);
   const [deckMenuOpen, setDeckMenuOpen] = useState(false);
   const deckMenuRef = useRef<HTMLDivElement>(null);
 
@@ -68,13 +69,14 @@ export default function StudyPage() {
     if (sessionFinished) celebrate();
   }, [sessionFinished]);
 
-  // Trocar de trilha reinicia a sessão -- os cards da fila mudam por baixo,
-  // entao o indice e o placar antigos nao fazem mais sentido.
+  // Trocar de trilha (ou entrar/sair do modo adiantado) reinicia a sessão --
+  // os cards da fila mudam por baixo, entao o indice e o placar antigos nao
+  // fazem mais sentido.
   useEffect(() => {
     setIndex(0);
     setShowBack(false);
     setDone({ reviewed: 0, correct: 0 });
-  }, [deckKey]);
+  }, [deckKey, cram]);
 
   // Fecha o menu de trilhas ao clicar fora dele.
   useEffect(() => {
@@ -118,6 +120,16 @@ export default function StudyPage() {
       if (!current || !user) return;
       setSaving(true);
       setSaveError(null);
+
+      // Modo adiantado: só prática -- não grava review nem mexe no
+      // agendamento real do card (schedule()/due_at), só avança a sessão.
+      if (cram) {
+        setQueue((q) => q.filter((c) => c.id !== current.id));
+        setDone((d) => ({ reviewed: d.reviewed + 1, correct: d.correct + (rating >= 3 ? 1 : 0) }));
+        setSaving(false);
+        advance();
+        return;
+      }
 
       const prev = {
         intervalDays: current.interval_days,
@@ -172,7 +184,7 @@ export default function StudyPage() {
       setSaving(false);
       advance();
     },
-    [current, user, startedAt, setQueue, advance],
+    [current, user, startedAt, setQueue, advance, cram],
   );
 
   const total = useMemo(() => queue.length + done.reviewed, [queue.length, done.reviewed]);
@@ -272,6 +284,26 @@ export default function StudyPage() {
         {deckIds.length > 1 ? (
           <p className="mt-1 text-2xs text-slate-muted">Misturando cards das trilhas selecionadas.</p>
         ) : null}
+        {cram ? (
+          <p className="mt-2 text-2xs text-warn">
+            Modo adiantado: praticar aqui não muda quando esses cards voltam a aparecer.{" "}
+            <button
+              type="button"
+              onClick={() => setCram(false)}
+              className="underline decoration-dotted underline-offset-2 hover:text-paper"
+            >
+              Sair do modo adiantado
+            </button>
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setCram(true)}
+            className="mt-2 text-2xs text-slate-muted underline decoration-dotted underline-offset-2 hover:text-slate-soft"
+          >
+            Estudar adiantado (sem esperar a data)
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -367,31 +399,69 @@ export default function StudyPage() {
       ) : done.reviewed > 0 ? (
         <EmptyState
           mood="proud"
-          title="Sessão concluida"
-          description={`Você revisou ${done.reviewed} cards com ${Math.round(
-            (done.correct / done.reviewed) * 100,
-          )}% de acerto. O Faro já atualizou seu painel.`}
+          title={cram ? "Prática concluída" : "Sessão concluida"}
+          description={
+            cram
+              ? `Você praticou ${done.reviewed} cards com ${Math.round(
+                  (done.correct / done.reviewed) * 100,
+                )}% de acerto. Isso não muda quando eles voltam a aparecer no /estudar normal.`
+              : `Você revisou ${done.reviewed} cards com ${Math.round(
+                  (done.correct / done.reviewed) * 100,
+                )}% de acerto. O Faro já atualizou seu painel.`
+          }
           action={
-            <Link
-              to="/painel"
-              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-            >
-              Ver painel
-            </Link>
+            cram ? (
+              <button
+                type="button"
+                onClick={() => setCram(false)}
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Voltar ao modo normal
+              </button>
+            ) : (
+              <Link
+                to="/painel"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Ver painel
+              </Link>
+            )
           }
         />
       ) : (
         <EmptyState
           mood="yawning"
-          title="Nada pra revisar hoje"
-          description="O Faro não encontrou cards prontos para revisar agora. Gere novos cards ou volte depois."
+          title={cram ? "Nada pra praticar aqui" : "Nada pra revisar hoje"}
+          description={
+            cram
+              ? "Essa trilha não tem cards disponíveis pra praticar (cards suspensos não entram)."
+              : "O Faro não encontrou cards prontos para revisar agora. Gere novos cards ou estude adiantado."
+          }
           action={
-            <Link
-              to="/importar"
-              className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
-            >
-              Gerar cards
-            </Link>
+            cram ? (
+              <Link
+                to="/importar"
+                className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+              >
+                Gerar cards
+              </Link>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-2">
+                <Link
+                  to="/importar"
+                  className="press inline-block rounded-sm bg-action px-4 py-2 text-sm font-medium text-ink-900 hover:bg-action-deep"
+                >
+                  Gerar cards
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setCram(true)}
+                  className="press inline-block rounded-sm border border-hairline px-4 py-2 text-sm text-paper hover:border-focus"
+                >
+                  Estudar adiantado
+                </button>
+              </div>
+            )
           }
         />
       )}
